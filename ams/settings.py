@@ -58,7 +58,7 @@ MIDDLEWARE = [
     'base.router_middleware.RouterAccessMiddleware',
 ]
 
-ROUTER_ALLOWED_IP = '192.168.43.25'  # Specify the IP range
+ROUTER_ALLOWED_IP = '127.0.0.1'  # Specify the IP range
 
 
 
