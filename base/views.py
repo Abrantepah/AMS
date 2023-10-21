@@ -9,15 +9,14 @@ import secrets
 from django.urls import reverse
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
-from datetime import datetime, timedelta
+from datetime import timedelta
 from django.utils import timezone
+from django.http import HttpResponse
+from .decorators import restrict_by_ip_range
 
 
-
-
-# Create your views here.
-
-
+# @restrict_to_routers
+@restrict_by_ip_range('192.168.0.0/24')  # Specify your allowed IP range
 def student_login(request):
     if request.method == 'POST':
         username = request.POST['username']
@@ -302,7 +301,7 @@ def StudentsTable(request):
     return render(request, 'base/Students.html', context)
 
 
-def PermissionTable(request):
+def PermissionTable(request): 
     students = Student.objects.all()
     courses = Course.objects.all()
     departments = Department.objects.all()
