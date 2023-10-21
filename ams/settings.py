@@ -60,7 +60,7 @@ MIDDLEWARE = [
     
 ]
 
-ROUTER_ALLOWED_IP_RANGE = '172.20.10.255'  # Specify the IP range
+ROUTER_ALLOWED_IP_RANGE = '102.176.75.255'  # Specify the IP range
 
 
 
