@@ -45,7 +45,13 @@ class RouterAccessMiddleware:
     def __call__(self, request):
         client_ip = request.META.get('REMOTE_ADDR')
 
-        if is_ip_in_range(client_ip, self.allowed_ip_range):
-            return self.get_response(request)
+        if is_valid_ipv4(self.allowed_ip_range):
+            response_content = f"Client IP: {client_ip}, Allowed IP Range: {self.allowed_ip_range}"
+            response = HttpResponse(response_content)
+
+            return response
+
+        # if is_ip_in_range(client_ip, self.allowed_ip_range):
+            # return self.get_response(request)
         else:
             return HttpResponse("Access Denied", status=403)
