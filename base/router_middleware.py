@@ -40,7 +40,7 @@ from django.conf import settings
 class RouterAccessMiddleware:
     def __init__(self, get_response):
         self.get_response = get_response
-        self.allowed_ip_range = getattr(settings, 'ROUTER_ALLOWED_IP_RANGE', '127.0.0.1')  # Use a default value if not set
+        self.allowed_ip_range = getattr(settings, 'ROUTER_ALLOWED_IP')  # Use a default value if not set
 
     def __call__(self, request):
         client_ip = request.META.get('REMOTE_ADDR')
