@@ -12,11 +12,10 @@ from django.http import JsonResponse
 from datetime import timedelta
 from django.utils import timezone
 from django.http import HttpResponse
-from .decorators import restrict_by_ip_range
+from .decorators import restrict_to_router
 
 
-# @restrict_to_routers
-@restrict_by_ip_range('192.168.0.0/24')  # Specify your allowed IP range
+@restrict_to_router
 def student_login(request):
     if request.method == 'POST':
         username = request.POST['username']
