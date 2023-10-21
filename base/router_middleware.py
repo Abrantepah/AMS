@@ -1,5 +1,6 @@
 # # router_middleware.py
 from django.http import HttpResponse
+from ipware import get_client_ip
 
 def is_valid_ipv4(ip):
     parts = ip.split('.')
@@ -40,18 +41,21 @@ from django.conf import settings
 class RouterAccessMiddleware:
     def __init__(self, get_response):
         self.get_response = get_response
-        self.allowed_ip_range = getattr(settings, 'ROUTER_ALLOWED_IP')  # Use a default value if not set
+        self.allowed_ip_range = getattr(settings, 'ROUTER_ALLOWED_IP_RANGE')  # Use a default value if not set
 
     def __call__(self, request):
-        client_ip = request.META.get('REMOTE_ADDR')
+        # client_ip = request.META.get('REMOTE_ADDR')
+        client_ip, _ = get_client_ip(request)
+        # if is_valid_ipv4(self.allowed_ip_range):
+            
+        #     return response
 
-        if is_valid_ipv4(self.allowed_ip_range):
-            response_content = f"Client IP: {client_ip}, Allowed IP Range: {self.allowed_ip_range}"
+        if is_ip_in_range(client_ip, self.allowed_ip_range):
+            
+            return self.get_response(request)
+        else:
+            response_content = f"Client IP: {client_ip}, Allowed IP Range: {self.allowed_ip_range}, Access Denied"
             response = HttpResponse(response_content)
 
             return response
-
-        # if is_ip_in_range(client_ip, self.allowed_ip_range):
-            # return self.get_response(request)
-        else:
-            return HttpResponse("Access Denied", status=403)
+            # return HttpResponse("Access Denied", status=403)

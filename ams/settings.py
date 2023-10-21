@@ -42,13 +42,13 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     
     'base.apps.BaseConfig',
+    'ipware',
         
 ]
 
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -56,9 +56,11 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'base.router_middleware.RouterAccessMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
+    
 ]
 
-ROUTER_ALLOWED_IP = '192.168.43.25'  # Specify the IP range
+ROUTER_ALLOWED_IP_RANGE = '192.168.43.255'  # Specify the IP range
 
 
 
