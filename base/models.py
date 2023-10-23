@@ -96,7 +96,8 @@ class VerificationCode(models.Model):
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
     session = models.ForeignKey(Session, on_delete=models.CASCADE)
     expiration_time = models.DateTimeField()
-# add location field here
+    latitude = models.DecimalField(max_digits=9, decimal_places=6, null=False)
+    longitude = models.DecimalField(max_digits=9, decimal_places=6, null=False)
     used = models.BooleanField(default=False)
 
     def __str__(self):

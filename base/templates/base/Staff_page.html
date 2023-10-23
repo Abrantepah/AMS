@@ -89,7 +89,6 @@
 function getLocation() {
     if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(function(position) {
-          alert("vhimmm") 
             var latitude = position.coords.latitude;
             var longitude = position.coords.longitude;
             
@@ -107,7 +106,6 @@ function getLocation() {
         alert("Geolocation is not supported by this browser.");
     }
 }
-
 
     // Load sessions for the default selected course on page load
     var defaultCourseId = document.getElementById('course').value;

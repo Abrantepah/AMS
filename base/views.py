@@ -103,7 +103,7 @@ def submit_geolocation(request):
 
 
 
-def generate_verification_code(lecturer, course, session, expiration_minutes):
+def generate_verification_code(lecturer, course, session, expiration_minutes, latitude, longitude):
     # Your code to generate the verification code
     alphabet = string.ascii_letters + string.digits
     verification_code = ''.join(secrets.choice(alphabet) for i in range(6))
@@ -112,13 +112,15 @@ def generate_verification_code(lecturer, course, session, expiration_minutes):
     current_time = timezone.now()
     expiration_time = current_time + timedelta(minutes=expiration_minutes)
 
-    # Store the verification code with the associated lecturer, course, and expiration time
+    # Store the verification code with the associated lecturer, course, and session
     code = VerificationCode.objects.create(
         code=verification_code,
         lecturer=lecturer,
         course=course,
         session=session,
         expiration_time=expiration_time,
+        latitude=latitude,
+        longitude=longitude,
     )
     return code
 
@@ -220,21 +222,27 @@ def LecturerHome(request):
         sessions = Session.objects.filter(course=default_course)
         available_sessions = [session for session in sessions if not session.is_attended()]
 
-        # if request.method == 'POST':
-        #     selected_course_id = request.POST.get('course')
-        #     selected_course = get_object_or_404(Course, id=selected_course_id)
+        if request.method == 'POST':
+            selected_course_id = request.POST.get('course')
+            selected_course = get_object_or_404(Course, id=selected_course_id)
             
-        #     selected_session_id = request.POST.get('session')
-        #     selected_session = get_object_or_404(Session, id=selected_session_id)
+            selected_session_id = request.POST.get('session')
+            selected_session = get_object_or_404(Session, id=selected_session_id)
+            
+            selected_latitude = request.POST.get('latitude')
+            selected_longitude = request.POST.get('longitude')
+           
+            
+            
 
-        #     expiration_minutes = 3
-        #     # Generate a verification code
-        #     code = generate_verification_code(lecturer, selected_course, selected_session, expiration_minutes)
+            expiration_minutes = 3
+            # Generate a verification code
+            code = generate_verification_code(lecturer, selected_course, selected_session, expiration_minutes, selected_latitude, selected_longitude)
 
             
 
-        #     # Pass the filtered sessions to the context
-        #     return redirect('generate', code=code.code)
+            # Pass the filtered sessions to the context
+            return redirect('generate', code=code.code)
 
         context = {'lecturer': lecturer, 'courses': courses, 'available_sessions': available_sessions, }
         return render(request, 'base/Staff_page.html', context)
