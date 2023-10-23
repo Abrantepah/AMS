@@ -80,16 +80,38 @@
     });
 
     // Add event listener to the "Generate" button for submitting the generate request
-    document.getElementById('generateButton').addEventListener('click', function(event) {
-        var selectedCourseId = document.getElementById('course').value;
-        var selectedSessionId = document.getElementById('session').value;
+      document.getElementById('generateButton').addEventListener('click', function(event) {
+            if (confirm("Do you allow this app to know your location?")) {
+                getLocation();
+                showPosition();
+            }
+        });
+
+        function getLocation() {
+            if (navigator.geolocation) {
+               var d = navigator.geolocation.getCurrentPosition(showPosition);
+               prompt(d)
+            } else {
+              prompt("Geolocation is not supported by this browser.");
+            }
+            
+            var selectedCourseId = document.getElementById('course').value;
+            var selectedSessionId = document.getElementById('session').value;
         
         // You can use these selected values to generate the verification code
         // and perform any additional logic if needed.
         
         // For example, you can redirect to the verification code page with the selected values.
-        window.location.href = 'generate/{{code}}';
-    });
+         window.location.href = 'generate/{{code}}';
+        }
+
+        function showPosition(position) {
+            var latitude = position.coords.latitude;
+            var longitude = position.coords.longitude;
+            var address = "Latitude: " + latitude + "<br>Longitude: " + longitude;
+            prompt("sdsdsd")
+          }
+
 
     // Load sessions for the default selected course on page load
     var defaultCourseId = document.getElementById('course').value;

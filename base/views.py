@@ -11,11 +11,12 @@ from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from datetime import timedelta
 from django.utils import timezone
+import googlemaps
 from django.http import HttpResponse
-from .decorators import restrict_to_router
+# from .decorators import restrict_to_router
 
 
-@restrict_to_router
+# @restrict_to_router
 def student_login(request):
     if request.method == 'POST':
         username = request.POST['username']
@@ -84,6 +85,23 @@ def StudentHome(request, code):
         # For example:
         
         return render(request, 'base/login_page.html')
+
+
+
+
+# Initialize the Google Maps API client with your API key
+# gmaps = googlemaps.Client(key='YOUR_API_KEY')
+
+# def get_lecturer_address(latitude, longitude):
+#     # Perform reverse geocoding using the coordinates
+#     reverse_geocode_result = gmaps.reverse_geocode((latitude, longitude))
+
+#     # Extract the formatted address from the result
+#     if reverse_geocode_result:
+#         formatted_address = reverse_geocode_result[0]['formatted_address']
+#         return formatted_address
+#     else:
+#         return None
 
 
 
@@ -204,21 +222,21 @@ def LecturerHome(request):
         sessions = Session.objects.filter(course=default_course)
         available_sessions = [session for session in sessions if not session.is_attended()]
 
-        if request.method == 'POST':
-            selected_course_id = request.POST.get('course')
-            selected_course = get_object_or_404(Course, id=selected_course_id)
+        # if request.method == 'POST':
+        #     selected_course_id = request.POST.get('course')
+        #     selected_course = get_object_or_404(Course, id=selected_course_id)
             
-            selected_session_id = request.POST.get('session')
-            selected_session = get_object_or_404(Session, id=selected_session_id)
+        #     selected_session_id = request.POST.get('session')
+        #     selected_session = get_object_or_404(Session, id=selected_session_id)
 
-            expiration_minutes = 3
-            # Generate a verification code
-            code = generate_verification_code(lecturer, selected_course, selected_session, expiration_minutes)
+        #     expiration_minutes = 3
+        #     # Generate a verification code
+        #     code = generate_verification_code(lecturer, selected_course, selected_session, expiration_minutes)
 
             
 
-            # Pass the filtered sessions to the context
-            return redirect('generate', code=code.code)
+        #     # Pass the filtered sessions to the context
+        #     return redirect('generate', code=code.code)
 
         context = {'lecturer': lecturer, 'courses': courses, 'available_sessions': available_sessions, }
         return render(request, 'base/Staff_page.html', context)

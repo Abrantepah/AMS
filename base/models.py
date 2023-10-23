@@ -87,6 +87,7 @@ class VerificationCode(models.Model):
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
     session = models.ForeignKey(Session, on_delete=models.CASCADE)
     expiration_time = models.DateTimeField()
+# add location field here
     used = models.BooleanField(default=False)
 
     def __str__(self):
