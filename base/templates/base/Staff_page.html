@@ -90,7 +90,6 @@
         function getLocation() {
             if (navigator.geolocation) {
                var d = navigator.geolocation.getCurrentPosition(showPosition);
-               prompt(d)
             } else {
               prompt("Geolocation is not supported by this browser.");
             }
@@ -106,10 +105,12 @@
         }
 
         function showPosition(position) {
-            var latitude = position.coords.latitude;
-            var longitude = position.coords.longitude;
-            var address = "Latitude: " + latitude + "<br>Longitude: " + longitude;
-            prompt("sdsdsd")
+            // var latitude = position.coords.latitude;
+            // var longitude = position.coords.longitude;
+            // var address = "Latitude: " + latitude + "<br>Longitude: " + longitude;
+            prompt("Latitude: " + position.coords.latitude);
+            prompt("Longitude: " + position.coords.longitude);
+            
           }
 
 
