@@ -133,6 +133,7 @@ def VerifyCode(request):
 
     if request.method == 'POST':
         code = request.POST.get('code')
+        student_latitude = request.POST.get('latitude')
         try:
             verification_code = VerificationCode.objects.get(code=code, used=False)
             session = verification_code.session
@@ -166,7 +167,7 @@ def VerifyCode(request):
 
                 # Assuming you want to allow a maximum distance of, for example, 1 kilometer
                 max_distance = 1.0  # Change to 1.0 for kilometers
-
+         
                 # Perform the radius check
                 if session.expiration_time <= current_time or distance > max_distance:
                  error_message = 'Verification code has expired or you are not within the location radius.'
@@ -191,7 +192,7 @@ def VerifyCode(request):
                             messages.success(request, 'Verification successful. You can now log in.')
                             return redirect('student_home', code=code)
 
-    return render(request, 'base/verify_code.html', {'error_message': error_message})
+    return render(request, 'base/verify_code.html', {'error_message': error_message, 'student_latitude': student_latitude,})
 
 
 
