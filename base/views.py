@@ -168,7 +168,7 @@ def VerifyCode(request):
                 max_distance = 1.0  # Change to 1.0 for kilometers
 
                 # Perform the radius check
-                if session.expiration_time <= current_time or distance > max_distance:
+                if verification_code.expiration_time <= current_time or distance > max_distance:
                  error_message = 'Verification code has expired or you are not within the location radius.'
                 else:
                     session.expiration_time = current_time + timedelta(minutes=5)
