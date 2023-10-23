@@ -79,39 +79,34 @@
         populateSessions(selectedCourseId);
     });
 
-    // Add event listener to the "Generate" button for submitting the generate request
-      document.getElementById('generateButton').addEventListener('click', function(event) {
-            if (confirm("Do you allow this app to know your location?")) {
-                getLocation();
-                showPosition();
-            }
+    document.getElementById('generateButton').addEventListener('click', function(event) {
+    if (confirm("Do you allow this app to know your location?")) {
+       getLocation();
+    }
+});
+
+//getting the location of the user and populating the glocation database
+function getLocation() {
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(function(position) {
+          alert("vhimmm") 
+            var latitude = position.coords.latitude;
+            var longitude = position.coords.longitude;
+            
+            // Send the geolocation data to the server using an AJAX request
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', '/submit_geolocation/', true);
+            xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8');
+            xhr.send('latitude=' + latitude + '&longitude=' + longitude);
+
+            // Optionally, display the data to the user
+        
+            alert("Latitude: " + latitude + "\nLongitude: " + longitude);
         });
-
-        function getLocation() {
-            if (navigator.geolocation) {
-               var d = navigator.geolocation.getCurrentPosition(showPosition);
-            } else {
-              prompt("Geolocation is not supported by this browser.");
-            }
-            
-            var selectedCourseId = document.getElementById('course').value;
-            var selectedSessionId = document.getElementById('session').value;
-        
-        // You can use these selected values to generate the verification code
-        // and perform any additional logic if needed.
-        
-        // For example, you can redirect to the verification code page with the selected values.
-         window.location.href = 'generate/{{code}}';
-        }
-
-        function showPosition(position) {
-            // var latitude = position.coords.latitude;
-            // var longitude = position.coords.longitude;
-            // var address = "Latitude: " + latitude + "<br>Longitude: " + longitude;
-            prompt("Latitude: " + position.coords.latitude);
-            prompt("Longitude: " + position.coords.longitude);
-            
-          }
+    } else {
+        alert("Geolocation is not supported by this browser.");
+    }
+}
 
 
     // Load sessions for the default selected course on page load

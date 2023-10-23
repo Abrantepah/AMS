@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth.models import User
-from .models import Department, Student, Course, Lecturer, VerificationCode, Session, StudentCourse,Attendance
+from .models import Department, Student, Course, Lecturer, VerificationCode, Session, StudentCourse, Attendance, Glocation
 from .forms import  LecturerForm, DepartmentForm, CourseForm
 from django.contrib.auth import authenticate, login, logout
 import string
@@ -88,19 +88,18 @@ def StudentHome(request, code):
 
 
 
-# Initialize the Google Maps API client with your API key
-# gmaps = googlemaps.Client(key='YOUR_API_KEY')
-
-# def get_lecturer_address(latitude, longitude):
-#     # Perform reverse geocoding using the coordinates
-#     reverse_geocode_result = gmaps.reverse_geocode((latitude, longitude))
-
-#     # Extract the formatted address from the result
-#     if reverse_geocode_result:
-#         formatted_address = reverse_geocode_result[0]['formatted_address']
-#         return formatted_address
-#     else:
-#         return None
+def submit_geolocation(request):
+    if request.method == 'POST':
+        latitude = request.POST.get('latitude')
+        longitude = request.POST.get('longitude')
+        if latitude is not None and longitude is not None:
+            geolocation = Glocation(latitude=latitude, longitude=longitude)
+            geolocation.save()
+            return JsonResponse({'message': 'Geolocation data saved successfully.'})
+        else:
+            return JsonResponse({'error': 'Latitude and longitude data not provided.'})
+    else:
+        return JsonResponse({'error': 'Invalid request method.'})
 
 
 
