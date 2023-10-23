@@ -11,6 +11,7 @@ from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from datetime import timedelta
 from django.utils import timezone
+import math
 from django.http import HttpResponse
 # from .decorators import restrict_to_router
 
@@ -143,24 +144,52 @@ def VerifyCode(request):
                 verification_code.save()
                 error_message = 'Verification code has expired.'
             else:
-                session.expiration_time = current_time + timedelta(minutes=5)
-                verification_code.used = False
-                session.save()  # Save the session
-                verification_code.save()  # Save the verification code
+                # Get the student's location
+                student_latitude = float(request.POST.get('latitude'))
+                student_longitude = float(request.POST.get('longitude'))
+                verification_latitude = float(verification_code.latitude)
+                verification_longitude = float(verification_code.longitude)
 
-                if not request.user.is_staff:
-                    student = Student.objects.get(user=request.user)
+               # Calculate the distance between the two sets of coordinates using the Haversine formula
+                radius = 6371  # Earth's radius in kilometers
+                lat1 = math.radians(student_latitude)
+                lon1 = math.radians(student_longitude)
+                lat2 = math.radians(verification_latitude)
+                lon2 = math.radians(verification_longitude)
 
-                    try:
-                        student_course = StudentCourse.objects.get(student=student, course=verification_code.course)
-                    except StudentCourse.DoesNotExist:
-                        error_message = f"You are not enrolled in {verification_code.course}. Invalid login credentials. Please try again."
-                    else:
-                        # Perform verification here
-                        # ...
+                delta_lat = lat2 - lat1
+                delta_lon = lon2 - lon1
 
-                        messages.success(request, 'Verification successful. You can now log in.')
-                        return redirect('student_home', code=code)
+                a = math.sin(delta_lat / 2) ** 2 + math.cos(lat1) * math.cos(lat2) * math.sin(delta_lon / 2) ** 2
+                c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
+                distance = radius * c  # Distance in kilometers
+
+                # Assuming you want to allow a maximum distance of, for example, 1 kilometer
+                max_distance = 1.0  # Change to 1.0 for kilometers
+
+                # Perform the radius check
+                if session.expiration_time <= current_time or distance > max_distance:
+                 error_message = 'Verification code has expired or you are not within the location radius.'
+                else:
+                    session.expiration_time = current_time + timedelta(minutes=5)
+                    verification_code.used = False
+                    session.save()
+                    verification_code.save()
+
+                    if not request.user.is_staff:
+                        student = Student.objects.get(user=request.user)
+
+                        try:
+                            student_course = StudentCourse.objects.get(student=student, course=verification_code.course)
+                        except StudentCourse.DoesNotExist:
+                            error_message = f"You are not enrolled in {verification_code.course}. Invalid login credentials. Please try again."
+                        else:
+                            # Perform verification here
+                            # ...
+
+                            # load the message.success in a green-covered text
+                            messages.success(request, 'Verification successful. You can now log in.')
+                            return redirect('student_home', code=code)
 
     return render(request, 'base/verify_code.html', {'error_message': error_message})
 

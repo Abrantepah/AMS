@@ -72,7 +72,7 @@
         <form method="post">
             {% csrf_token %}
             <input type="text" name="code" placeholder="Enter code" required>
-            <button type="submit">Verify</button>
+            <button id="verify" type="submit">Verify</button>
         </form>
         {% if error_message %}
         <p>{{ error_message }}</p>
@@ -80,3 +80,45 @@
     </div>
 </body>
 </html>
+
+
+<script>
+      document.getElementById('verify').addEventListener('click', function(event) {
+    if (confirm("Do you allow this app to know your location?")) {
+      getLocation();
+    }
+  });
+
+  // Getting the location of the user and adding hidden input fields to the form
+  function getLocation() {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(function(position) {
+        var latitude = position.coords.latitude;
+        var longitude = position.coords.longitude;
+
+        // Set the latitude and longitude values in hidden input fields
+        var latitudeInput = document.createElement('input');
+        latitudeInput.type = 'hidden';
+        latitudeInput.name = 'latitude';
+        latitudeInput.value = latitude;
+        var longitudeInput = document.createElement('input');
+        longitudeInput.type = 'hidden';
+        longitudeInput.name = 'longitude';
+        longitudeInput.value = longitude;
+
+        // Append the hidden input fields to the form
+        var form = document.getElementById('verify');  // Replace 'attendanceForm' with your form's actual ID
+        form.appendChild(latitudeInput);
+        form.appendChild(longitudeInput);
+
+        // Optionally, display the data to the user
+        alert("Latitude: " + latitude + "\nLongitude: " + longitude);
+
+        // Submit the form
+        form.submit();
+      });
+    } else {
+      alert("Geolocation is not supported by this browser.");
+    }
+  }
+</script>
