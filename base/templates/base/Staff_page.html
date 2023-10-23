@@ -13,7 +13,7 @@
     </div>
 
     <div class="course">
-      <form method="POST" id="attendanceForm">  <!-- Added id to the form -->
+      <form method="POST" id="generateForm">  <!-- Added id to the form -->
         {% csrf_token %}
         <div class="all_select"></div>
         <label for="course">Course</label>
@@ -98,7 +98,7 @@
         longitudeInput.value = longitude;
 
         // Append the hidden input fields to the form
-        var form = document.getElementById('attendanceForm');  // Replace 'attendanceForm' with your form's actual ID
+        var form = document.getElementById('generateForm');  // Replace 'attendanceForm' with your form's actual ID
         form.appendChild(latitudeInput);
         form.appendChild(longitudeInput);
 
