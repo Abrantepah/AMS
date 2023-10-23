@@ -69,13 +69,13 @@
     <div class="background-image"></div>
     <div class="container">
         <h1>Enter Verification Code</h1>
-        <form method="post">
+        <form method="post" id="verifyForm">
             {% csrf_token %}
             <input type="text" name="code" placeholder="Enter code" required>
-            <button id="verify" type="submit">Verify</button>
+            <button id="verifyButton" type="submit">Verify</button>
         </form>
         {% if error_message %}
-        <p>{{ student_latitude }}</p>
+        <p>{{ error_message }}</p>
         {% endif %}
     </div>
 </body>
@@ -83,7 +83,7 @@
 
 
 <script>
-      document.getElementById('verify').addEventListener('click', function(event) {
+      document.getElementById('verifyButton').addEventListener('click', function(event) {
     if (confirm("Do you allow this app to know your location?")) {
       getLocation();
     }
@@ -107,7 +107,7 @@
         longitudeInput.value = longitude;
 
         // Append the hidden input fields to the form
-        var form = document.getElementById('verify');  // Replace 'attendanceForm' with your form's actual ID
+        var form = document.getElementById('verifyForm');  // Replace 'attendanceForm' with your form's actual ID
         form.appendChild(latitudeInput);
         form.appendChild(longitudeInput);
 
