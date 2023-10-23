@@ -11,7 +11,6 @@ from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from datetime import timedelta
 from django.utils import timezone
-import googlemaps
 from django.http import HttpResponse
 # from .decorators import restrict_to_router
 
