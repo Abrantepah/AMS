@@ -133,7 +133,6 @@ def VerifyCode(request):
 
     if request.method == 'POST':
         code = request.POST.get('code')
-        student_latitude = request.POST.get('latitude')
         try:
             verification_code = VerificationCode.objects.get(code=code, used=False)
             session = verification_code.session
@@ -146,28 +145,28 @@ def VerifyCode(request):
                 error_message = 'Verification code has expired.'
             else:
                 # Get the student's location
-                student_latitude = float(request.POST.get('latitude'))
-                student_longitude = float(request.POST.get('longitude'))
+                # student_latitude = float(request.POST.get('latitude'))
+                # student_longitude = float(request.POST.get('longitude'))
                 verification_latitude = float(verification_code.latitude)
                 verification_longitude = float(verification_code.longitude)
 
                # Calculate the distance between the two sets of coordinates using the Haversine formula
                 radius = 6371  # Earth's radius in kilometers
-                lat1 = math.radians(student_latitude)
-                lon1 = math.radians(student_longitude)
+                # lat1 = math.radians(student_latitude)
+                # lon1 = math.radians(student_longitude)
                 lat2 = math.radians(verification_latitude)
                 lon2 = math.radians(verification_longitude)
 
-                delta_lat = lat2 - lat1
-                delta_lon = lon2 - lon1
+                delta_lat = lat2 
+                delta_lon = lon2 
 
-                a = math.sin(delta_lat / 2) ** 2 + math.cos(lat1) * math.cos(lat2) * math.sin(delta_lon / 2) ** 2
+                a = math.sin(delta_lat / 2) ** 2 + math.cos(lat2) * math.cos(lat2) * math.sin(delta_lon / 2) ** 2
                 c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
                 distance = radius * c  # Distance in kilometers
 
                 # Assuming you want to allow a maximum distance of, for example, 1 kilometer
                 max_distance = 1.0  # Change to 1.0 for kilometers
-         
+
                 # Perform the radius check
                 if session.expiration_time <= current_time or distance > max_distance:
                  error_message = 'Verification code has expired or you are not within the location radius.'
@@ -192,7 +191,7 @@ def VerifyCode(request):
                             messages.success(request, 'Verification successful. You can now log in.')
                             return redirect('student_home', code=code)
 
-    return render(request, 'base/verify_code.html', {'error_message': error_message, 'student_latitude': student_latitude,})
+    return render(request, 'base/verify_code.html', {'error_message': error_message})
 
 
 
