@@ -81,14 +81,6 @@ def assign_program_courses(sender, instance, created, **kwargs):
                 StudentCourse.objects.create(student=instance, course=course)
 
 
-class Glocation(models.Model):
-    latitude = models.DecimalField(max_digits=9, decimal_places=6)
-    longitude = models.DecimalField(max_digits=9, decimal_places=6)
-    timestamp = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return f"Latitude: {self.latitude}, Longitude: {self.longitude}"
-
 
 class VerificationCode(models.Model):
     code = models.CharField(max_length=10, unique=True)

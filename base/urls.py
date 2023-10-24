@@ -19,6 +19,6 @@ urlpatterns = [
    path('students', views.StudentsTable, name="students_table"),
    path('permission', views.PermissionTable, name="permission_table"),
    path('Help/', views.Help, name="help"),
-   path('submit_geolocation/', views.submit_geolocation, name='submit_geolocation'),
-   
+  
+
 ]

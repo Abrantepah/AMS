@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth.models import User
-from .models import Department, Student, Course, Lecturer, VerificationCode, Session, StudentCourse, Attendance, Glocation
+from .models import Department, Student, Course, Lecturer, VerificationCode, Session, StudentCourse, Attendance
 from .forms import  LecturerForm, DepartmentForm, CourseForm
 from django.contrib.auth import authenticate, login, logout
 import string
@@ -86,21 +86,6 @@ def StudentHome(request, code):
         
         return render(request, 'base/login_page.html')
 
-
-
-
-def submit_geolocation(request):
-    if request.method == 'POST':
-        latitude = request.POST.get('latitude')
-        longitude = request.POST.get('longitude')
-        if latitude is not None and longitude is not None:
-            geolocation = Glocation(latitude=latitude, longitude=longitude)
-            geolocation.save()
-            return JsonResponse({'message': 'Geolocation data saved successfully.'})
-        else:
-            return JsonResponse({'error': 'Latitude and longitude data not provided.'})
-    else:
-        return JsonResponse({'error': 'Invalid request method.'})
 
 
 
