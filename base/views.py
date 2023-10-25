@@ -65,6 +65,7 @@ def Lecturer_login(request):
      return render(request, 'base/lecturer_login.html')
     
 
+@login_required
 def StudentHome(request, code):
     # Check if the user is authenticated (logged in)
     if request.user.is_authenticated:
@@ -180,7 +181,7 @@ def VerifyCode(request):
 
 
 
-
+@login_required
 def MarkAttendance(request, code):
     verification_code = get_object_or_404(VerificationCode, code=code)
     lecturer = verification_code.lecturer
@@ -192,27 +193,59 @@ def MarkAttendance(request, code):
     time_remaining = (time - timezone.now()).total_seconds()
     if time_remaining <= 0:
         return redirect('login')
+    
 
     if request.method == 'POST':
         # Check if the student is eligible to mark attendance
-        if time_remaining > 0:  # No need for this check again, it's already done above
-            # Mark attendance for the student
-            attendance, created = Attendance.objects.get_or_create(
-                StudentCourse=student_course,
-                session=session,
-                defaults={'attended': True}
-            )
-            if not created:
-                attendance.attended = True
-                attendance.save()
+        if time_remaining > 0:
+            attendance_type = request.POST.get('attendance_type')
+            if attendance_type == 'start':
+                # Mark attendance for the start of the session
+                attendance, created = Attendance.objects.get_or_create(
+                    StudentCourse=student_course,
+                    session=session,
+                    defaults={'attended_start': True}
+                )
+                if not created:
+                    attendance.attended_start = True
+                    attendance.save()
+            elif attendance_type == 'end':
+                # Mark attendance for the end of the session
+                attendance, created = Attendance.objects.get_or_create(
+                    StudentCourse=student_course,
+                    session=session,
+                    defaults={'attended_end': True}
+                )
+                if not created:
+                    attendance.attended_end = True
+                    attendance.save()
+
+
+    # if request.method == 'POST':
+    #     # Check if the student is eligible to mark attendance
+    #     if time_remaining > 0:  # No need for this check again, it's already done above
+    #         # Mark attendance for the student
+    #         attendance, created = Attendance.objects.get_or_create(
+    #             StudentCourse=student_course,
+    #             session=session,
+    #             defaults={'attended': True}
+    #         )
+    #         if not created:
+    #             attendance.attended = True
+    #             attendance.save()
+
+
         return redirect('closing')
     
+    attendance_marked = Attendance.objects.filter(session=session, attended_start=True).exists()
+
     context = {
         'verification_code': verification_code,
         'lecturer': lecturer,
         'course': course,
         'session': session,
         'time_remaining': time_remaining,
+        'attendance_marked': attendance_marked,
     }
 
     return render(request, 'base/attendance_page.html', context)
@@ -223,7 +256,7 @@ def Closing(request):
     return render(request, 'base/closing.html')
 
 
-
+@login_required
 def LecturerHome(request):
     if request.user.is_authenticated:
         lecturer = Lecturer.objects.get(user=request.user)
@@ -257,7 +290,6 @@ def LecturerHome(request):
 
             # Pass the filtered sessions to the context
             return redirect('generate', code=code.code)
-
         context = {'lecturer': lecturer, 'courses': courses, 'available_sessions': available_sessions, }
         return render(request, 'base/Staff_page.html', context)
     else:
@@ -281,7 +313,7 @@ def get_sessions_for_course(request):
       
     return JsonResponse({'error': 'Invalid request method'}, status=405)
 
-
+@login_required
 def GeneratePage(request, code):
     # Retrieve the VerificationCode object with the given code
     verification_code = get_object_or_404(VerificationCode, code=code)
@@ -291,7 +323,7 @@ def GeneratePage(request, code):
 
 
 
-
+@login_required
 def TablePage(request):
 
     students_table_url = reverse("students_table")
@@ -337,7 +369,7 @@ def StudentsTable(request):
     context = {'student_info': student_info}
     return render(request, 'base/Students.html', context)
 
-
+@login_required
 def PermissionTable(request): 
     students = Student.objects.all()
     courses = Course.objects.all()
@@ -372,6 +404,7 @@ def PermissionTable(request):
 #     context = {'login': login}
 #     return render(request, 'base/login_page.html', context)    
 
+@login_required
 def Help(request):
     return render(request, 'base/help.html')    
 

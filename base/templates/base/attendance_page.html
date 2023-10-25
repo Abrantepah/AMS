@@ -20,53 +20,58 @@
 
   <div class="attendance_main">
     <div class="attendance-taker">
-      <h2>{{course.name}}</h2>
+      <h2>{{ course.name }}</h2>
       <img src="{% static 'images/avatar.svg' %}" alt="">
-      <h3>Lecturer: {{lecturer.name}}</h3>
+      <h3>Lecturer: {{ lecturer.name }}</h3>
       <h1>Mark Attendance</h1>
       <div class="sections">
         <div class="sectons-marker">
           <span class="marker"></span>
-          <span class="time">9:00 AM - 10:00 AM</span>
         </div>
-        <button type="button" disabled class="btn btn-outline-danger">Session {{session.id}}</button>
-       
+        <button type="button" disabled class="btn btn-outline-danger">Session {{ session.id }}</button>
+
         <form action="" method="post">
           {% csrf_token %}
-          <button type="submit" id="mark-attendance">Mark Attendance</button>
+          <input type="hidden" name="attendance_type" value="start">
+          <button type="submit" id="mark-attendance-start" {% if attendance_marked %}disabled{% endif %}>Mark Start Attendance</button>
         </form>
         
+        <form action="" method="post">
+          {% csrf_token %}
+          <input type="hidden" name="attendance_type" value="end">
+          <button type="submit" id="mark-attendance-end">Mark End Attendance</button>
+        </form>
       </div>
       <div id="attendance-result"></div>
       <h5>Countdown Timer</h5>
-      <h1 id="countdown">{{time_remaining}}</h1>
+      <h1 id="countdown">{{ time_remaining }}</h1>
     </div>
   </div>
   
   <script>
     document.addEventListener('DOMContentLoaded', function () {
-  const countdownElement = document.getElementById('countdown');
-  const initialTimeRemaining = parseInt(countdownElement.textContent);
+      const countdownElement = document.getElementById('countdown');
+      const initialTimeRemaining = parseInt(countdownElement.textContent);
 
-  function updateCountdown() {
-    let timeRemaining = parseInt(countdownElement.textContent);
+      function updateCountdown() {
+        let timeRemaining = parseInt(countdownElement.textContent);
 
-    const interval = setInterval(() => {
-      if (timeRemaining <= 0) {
-        countdownElement.textContent = 'Time expired';
-        clearInterval(interval);
-        // Optionally, you can perform actions when the time expires
-      } else {
-        const minutes = Math.floor(timeRemaining / 60);
-        const seconds = timeRemaining % 60;
-        countdownElement.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
-        timeRemaining--;
+        const interval = setInterval(() => {
+          if (timeRemaining <= 0) {
+            countdownElement.textContent = 'Time expired';
+            clearInterval(interval);
+            // Optionally, you can perform actions when the time expires
+          } else {
+            const minutes = Math.floor(timeRemaining / 60);
+            const seconds = timeRemaining % 60;
+            countdownElement.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+            timeRemaining--;
+          }
+        }, 1000);
       }
-    }, 1000);
-  }
 
-  updateCountdown();
-});
+      updateCountdown();
+    });
   </script>
   <!-- Include the external JavaScript file -->
   <script src="{% static 'styles/script.js' %}"></script>

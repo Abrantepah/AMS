@@ -30,7 +30,7 @@ class Course(models.Model):
     code = models.PositiveIntegerField(unique=True)
     department = models.ForeignKey(Department, on_delete=models.CASCADE) 
     lecturer = models.ForeignKey(Lecturer, on_delete=models.PROTECT, null=True)
-    
+
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
 
@@ -113,7 +113,7 @@ def create_sessions(sender, instance, created, **kwargs):
                 course=instance,
                 date=timezone.now().date(),  # Set the date to current date
                 time=timezone.now().time(),  # Set the time to current time
-                expiration_time=timezone.now() + timezone.timedelta(minutes=5)  # Initial expiration time
+                expiration_time=timezone.now() + timezone.timedelta(minutes=4)  # Initial expiration time
             )
 
 
@@ -121,14 +121,22 @@ class Attendance(models.Model):
     StudentCourse = models.ForeignKey(StudentCourse, on_delete=models.CASCADE)
     session = models.ForeignKey(Session, on_delete=models.CASCADE)
     attended = models.BooleanField(default=False)
+    attended_start = models.BooleanField(default=False)
+    attended_end = models.BooleanField(default=False)
 
     def save(self, *args, **kwargs):
-        if self.attended:
+        if self.attended_start and self.attended_end:
+          self.attended = True
+
+        if self.attended_end:
             self.StudentCourse.strike += 0
         else:
             self.StudentCourse.strike += 1
+
+    
         self.StudentCourse.save()
         super(Attendance, self).save(*args, **kwargs)
 
     def __str__(self):
-        return f"{self.student.name} - {self.course.name} - Session {self.session.sessions}"
+     return f"{self.StudentCourse.student.name} - {self.StudentCourse.course.name} - Session {self.session.sessions}"
+
