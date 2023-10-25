@@ -30,6 +30,14 @@ class Course(models.Model):
     code = models.PositiveIntegerField(unique=True)
     department = models.ForeignKey(Department, on_delete=models.CASCADE) 
     lecturer = models.ForeignKey(Lecturer, on_delete=models.PROTECT, null=True)
+    
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+
+        # After saving the course, find students from the same department and assign them
+        students = Student.objects.filter(programme=self.department)
+        for student in students:
+            StudentCourse.objects.get_or_create(student=student, course=self)
 
     def __str__(self):
         return self.name
