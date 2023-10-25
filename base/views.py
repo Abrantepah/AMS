@@ -221,20 +221,6 @@ def MarkAttendance(request, code):
                     attendance.save()
 
 
-    # if request.method == 'POST':
-    #     # Check if the student is eligible to mark attendance
-    #     if time_remaining > 0:  # No need for this check again, it's already done above
-    #         # Mark attendance for the student
-    #         attendance, created = Attendance.objects.get_or_create(
-    #             StudentCourse=student_course,
-    #             session=session,
-    #             defaults={'attended': True}
-    #         )
-    #         if not created:
-    #             attendance.attended = True
-    #             attendance.save()
-
-
         return redirect('closing')
     
     attendance_marked = Attendance.objects.filter(session=session, attended_start=True).exists()
@@ -281,8 +267,10 @@ def LecturerHome(request):
            
             
             
-
+            # minutes it takes for code to expire
             expiration_minutes = 3
+
+
             # Generate a verification code
             code = generate_verification_code(lecturer, selected_course, selected_session, expiration_minutes, selected_latitude, selected_longitude)
 

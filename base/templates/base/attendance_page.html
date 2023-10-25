@@ -25,22 +25,28 @@
       <h3>Lecturer: {{ lecturer.name }}</h3>
       <h1>Mark Attendance</h1>
       <div class="sections">
-        <div class="sectons-marker">
-          <span class="marker"></span>
-        </div>
-        <button type="button" disabled class="btn btn-outline-danger">Session {{ session.id }}</button>
-
-        <form action="" method="post">
-          {% csrf_token %}
-          <input type="hidden" name="attendance_type" value="start">
-          <button type="submit" id="mark-attendance-start" {% if attendance_marked %}disabled{% endif %}>Mark Start Attendance</button>
-        </form>
         
-        <form action="" method="post">
-          {% csrf_token %}
-          <input type="hidden" name="attendance_type" value="end">
-          <button type="submit" id="mark-attendance-end">Mark End Attendance</button>
-        </form>
+        <div class="d-flex justify-content-center mb-3">
+          <button type="button" disabled class="btn btn-outline-danger">Session {{ session.id }}</button>
+        </div>
+
+       
+        <div class="d-flex justify-content-center mb-3">
+          <form action="" method="post">
+            {% csrf_token %}
+            <input type="hidden" name="attendance_type" value="start">
+            <button type="submit" id="mark-attendance-start" {% if attendance_marked %}disabled{% endif %} class="btn btn-danger">Mark Start Attendance</button>
+          </form>
+        </div>
+        
+        <div class="d-flex justify-content-center mb-3">
+          <form action="" method of="post">
+            {% csrf_token %}
+            <input type="hidden" name="attendance_type" value="end">
+            <button type="submit" id="mark-attendance-end" {% if not attendance_marked %}disabled{% endif %} class="btn btn-success">Mark End Attendance</button>
+          </form>
+        </div>
+        
       </div>
       <div id="attendance-result"></div>
       <h5>Countdown Timer</h5>

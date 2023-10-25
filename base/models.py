@@ -113,7 +113,7 @@ def create_sessions(sender, instance, created, **kwargs):
                 course=instance,
                 date=timezone.now().date(),  # Set the date to current date
                 time=timezone.now().time(),  # Set the time to current time
-                expiration_time=timezone.now() + timezone.timedelta(minutes=4)  # Initial expiration time
+                expiration_time=timezone.now() + timezone.timedelta(minutes=5)  # Initial expiration time
             )
 
 
