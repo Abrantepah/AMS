@@ -1,39 +1,5 @@
 // static/styles/script.js
 
-document.addEventListener('DOMContentLoaded', function () {
-  const countdownElement = document.getElementById('countdown');
-  const initialTimeRemaining = parseInt(countdownElement.textContent);
-
-  function updateCountdown() {
-    let timeRemaining = parseInt(countdownElement.textContent);
-
-    const interval = setInterval(() => {
-      if (timeRemaining <= 0) {
-        countdownElement.textContent = 'Time expired';
-        clearInterval(interval);
-        // Optionally, you can perform actions when the time expires
-      } else {
-        const minutes = Math.floor(timeRemaining / 60);
-        const seconds = timeRemaining % 60;
-        countdownElement.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
-        timeRemaining--;
-      }
-    }, 1000);
-  }
-
-  updateCountdown();
-});
-
-// ################ mark button operation ###############
-function markAttendance() {
-    var button = document.getElementById("mark-attendance");
-    button.classList.add("clicked");
-    button.innerHTML = "Marked Present";
-    button.disabled = true;
-  }
-
-
-
 // Function to filter students based on the select and input values
 function filterStudents() {
   const indexFilterValue = document.getElementById('indexFilter').value;
@@ -175,30 +141,6 @@ function viewFile(button) {
     });
 }
 
-
-//####### Strike content color operation ###########
-
-  // Get all the rows with class "strike-content"
-  const strikeRows = document.querySelectorAll('.strike-content');
-
-  // Loop through each row
-  strikeRows.forEach(row => {
-    // Get the strike content value
-    const strikeContent = parseInt(row.textContent);
-
-    // Determine the appropriate class based on the strike content value
-    let rowClass = '';
-    if (strikeContent === 1) {
-      rowClass = 'table-success';
-    } else if (strikeContent === 2) {
-      rowClass = 'table-warning';
-    } else if (strikeContent === 3) {
-      rowClass = 'table-danger';
-    }
-
-    // Add the class to the row
-    row.closest('tr').classList.add(rowClass);
-  });
 
 // ##############help##########
 function generateAnswer(faqNumber) {
