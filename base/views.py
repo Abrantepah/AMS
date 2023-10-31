@@ -209,7 +209,7 @@ def MarkAttendance(request, code):
                 if not created:
                     attendance.attended_start = True
                     attendance.save()
-            elif attendance_type == 'end':
+            elif attendance_type == 'end' and attendance.attended_start == True:
                 # Mark attendance for the end of the session
                 attendance, created = Attendance.objects.get_or_create(
                     StudentCourse=student_course,

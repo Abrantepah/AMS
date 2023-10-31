@@ -33,20 +33,20 @@
        
         <div class="d-flex justify-content-center mb-3">
           <form action="" method="post">
-              {% csrf_token %}
-              <input type="hidden" name="attendance_type" value="start">
-              <button type="submit" id="mark-attendance-start" {% if attendance_marked %}disabled{% endif %} class="btn btn-danger" data-attendance-marked="{{ attendance_marked }}" data-start-timestamp="{{ start_timestamp }}">Mark Start Attendance</button>
+            {% csrf_token %}
+            <input type="hidden" name="attendance_type" value="start">
+            <button type="submit" id="mark-attendance-start" {% if attendance_marked %}disabled{% endif %} class="btn btn-danger">Mark Start Attendance</button>
           </form>
-      </div>
-      
-      <div class="d-flex justify-content-center mb-3">
+        </div>
+        
+        <div class="d-flex justify-content-center mb-3">
           <form action="" method="post">
-              {% csrf_token %}
-              <input type="hidden" name="attendance_type" value="end">
-              <button type="submit" id="mark-attendance-end" {% if not attendance_marked %}disabled{% endif %} class="btn btn-success" data-disable-timer="15" data-enabled="false">Mark End Attendance</button>
-          </form> 
-      </div>
-      
+            {% csrf_token %}
+            <input type="hidden" name="attendance_type" value="end">
+            <button type="submit" id="mark-attendance-end" {% if not attendance_marked %}disabled{% endif %} class="btn btn-success">Mark End Attendance</button>
+          </form>
+        </div>
+        
       </div>
       <div id="attendance-result"></div>
       <h5>Countdown Timer</h5>
@@ -54,7 +54,7 @@
     </div>
   </div>
   
-  <script>
+  <!-- <script>
     document.addEventListener('DOMContentLoaded', function () {
       const countdownElement = document.getElementById('countdown');
       const initialTimeRemaining = parseInt(countdownElement.textContent);
@@ -77,40 +77,8 @@
       }
 
       updateCountdown();
-
-   
- 
-        const startButton = document.getElementById('mark-attendance-start');
-        const endButton = document.getElementById('mark-attendance-end');
-
-        // Get the data attributes
-        const isAttendanceMarked = startButton.getAttribute('data-attendance-marked') === 'True';
-        const startTimestamp = parseInt(startButton.getAttribute('data-start-timestamp'));
-        const disableTimer = parseInt(endButton.getAttribute('data-disable-timer'));
-
-        // Calculate the current time and elapsed time
-        const currentTime = Math.floor(Date.now() / 1000);
-        const elapsedMinutes = (currentTime - startTimestamp) / 60;
-
-        // Check if the "Mark Start Attendance" button has been used
-        if (isAttendanceMarked) {
-            // Check if 15 minutes have elapsed
-            if (elapsedMinutes >= disableTimer) {
-                endButton.removeAttribute('disabled');
-                endButton.setAttribute('data-enabled', 'true');
-            } else {
-                // Disable the "Mark End Attendance" button
-                endButton.setAttribute('disabled', 'true');
-                endButton.setAttribute('data-enabled', 'false');
-            }
-        } else {
-            // If "Mark Start Attendance" hasn't been used, disable the "Mark End Attendance" button
-            endButton.setAttribute('disabled', 'true');
-            endButton.setAttribute('data-enabled', 'false');
-        
-        }
     });
-  </script>
+  </script> -->
   <!-- Include the external JavaScript file -->
   <script src="{% static 'styles/script.js' %}"></script>
 </body>
