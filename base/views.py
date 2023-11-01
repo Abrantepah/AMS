@@ -231,7 +231,7 @@ def MarkAttendance(request, code):
         'course': course,
         'session': session,
         'time_remaining': time_remaining,
-        'attendance_marked': attendance_marked_start,
+        'attendance_marked_start': attendance_marked_start,
     }
 
     return render(request, 'base/attendance_page.html', context)
