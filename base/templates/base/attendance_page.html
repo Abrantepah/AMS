@@ -35,7 +35,7 @@
           <form action="" method="post">
             {% csrf_token %}
             <input type="hidden" name="attendance_type" value="start">
-            <button type="submit" id="mark-attendance-start" {% if attendance_marked %}disabled{% endif %} class="btn btn-danger">Mark Start Attendance</button>
+            <button type="submit" id="mark-attendance-start" {% if attendance_marked_start %}disabled{% endif %} class="btn btn-danger">Mark Start Attendance</button>
           </form>
         </div>
         
@@ -43,7 +43,7 @@
           <form action="" method="post">
             {% csrf_token %}
             <input type="hidden" name="attendance_type" value="end">
-            <button type="submit" id="mark-attendance-end" {% if not attendance_marked %}disabled{% endif %} class="btn btn-success">Mark End Attendance</button>
+            <button type="submit" id="mark-attendance-end" {% if not attendance_marked_start %}disabled{% endif %} class="btn btn-success">Mark End Attendance</button>
           </form>
         </div>
         

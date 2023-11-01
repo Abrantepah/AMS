@@ -209,7 +209,7 @@ def MarkAttendance(request, code):
                 if not created:
                     attendance.attended_start = True
                     attendance.save()
-            elif attendance_type == 'end' and attendance.attended_start == True:
+            elif attendance_type == 'end':
                 # Mark attendance for the end of the session
                 attendance, created = Attendance.objects.get_or_create(
                     StudentCourse=student_course,
@@ -223,7 +223,7 @@ def MarkAttendance(request, code):
 
         return redirect('closing')
     
-    attendance_marked = Attendance.objects.filter(session=session, attended_start=True).exists()
+    attendance_marked_start = Attendance.objects.filter(session=session, attended_start=True).exists()
 
     context = {
         'verification_code': verification_code,
@@ -231,7 +231,7 @@ def MarkAttendance(request, code):
         'course': course,
         'session': session,
         'time_remaining': time_remaining,
-        'attendance_marked': attendance_marked,
+        'attendance_marked': attendance_marked_start,
     }
 
     return render(request, 'base/attendance_page.html', context)
