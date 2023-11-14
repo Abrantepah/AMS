@@ -1,48 +1,5 @@
 // static/styles/script.js
 
-// Function to filter students based on the select and input values
-function filterStudents() {
-  const indexFilterValue = document.getElementById('indexFilter').value;
-  const courseFilterValue = document.getElementById('courseFilter').value;
-  const yearFilterValue = document.getElementById('yearFilter').value;
-  const strikesFilterValue = document.getElementById('strikesFilter').value;
-  const nameFilterValue = document.getElementById('nameFilter').value.toLowerCase();
-
-  const filteredStudents = students.filter((student) => {
-    return (
-      (indexFilterValue === '' || student.index === indexFilterValue) &&
-      (courseFilterValue === '' || student.course === courseFilterValue) &&
-      (yearFilterValue === '' || student.year === yearFilterValue) &&
-      (strikesFilterValue === '' || student.strikes.toString() === strikesFilterValue) &&
-      student.name.toLowerCase().includes(nameFilterValue)
-    );
-  });
-
-  renderStudents(filteredStudents);
-}
-
-// Function to render the filtered student rows in the table
-function renderStudents(filteredStudents) {
-  const tableBody = document.querySelector('#studentsTable tbody');
-  tableBody.innerHTML = '';
-
-  filteredStudents.forEach((student) => {
-    const row = document.createElement('tr');
-    row.innerHTML = `
-      <td>${student.index}</td>
-      <td>${student.course}</td>
-      <td>${student.year}</td>
-      <td>${student.strikes}</td>
-      <td>${student.name}</td>
-    `;
-
-    tableBody.appendChild(row);
-  });
-}
-
-// Add event listener to the filter button
-document.getElementById('filterButton').addEventListener('click', filterStudents);
-
 // ########## active reports sidenav ########
 function showContent(url, link) {
   // Remove active class from all links

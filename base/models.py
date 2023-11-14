@@ -5,11 +5,12 @@ from django.contrib.auth.models import User
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.utils import timezone
+from django.core.validators import MaxValueValidator, MinValueValidator
+
 
 class Department(models.Model):
     dno = models.PositiveIntegerField(unique=True)
     dname = models.CharField(max_length=100)
-    
 
     def __str__(self):
         return self.dname
@@ -19,7 +20,8 @@ class Lecturer(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     name = models.CharField(max_length=60)
     SN = models.PositiveIntegerField(unique=True)
-    department = models.ForeignKey(Department, on_delete=models.SET_NULL, null=True)
+    department = models.ForeignKey(
+        Department, on_delete=models.SET_NULL, null=True)
 
     def __str__(self):
         return self.name
@@ -28,29 +30,29 @@ class Lecturer(models.Model):
 class Course(models.Model):
     name = models.CharField(max_length=40)
     code = models.PositiveIntegerField(unique=True)
-    department = models.ForeignKey(Department, on_delete=models.CASCADE) 
+    department = models.ForeignKey(Department, on_delete=models.CASCADE)
+    year = models.PositiveIntegerField(
+        validators=[
+            MinValueValidator(1),
+            MaxValueValidator(8)
+        ]
+    )
     lecturer = models.ForeignKey(Lecturer, on_delete=models.PROTECT, null=True)
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
 
-        # After saving the course, find students from the same department and assign them
-        students = Student.objects.filter(programme=self.department)
-        for student in students:
-            StudentCourse.objects.get_or_create(student=student, course=self)
-
     def __str__(self):
         return self.name
 
 
-
 class Session(models.Model):
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
-    date = models.DateField()  
+    date = models.DateField()
     time = models.TimeField()
-    expiration_time = models.DateTimeField(default=timezone.now() + timezone.timedelta(minutes=5))  # Initial expiration time
-    sessions = models.PositiveIntegerField(default=15)
-    
+    expiration_time = models.DateTimeField(default=timezone.now(
+    ) + timezone.timedelta(minutes=40))  # Initial expiration time
+
     def is_attended(self):
         return self.attendance_set.filter(attended=True).exists()
 
@@ -62,32 +64,95 @@ class Session(models.Model):
         super().save(*args, **kwargs)
 
 
+# Signal to automatically create 15 sessions for each course after course creation
+@receiver(post_save, sender=Course)
+def create_sessions(sender, instance, created, **kwargs):
+    if created:
+        for i in range(15):
+            session = Session.objects.create(
+                course=instance,
+                date=timezone.now().date(),  # Set the date to current date
+                time=timezone.now().time(),  # Set the time to current time
+                # Initial expiration time
+                expiration_time=timezone.now() + timezone.timedelta(minutes=40)
+            )
+
+
 class Student(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     reference = models.PositiveIntegerField(unique=True)
     index = models.PositiveIntegerField(unique=True)
     name = models.CharField(max_length=60)
     year = models.PositiveIntegerField()
+
+    #  make this field hidden
     Total_strike = models.PositiveIntegerField(default=0)
-    
-    programme = models.ForeignKey(Department, on_delete=models.SET_NULL, null=True)
+
+    programme = models.ForeignKey(
+        Department, on_delete=models.SET_NULL, null=True)
 
     def __str__(self):
         return self.name
+
+
+class StudentCode(models.Model):
+    student = models.ForeignKey(Student, on_delete=models.CASCADE)
+    code = models.CharField(max_length=10)
+    used = models.BooleanField(default=False)
+
 
 class StudentCourse(models.Model):
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
     strike = models.PositiveIntegerField(default=0)
 
+
 @receiver(post_save, sender=Student)
 def assign_program_courses(sender, instance, created, **kwargs):
     if created:
         if instance.programme:
-            courses = Course.objects.filter(department=instance.programme)
+            courses = Course.objects.filter(
+                department=instance.programme, year=instance.year)
             for course in courses:
                 StudentCourse.objects.create(student=instance, course=course)
 
+
+class StudentSession(models.Model):
+    studentcourse = models.ForeignKey(StudentCourse, on_delete=models.CASCADE)
+    attended = models.BooleanField(null=True)
+    date = models.DateField()
+    time = models.TimeField()
+
+    def is_attended(self):
+        return self.attendance_set.filter(attended=True).exists()
+
+    def save(self, *args, **kwargs):
+        if not self.date:
+            self.date = timezone.now().date()
+        if not self.time:
+            self.time = timezone.now().time()
+        super().save(*args, **kwargs)
+
+
+@receiver(post_save, sender=StudentCourse)
+def create_student_sessions(sender, instance, created, **kwargs):
+    if created:
+        for i in range(15):
+            StudentSession.objects.create(
+                studentcourse=instance,
+                date=timezone.now().date(),
+                time=timezone.now().time(),
+            )
+
+
+class StudentPermission(models.Model):
+    studentsession = models.ForeignKey(
+        StudentSession, on_delete=models.PROTECT)
+    message = models.CharField(max_length=40, null=True)
+    created = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.message
 
 
 class VerificationCode(models.Model):
@@ -104,19 +169,6 @@ class VerificationCode(models.Model):
         return self.code
 
 
-# Signal to automatically create 15 sessions for each course after course creation
-@receiver(post_save, sender=Course)
-def create_sessions(sender, instance, created, **kwargs):
-    if created:
-        for i in range(15):
-            session = Session.objects.create(
-                course=instance,
-                date=timezone.now().date(),  # Set the date to current date
-                time=timezone.now().time(),  # Set the time to current time
-                expiration_time=timezone.now() + timezone.timedelta(minutes=5)  # Initial expiration time
-            )
-
-
 class Attendance(models.Model):
     StudentCourse = models.ForeignKey(StudentCourse, on_delete=models.CASCADE)
     session = models.ForeignKey(Session, on_delete=models.CASCADE)
@@ -125,18 +177,10 @@ class Attendance(models.Model):
     attended_end = models.BooleanField(default=False)
 
     def save(self, *args, **kwargs):
-        if self.attended_start and self.attended_end:
-          self.attended = True
+        if self.attended_end and self.attended_start:
+            self.attended = True
 
-        if self.attended_end:
-            self.StudentCourse.strike += 0
-        else:
-            self.StudentCourse.strike += 1
-
-    
-        self.StudentCourse.save()
         super(Attendance, self).save(*args, **kwargs)
 
     def __str__(self):
-     return f"{self.StudentCourse.student.name} - {self.StudentCourse.course.name} - Session {self.session.sessions}"
-
+        return f"{self.StudentCourse.student.name} - {self.StudentCourse.course.name} - Session {self.session.id}"
