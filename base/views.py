@@ -50,27 +50,6 @@ def Lecturer_login(request):
         username = request.POST['username']
         password = request.POST['password']
 
-        sessions = Session.objects.filter(attendance__attended=True)
-
-        # Annotate the StudentSession objects with the same modulo operation
-        studentsessions = StudentSession.objects.all()
-
-        func_values = [(session.id - 1) % 15 + 1 for session in sessions]
-
-        for func in func_values:
-            for studentsession in studentsessions:
-                var = ((studentsession.id - 1) % 15) + 1
-                if var == func:
-                    mark = studentsession.attended
-                    if mark is None:
-                        mark = False
-                    if mark is False:
-                        mark = False
-                    else:
-                        mark = True
-                    studentsession.attended = mark  # Set the value explicitly
-                    studentsession.save()
-
         # Authenticate the user based on reference, username, and password
         user = authenticate(request, username=username, password=password)
 
@@ -406,12 +385,12 @@ def StudentsTable(request):
 
     if lecturer_courses.exists():
         default_course_id = lecturer_courses.first().id
-        default_course = Course.objects.filter(id=default_course_id)
+        default_course = Course.objects.get(id=default_course_id)
     else:
         # Handle the case where no courses are associated with the lecturer
         default_course = None
 
-    sessions = Session.objects.filter(course__in=default_course).annotate(
+    sessions = Session.objects.filter(course=default_course).annotate(
         student_session_modulo=((F('id') - 1) % 15) + 1
     )
 
@@ -420,7 +399,7 @@ def StudentsTable(request):
         studentcourse__course__in=lecturer_courses)
 
     departments_with_lecturer = Department.objects.filter(
-        lecturer__isnull=False)
+        lecturer=lecturer)
 
     if request.method == 'POST':
         # Use request.POST to retrieve form data from a POST request
@@ -438,6 +417,7 @@ def StudentsTable(request):
         if courseF:
             students = Student.objects.filter(
                 studentcourse__course__name=courseF, studentcourse__course__lecturer=lecturer)
+            default_course = Course.objects.get(name=courseF)
         if programmeF:
             students = Student.objects.filter(
                 programme=programmeF, studentcourse__course__lecturer=lecturer)
@@ -458,13 +438,37 @@ def StudentsTable(request):
         students = Student.objects.filter(
             studentcourse__course__in=lecturer_courses)
 
+    Tsessions = Session.objects.filter(
+        attendance__attended=True, course=default_course)
+
+    func_values = [(session.id - 1) % 15 + 1 for session in Tsessions]
+
     # Prepare a dictionary to store student information and strikes
     student_info = {}
 
     for student in students:
-        studentcourse = StudentCourse.objects.get(
-            student=student, course__lecturer=lecturer)
+        try:
+            studentcourse = StudentCourse.objects.get(
+                student=student, course__lecturer=lecturer, course__year=default_course.year)
+        except:
+            message = 'nothing'
+        showdown = studentcourse.course
         studses = StudentSession.objects.filter(studentcourse=studentcourse)
+
+        # for marking none attended sessions
+        for func in func_values:
+            for studse in studses:
+                var = ((studse.id - 1) % 15) + 1
+                if var == func:
+                    mark = studse.attended
+                    if mark is None:
+                        mark = False
+                    if mark is False:
+                        mark = False
+                    else:
+                        mark = True
+                    studse.attended = mark  # Set the value explicitly
+                    studse.save()
 
         # Initialize the check variable inside the loop for each student
         check = 0
@@ -506,9 +510,10 @@ def StudentsTable(request):
             })
 
     context = {'student_info': student_info,
-               'sessions': sessions,
+               'sessions': Tsessions,
                'lecturer_courses': lecturer_courses,
                'departments': departments_with_lecturer,
+               'course': showdown,
                }
     return render(request, 'base/Students.html', context)
 
