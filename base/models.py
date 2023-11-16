@@ -150,9 +150,10 @@ class StudentPermission(models.Model):
         StudentSession, on_delete=models.PROTECT)
     message = models.CharField(max_length=40, null=True)
     created = models.DateTimeField(auto_now_add=True)
+    status = models.BooleanField(default=None, null=True)
 
     def __str__(self):
-        return self.message
+        return self.message[0-30]
 
 
 class VerificationCode(models.Model):

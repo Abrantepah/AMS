@@ -69,9 +69,9 @@
           <th scope="col">SK</th>
           {% for session in sessions %}
            {% if session.is_attended %}
-            <th scope="col" style="color: green;">S{{ session.id }}</th>
+            <th scope="col" style="color: green;">S{{ session.student_session_modulo }}</th>
           {% else %}
-           <th scope="col" style="color: red;">S{{ session.id }}</th>
+           <th scope="col" style="color: red;">S{{ session.student_session_modulo }}</th>
           {% endif %}
           {% endfor %}
 

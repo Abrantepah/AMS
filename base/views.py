@@ -14,8 +14,7 @@ from django.http import JsonResponse
 from datetime import timedelta
 from django.utils import timezone
 import math
-from django.http import HttpResponse
-from django.db.models import F, ExpressionWrapper, IntegerField
+from django.db.models import F, Q
 
 # from .decorators import restrict_to_router
 
@@ -219,6 +218,9 @@ def MarkAttendance(request, code):
     student_course = StudentCourse.objects.get(
         student=request.user.student, course=course)  # Use get() here
     session_id = session.id
+    displaysession = Session.objects.annotate(
+        student_session_modulo=(((F('id') - 1) % 15) + 1)
+    ).get(id=session_id)
 
 
 # Use F expressions to get the modulo 10 of the StudentSession ID
@@ -290,7 +292,7 @@ def MarkAttendance(request, code):
         'verification_code': verification_code,
         'lecturer': lecturer,
         'course': course,
-        'session': session,
+        'session': displaysession,
         'time_remaining': time_remaining,
         'attendance_marked_start': attendance_marked_start,
     }
@@ -308,31 +310,6 @@ def Closing(request):
 def LecturerHome(request):
 
     if request.user.is_authenticated:
-
-        # uncomment when all the database is preped
-        #  students = Student.objects.all()
-        # for student in students:
-        #     try:
-        #         studentcourse = StudentCourse.objects.get(student=student)
-        #     except StudentCourse.DoesNotExist:
-
-        #         studses = StudentSession.objects.filter(
-        #             studentcourse=studentcourse)
-
-        #         # Initialize the check variable inside the loop for each student
-        #     check = 0
-
-        #     for studse in studses:
-        #         attended = studse.attended
-        #         if attended is False:
-        #             check += 1
-
-        #     try:
-        #         studentcourse.strike = check
-        #         studentcourse.save()
-        #     except StudentCourse.DoesNotExist:
-        #         # Handle the case where StudentCourse does not exist for the student
-        #         pass
 
         lecturer = Lecturer.objects.get(user=request.user)
         courses = Course.objects.filter(lecturer=lecturer)
@@ -434,7 +411,9 @@ def StudentsTable(request):
         # Handle the case where no courses are associated with the lecturer
         default_course = None
 
-    sessions = Session.objects.filter(course__in=default_course)
+    sessions = Session.objects.filter(course__in=default_course).annotate(
+        student_session_modulo=((F('id') - 1) % 15) + 1
+    )
 
     # Get all students enrolled in the courses related to the lecturer
     students = Student.objects.filter(
@@ -538,9 +517,8 @@ def StudentsTable(request):
 def PermissionTable(request):
     lecturer = Lecturer.objects.get(user=request.user)
     lecturer_courses = Course.objects.filter(lecturer=lecturer)
-    course_id = '1'
-    courses = Course.objects.get(lecturer=lecturer, id=course_id)
-    studentcourses = StudentCourse.objects.filter(course=courses)
+
+    studentcourses = StudentCourse.objects.filter(course__in=lecturer_courses)
 
     if request.method == 'POST':
         # Use request.POST to retrieve form data from a POST request
@@ -576,17 +554,47 @@ def PermissionTable(request):
                 student__name__icontains=nameF, course__lecturer=lecturer)
     else:
 
-        studentcourses = StudentCourse.objects.filter(course=courses)
+        studentcourses = StudentCourse.objects.filter(
+            course__in=lecturer_courses)
+
+    sps = StudentPermission.objects.filter(
+        studentsession__studentcourse__in=studentcourses,
+        status=None
+    )
 
     departments_with_lecturer = Department.objects.filter(
-        lecturer__isnull=False)
+        lecturer=lecturer)
+
+    # change permission status and update strike
 
     context = {'studentcourses': studentcourses,
+               'sps': sps,
                'lecturer_courses': lecturer_courses,
-               'courses': courses,
                'departments': departments_with_lecturer
                }
     return render(request, 'base/permission.html', context)
+
+
+def get_file_content(request):
+    permission_id = request.GET.get('permission_id')
+    permission = get_object_or_404(StudentPermission, id=permission_id)
+    content = permission.message  # Assuming message contains the file content
+    return JsonResponse({'content': content})
+
+
+def update_permission(request):
+    permission_id = request.GET.get('permission_id')
+    accept = request.GET.get('accept')
+
+    permission = get_object_or_404(StudentPermission, id=permission_id)
+
+    # Update fields based on user's acceptance
+    if accept.lower() == 'true':
+        permission.studentsession.attended = True
+    permission.status = True
+    permission.save()
+
+    return JsonResponse({'message': 'Permission updated successfully'})
 
 
 # def CreateStudent(request):
@@ -616,11 +624,74 @@ def Permission(request):
 
     student = request.user.student
 
-    studentcourse = StudentCourse.objects.filter(student=student)
+    studentcourses = StudentCourse.objects.filter(student=student)
 
-    context = {'studentcourse': studentcourse, }
+    default_course = studentcourses.first()
 
-    return render(request, 'base/permission_page.html')
+    # Filter sessions and annotate the student_session_modulo and exclude studentsession that have an existing studentpermission
+    sessions = StudentSession.objects.filter(
+        Q(studentcourse=default_course, attended=False) | Q(
+            studentcourse=default_course, attended=None)
+    ).exclude(studentpermission__studentsession=F('id')).annotate(
+        student_session_modulo=((F('id') - 1) % 15) + 1
+    )
+
+    if request.method == 'POST':
+
+        studentsession_id = request.POST.get('session')
+        studentsession = StudentSession.objects.get(id=studentsession_id)
+        message = request.POST.get('message')
+
+        studentpermission, created = StudentPermission.objects.get_or_create(
+            studentsession=studentsession,
+            message=message,
+            sent=True,
+        )
+
+# Check if the object was created before saving
+        if created:
+            studentpermission.save()
+
+    context = {'studentcourses': studentcourses,
+               'student': student, 'sessions': sessions}
+
+    return render(request, 'base/permission_page.html', context)
+
+
+def get_sessions(request):
+    if request.method == 'GET':
+        student = request.user.student
+        selected_course_id = request.GET.get('course_id')
+
+        # Get the selected course
+        selected_course = get_object_or_404(Course, id=selected_course_id)
+
+        try:
+            # Get the specific StudentCourse for the logged-in student and selected course
+            studentcourse = StudentCourse.objects.get(
+                student=student, course=selected_course)
+
+            # Get sessions for the selected studentcourse
+            sessions = StudentSession.objects.filter(
+                Q(studentcourse=studentcourse, attended=False) | Q(
+                    studentcourse=studentcourse, attended=None)
+            ).exclude(studentpermission__studentsession=F('id')).annotate(
+                student_session_modulo=((F('id') - 1) % 15) + 1
+            )
+            # Convert the sessions into a list of dictionaries
+            sessions_data = [
+                {'id': session.id} for session in sessions]
+
+            data = {
+                'sessions': sessions_data,
+            }
+
+            return JsonResponse(data)
+
+        except StudentCourse.DoesNotExist:
+            return JsonResponse({'error': 'StudentCourse not found for the specified student and course.'}, status=404)
+
+    return JsonResponse({'error': 'Invalid request method'}, status=405)
 
 
 # def SForm(request):
@@ -632,6 +703,7 @@ def Permission(request):
 
 #     context = {'form': form}
 #     return render(request, 'base/Sforms.html', context)
+
 
 def DForm(request):
     form = DepartmentForm()

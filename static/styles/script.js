@@ -67,34 +67,58 @@ function handleDecline(button) {
   tr.querySelector('.view-file-button').textContent = 'Viewed';
 }
 
-function viewFile(button) {
+function viewFile(button, permissionId) {
   const tr = button.closest('tr');
 
-  // Fetch the file content
-  fetch('simpleFile')
+  // Fetch the file content from the database
+  fetch(`/get_file_content/?permission_id=${permissionId}`)
     .then(response => response.text())
     .then(content => {
       // Display the prompt and get user input
-      const userInput = prompt('File Content:\n\n' + content + '\n\nDo you accept?', 'Accept');
+      const userInput = prompt('Content:\n\n' + String(content)  + '\n\nDo you accept?', 'Accept');
 
       // Process user input
       if (userInput && userInput.toLowerCase() === 'accept') {
         // User accepted
         alert('You accepted the file content.');
-        // Do something else with the accepted content
-        handleAccept(button);
+
+        // Update the StudentPermission object in the database
+        fetch(`/update_permission/?permission_id=${permissionId}&accept=true`)
+          .then(response => response.json())
+          .then(data => {
+            // Handle the response if needed
+            console.log('Permission updated:', data);
+
+            // Do something else with the accepted content
+            handleAccept(button);
+          })
+          .catch(error => {
+            console.log('Error updating permission:', error);
+          });
       } else {
         // User declined or canceled
         alert('You declined the file content.');
-        // Do something else or exit
-        handleDecline(button);
+
+        // Update the StudentPermission object in the database
+        fetch(`/update_permission/?permission_id=${permissionId}&accept=false`)
+          .then(response => response.json())
+          .then(data => {
+            // Handle the response if needed
+            console.log('Permission updated:', data);
+
+            // Do something else or exit
+            handleDecline(button);
+          })
+          .catch(error => {
+            console.log('Error updating permission:', error);
+          });
       }
 
       button.textContent = 'Viewed';
       button.disabled = true;
     })
     .catch(error => {
-      console.log('Error:', error);
+      console.log('Error fetching file content:', error);
     });
 }
 

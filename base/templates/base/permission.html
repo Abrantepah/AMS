@@ -1,10 +1,11 @@
+{% load static %}
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Permission</title>
-    <link rel="stylesheet" href="styling.css">
+    <link rel="stylesheet" href="{% static 'styles/styling.css' %}">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" crossorigin="anonymous">
 </head>
 <body>
@@ -74,14 +75,14 @@
 
 
         <tbody>
-          {% for studentcourse in studentcourses %}
+          {% for sp in sps %}
           
-    {% if studentcourse.strike <= 1 %}
+    {% if sp.studentsession.studentcourse.strike <= 1 %}
       {% with status='success' %}
         <tr class="table-{{status}}">
           {% endwith %}
     {% else %}
-      {% if studentcourse.strike == 2 %}
+      {% if sp.studentsession.studentcourse.strike == 2 %}
         {% with status='warning' %}
           <tr class="table-{{status}}">
             {% endwith %}    
@@ -92,16 +93,16 @@
         {% endif %}
       {% endif %}
 
-            <td>{{studentcourse.student.name}}</td>
-            <td>{{studentcourse.student.index}}</td>
-            <td>{{studentcourse.student.programme}}</td>
-            <td>{{studentcourse.student.year}}</td>
-            <td id="strike_content">{{studentcourse.strike}}</td>
-            <td><button id="view-file" class="view-file-button" onclick="viewFile(this)">View File</button>
+            <td>{{sp.studentsession.studentcourse.student.name}}</td>
+            <td>{{sp.studentsession.studentcourse.student.index}}</td>
+            <td>{{sp.studentsession.studentcourse.student.programme}}</td>
+            <td>{{sp.studentsession.studentcourse.student.year}}</td>
+            <td id="strike_content">{{sp.studentsession.studentcourse.strike}}</td>
+            <td><button id="view-file"  class="view-file-button" onclick="viewFile(this, '{{ sp.id }}')">View File</button>
             </td>
             <td><div class="prompt-container">
-              <button value='0' class="accept-button" onclick="handleAccept(this)">Accept</button>
-              <button class="decline-button" onclick="handleDecline(this)">Decline</button>
+              <button value='0' class="accept-button" onclick="handleAccept(this, '{{ sp.id }}')">Accept</button>
+              <button class="decline-button" onclick="handleDecline(this, '{{ sp.id }}')">Decline</button>
             </div>
             </td>
           </tr>
@@ -109,7 +110,7 @@
         </tbody>
         </table>
       
-      <script src="script.js"></script>
+      <script src="{% static 'styles/script.js' %}"></script>
       <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz" crossorigin="anonymous"></script>
 </body>
 </html>

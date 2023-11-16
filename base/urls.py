@@ -22,6 +22,9 @@ urlpatterns = [
     path('permission/', views.PermissionTable, name="permission_table"),
     path('Help/', views.Help, name="help"),
     path('askpermission/', views.Permission, name="permission"),
-
+    path('get_sessions/', views.get_sessions,
+         name='get_sessions'),
+    path('get_file_content/', views.get_file_content, name="get_file"),
+    path('update_permission/', views.update_permission, name="updatepermission"),
 
 ]

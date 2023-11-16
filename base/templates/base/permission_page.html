@@ -60,7 +60,7 @@
 </head>
 
 <body>
-    <form action="" method="post">
+    <form action="" method="POST" id="permissionForm">
         {% csrf_token %}
 
         <h1>Permission Request</h1>
@@ -69,26 +69,62 @@
         <label for="course">Select Course:</label>
         <select id="course" name="course">
             {% for course in studentcourses %}
-            <option value="course1">{{ course }}</option>
+            <option value="{{ course.course.id}}">{{ course.course.name }}</option>
             {% endfor %}
         </select>
 
         <!-- Session Selection -->
         <label for="session">Select Session:</label>
         <select id="session" name="session">
-            <option value="session1">Session 1</option>
-            <option value="session2">Session 2</option>
-            <!-- Add more session options as needed -->
+        {% for session in sessions %}
+         <option value="{{ session.id }}">Session {{ session.student_session_modulo }}</option>
+        {% endfor %}
+            <!-- Options will be dynamically populated using JavaScript -->
         </select>
         
-        <textarea name="" id="" cols="51" rows="10" placeholder="Reason, please make it brief"></textarea>
-        <!-- Additional Fields (if any) -->
-        <!-- <label for="additionalField">Additional Field:</label>
-        <input type="text" id="additionalField" name="additionalField"> -->
-
-        <!-- Submit Button -->
+        <textarea name="message" value="{{ q }}" id="message" cols="51" rows="10" placeholder="Reason, please make it brief"></textarea>
+        
         <button type="submit">Send Permission Request</button>
     </form>
+
+    <script>
+          // Function to fetch and populate sessions based on the selected course
+  function populateSessions(selectedCourseId) {
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', `/get_sessions/?course_id=${selectedCourseId}`, true);
+    xhr.onreadystatechange = function() {
+      if (xhr.readyState === XMLHttpRequest.DONE) {
+        if (xhr.status === 200) {
+          var data = JSON.parse(xhr.responseText);
+          var sessionDropdown = document.getElementById('session');
+
+          // Clear existing options
+          sessionDropdown.innerHTML = '';
+
+          // Add new options for sessions
+          for (var session of data.sessions) {
+            var option = document.createElement('option');
+            option.value = session.id;
+            option.textContent = 'Session ' + (((session.id - 1) % 15) + 1);
+            sessionDropdown.appendChild(option);
+          }
+        } else {
+          // Handle error
+          console.error('Failed to fetch sessions for the selected course.');
+        }
+      }
+    };
+    xhr.send();
+  }
+
+  // Add event listener to the course dropdown
+  document.getElementById('course').addEventListener('change', function() {
+    var selectedCourseId = this.value;
+    console.log(selectedCourseId)
+    populateSessions(selectedCourseId);
+  });
+    </script>
+    
 </body>
 
 </html>
