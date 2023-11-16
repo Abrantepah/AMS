@@ -588,11 +588,15 @@ def update_permission(request):
 
     permission = get_object_or_404(StudentPermission, id=permission_id)
 
+    studentsession_id = permission.studentsession.id
+
+    studentsession = StudentSession.objects.get(id=studentsession_id)
     # Update fields based on user's acceptance
     if accept.lower() == 'true':
-        permission.studentsession.attended = True
+        studentsession.attended = True
     permission.status = True
     permission.save()
+    studentsession.save()
 
     return JsonResponse({'message': 'Permission updated successfully'})
 
@@ -632,7 +636,7 @@ def Permission(request):
     sessions = StudentSession.objects.filter(
         Q(studentcourse=default_course, attended=False) | Q(
             studentcourse=default_course, attended=None)
-    ).exclude(studentpermission__studentsession=F('id')).annotate(
+    ).exclude(studentpermission__sent=True).annotate(
         student_session_modulo=((F('id') - 1) % 15) + 1
     )
 
@@ -675,7 +679,7 @@ def get_sessions(request):
             sessions = StudentSession.objects.filter(
                 Q(studentcourse=studentcourse, attended=False) | Q(
                     studentcourse=studentcourse, attended=None)
-            ).exclude(studentpermission__studentsession=F('id')).annotate(
+            ).exclude(studentpermission__sent=True).annotate(
                 student_session_modulo=((F('id') - 1) % 15) + 1
             )
             # Convert the sessions into a list of dictionaries
