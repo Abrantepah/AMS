@@ -154,19 +154,20 @@ function generateAnswer(faqNumber) {
   document.querySelector('.chat-messages').appendChild(answerContainer);
 }
 
-
-//student table generate report and save as an excel file 
 function generateExcelReport() {
-  // Get table data
-  const table = document.querySelector('.table');
-  const data = XLSX.utils.table_to_sheet(table);
+  // Select the table element
+  var table = document.querySelector('.table');
+
+  // Create a worksheet
+  var ws = XLSX.utils.table_to_sheet(table);
 
   // Create a workbook
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, data, 'Sheet1');
+  var wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Sheet 1');
 
-  // Save the workbook as an Excel file
-  XLSX.writeFile(wb, 'report.xlsx');
+  // Save the workbook in xlsx format
+  var fileName = 'table_report.xlsx';
+  XLSX.writeFile(wb, fileName);
 }
 
 
