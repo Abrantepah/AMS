@@ -155,3 +155,18 @@ function generateAnswer(faqNumber) {
 }
 
 
+//student table generate report and save as an excel file 
+function generateExcelReport() {
+  // Get table data
+  const table = document.querySelector('.table');
+  const data = XLSX.utils.table_to_sheet(table);
+
+  // Create a workbook
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, data, 'Sheet1');
+
+  // Save the workbook as an Excel file
+  XLSX.writeFile(wb, 'report.xlsx');
+}
+
+

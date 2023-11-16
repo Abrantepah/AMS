@@ -75,7 +75,7 @@ function viewFile(button, permissionId) {
     .then(response => response.text())
     .then(content => {
       // Display the prompt and get user input
-      const userInput = prompt('Content:\n\n' + content + '\n\nDo you accept?', 'Accept');
+      const userInput = prompt('Content:\n\n' + String(content)  + '\n\nDo you accept?', 'Accept');
 
       // Process user input
       if (userInput && userInput.toLowerCase() === 'accept') {
@@ -152,6 +152,21 @@ function generateAnswer(faqNumber) {
 
   answerContainer.appendChild(answer);
   document.querySelector('.chat-messages').appendChild(answerContainer);
+}
+
+
+//student table generate report and save as an excel file 
+function generateExcelReport() {
+  // Get table data
+  const table = document.querySelector('.table');
+  const data = XLSX.utils.table_to_sheet(table);
+
+  // Create a workbook
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, data, 'Sheet1');
+
+  // Save the workbook as an Excel file
+  XLSX.writeFile(wb, 'report.xlsx');
 }
 
 

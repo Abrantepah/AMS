@@ -416,8 +416,11 @@ input[type="date"] {
   align-items: center;
 }
 
+
+
 .accept-button,
-.decline-button {
+.decline-button, 
+.generateReport{ 
   width: 100px;
   padding: 10px;
   margin-bottom: 10px;
@@ -437,6 +440,20 @@ input[type="date"] {
 .decline-button {
   background-color: lightcoral;
   color: darkred;
+}
+
+.generateReport{
+  background-color: rgb(93, 214, 93);
+  color: darkgreen;
+  width: 150px;
+  transition: 0.3s;
+  border-radius: 4px;
+}
+
+.generateReport:hover{
+  background-color: rgb(21, 138, 21);
+  color: rgb(2, 48, 2);
+  box-shadow: 0 0 6px rgba(0, 0, 0, 0.3);
 }
 
 .hide {

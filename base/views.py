@@ -452,7 +452,7 @@ def StudentsTable(request):
                 student=student, course__lecturer=lecturer, course__year=default_course.year)
         except:
             message = 'nothing'
-        showdown = studentcourse.course
+
         studses = StudentSession.objects.filter(studentcourse=studentcourse)
 
         # for marking none attended sessions
@@ -510,10 +510,10 @@ def StudentsTable(request):
             })
 
     context = {'student_info': student_info,
-               'sessions': Tsessions,
+               'sessions': sessions,
                'lecturer_courses': lecturer_courses,
                'departments': departments_with_lecturer,
-               'course': showdown,
+
                }
     return render(request, 'base/Students.html', context)
 
