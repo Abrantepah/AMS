@@ -71,6 +71,12 @@ def Lecturer_login(request):
     return render(request, 'base/lecturer_login.html')
 
 
+def logoutUser(request):
+
+    logout(request)
+    return redirect('login')
+
+
 @login_required(login_url='/')
 def StudentHome(request, code):
     # Check if the user is authenticated (logged in)

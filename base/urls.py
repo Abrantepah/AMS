@@ -6,6 +6,7 @@ from . import views
 urlpatterns = [
     path('', views.student_login, name="login"),
     path('lecturer_login/', views.Lecturer_login, name="lecturer_login"),
+    path('logout/', views.logoutUser, name="logout"),
     path('studenthome/<str:code>/', views.StudentHome, name="student_home"),
     path('lecturerhome/', views.LecturerHome, name="lecturer_home"),
     path('generate/<str:code>/', views.GeneratePage, name='generate'),

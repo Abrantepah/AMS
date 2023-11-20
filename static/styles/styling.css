@@ -177,7 +177,7 @@ input[type="date"] {
   justify-content: center;
   align-items: center;
   height: 100vh;
-  background-color: rgba(255, 255, 255, 0.5); /* Adjust the opacity as desired */
+  background-color: rgba(255, 255, 255, 0.27); /* Adjust the opacity as desired */
   backdrop-filter: blur(2px); /* Adds a blur effect to the background */
 }
 
@@ -185,7 +185,7 @@ input[type="date"] {
   width: 300px;
   margin: 0 auto;
   padding: 20px;
-  background-color: rgba(255, 255, 255, 0.211); /* Adjust the opacity as desired */
+  background-color: rgba(255, 255, 255, 0.538); /* Adjust the opacity as desired */
   border: 1px solid #ccc;
   border-radius: 5px;
   font-family: Arial, sans-serif;
@@ -229,21 +229,42 @@ input[type="date"] {
   box-shadow: 0 0 5px #80bdff;
 }
 
-.form-container input[type="submit"] {
-  padding: 10px 20px;
-  background-color: #4CAF50;
-  color: #fff;
-  border: none;
-  border-radius: 3px;
-  cursor: pointer;
+
+
+
+
+.form-container button{
+  margin-top: 20px; /* Add space between links and form */
+  width: 70px;
+  padding: 5px;
+  margin-bottom: 16px;
+  border-radius: 4px;
+  box-sizing: border-box;
   font-size: 16px;
+  border: 1px solid #aaafbd;
+  background-color: #3083dc;
+  color: rgb(222, 219, 219);
+  cursor: pointer;
+
+  transition: 0.3ms;
+
 }
 
-.form-container input[type="submit"]:hover {
-  background-color: #45a049;
+
+.form-container button:hover{
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  background-color:  #0f5eb2;
+  color: white;
 }
 
-
+.form-container a{
+  text-decoration: none;
+  color: rgb(20, 92, 169);
+  background-color: rgba(255, 255, 255, 0.427);
+  border-radius: 3px;
+  padding: 1px;
+  border: 3px solid rgba(255, 255, 255, 0.063);
+}
 
 #logo img{
  width: 50px;

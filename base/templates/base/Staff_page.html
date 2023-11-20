@@ -75,9 +75,7 @@
   });
 
   document.getElementById('generateButton').addEventListener('click', function(event) {
-    if (confirm("Do you allow this app to know your location?")) {
       getLocation();
-    }
   });
 
   // Getting the location of the user and adding hidden input fields to the form
@@ -101,9 +99,6 @@
         var form = document.getElementById('generateForm');  // Replace 'attendanceForm' with your form's actual ID
         form.appendChild(latitudeInput);
         form.appendChild(longitudeInput);
-
-        // Optionally, display the data to the user
-        alert("Latitude: " + latitude + "\nLongitude: " + longitude);
 
         // Submit the form
         form.submit();

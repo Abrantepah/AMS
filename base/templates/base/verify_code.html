@@ -19,8 +19,9 @@
         #Permission {
     margin-bottom: 20px;
     padding: 10px 20px;
-    background-color: rgb(41, 98, 3);
-    color: white;
+    border: 1px solid #aaafbd;
+  background-color: #3083dc;
+  color: rgb(255, 255, 255);
     border: none;
     border-radius: 5px;
     cursor: pointer;
@@ -28,8 +29,9 @@
 }
 
 #Permission:hover {
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
-    margin: 0px 0px 23px 3px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  background-color:  #0f5eb2;
+  color: white;
 }
 
 
@@ -71,13 +73,20 @@
         button[type="submit"] {
             margin-top: 8px;
             padding: 10px 20px;
-            background-color: rgb(41, 98, 3);
-            color: white;
+            border: 1px solid #aaafbd;
+  background-color: #3083dc;
+  color: rgb(255, 255, 255);
             border: none;
             border-radius: 5px;
             cursor: pointer;
         }
 
+        button[type="submit"]:hover{
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  background-color:  #0f5eb2;
+  color: white; 
+        }
+         
         p {
             margin-top: 10px;
             color: red;
@@ -105,9 +114,7 @@
 
     <script>
         document.getElementById('verifyButton').addEventListener('click', function(event) {
-            if (confirm("Do you allow this app to know your location?")) {
                 getLocation();
-            }
         });
 
         // Getting the location of the user and adding hidden input fields to the form
@@ -131,9 +138,6 @@
                     var form = document.getElementById('verifyForm'); // Replace 'attendanceForm' with your form's actual ID
                     form.appendChild(latitudeInput);
                     form.appendChild(longitudeInput);
-
-                    // Optionally, display the data to the user
-                    alert("Latitude: " + latitude + "\nLongitude: " + longitude);
 
                     // Submit the form
                     form.submit();
