@@ -63,3 +63,13 @@ class LecturerLoginAPIView(APIView):
         else:
             # User credentials are invalid, return an error response
             return Response({'error': 'Invalid login credentials'}, status=status.HTTP_401_UNAUTHORIZED)
+
+
+@api_view(['GET'])
+def student_home(request, user_id):
+    try:
+        student = Student.objects.get(user_id=user_id)
+        serializer = StudentSerializer(student)
+        return Response(serializer.data, status=200)
+    except Student.DoesNotExist:
+        return Response({'error': 'Student not found'}, status=404)

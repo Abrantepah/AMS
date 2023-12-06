@@ -1,5 +1,5 @@
 from django.urls import path
-from .api_views import get_students, get_lecturers, StudentLoginAPIView, LecturerLoginAPIView
+from .api_views import get_students, get_lecturers, StudentLoginAPIView, LecturerLoginAPIView, student_home
 
 urlpatterns = [
     path('api/students/', get_students, name='get_students'),
@@ -7,5 +7,6 @@ urlpatterns = [
     path('api/student-login/', StudentLoginAPIView.as_view(), name='student_login'),
     path('api/lecturer-login/', LecturerLoginAPIView.as_view(),
          name='lecturer_login'),
-    # Add other API endpoints as needed
+    path('api/student-home/<int:user_id>/', student_home, name='student_home'),
+
 ]
