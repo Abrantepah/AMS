@@ -9,5 +9,7 @@ urlpatterns = [
          name='lecturer_login'),
     path('api/student-home/<int:user_id>/', student_home, name='student_home'),
     path('api/permission/<int:user_id>/', permission_api),
+    path('api/permission/<int:user_id>/<int:course_id>/',
+         permission_api, name='permission_api'),
 
 ]

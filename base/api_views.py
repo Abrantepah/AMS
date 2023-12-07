@@ -77,15 +77,16 @@ def student_home(request, user_id):
 
 
 @api_view(['GET', 'POST'])
-def permission_api(request, user_id):
+def permission_api(request, user_id, course_id):
     student = Student.objects.get(id=user_id)
     student_courses = StudentCourse.objects.filter(student=student)
-    default_course = student_courses.first()
+    selected_studentcourse = StudentCourse.objects.get(
+        student=student, course_id=course_id)
 
     # Fetch sessions
     sessions = StudentSession.objects.filter(
-        Q(studentcourse=default_course, attended=False) | Q(
-            studentcourse=default_course, attended=None)
+        Q(studentcourse=selected_studentcourse, attended=False) | Q(
+            studentcourse=selected_studentcourse, attended=None)
     ).exclude(studentpermission__sent=True)
 
     course_instances = [
