@@ -29,4 +29,4 @@ class StudentSessionSerializer(serializers.ModelSerializer):
 class CourseSerializer(serializers.ModelSerializer):
     class Meta:
         model = StudentCourse
-        field = 'course'
+        fields = '__all__'
