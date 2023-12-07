@@ -2,9 +2,10 @@ from rest_framework.decorators import api_view
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from .models import Lecturer, Course, Student, StudentCourse, StudentSession, Session
-from .serializers import StudentSerializer, LecturerSerializer
+from .models import Lecturer, Course, Student, StudentCourse, StudentSession, StudentPermission
+from .serializers import StudentSerializer, LecturerSerializer, StudentPermissionSerializer, StudentSessionSerializer, CourseSerializer
 from django.contrib.auth import authenticate, login
+from django.db.models import F, Q
 
 
 @api_view(['GET'])
@@ -73,3 +74,42 @@ def student_home(request, user_id):
         return Response(serializer.data, status=200)
     except Student.DoesNotExist:
         return Response({'error': 'Student not found'}, status=404)
+
+
+@api_view(['GET', 'POST'])
+def permission_api(request):
+    student = request.user.student
+    student_courses = StudentCourse.objects.filter(student=student)
+    default_course = student_courses.first()
+
+    # Fetch sessions
+    sessions = StudentSession.objects.filter(
+        Q(studentcourse=default_course, attended=False) | Q(
+            studentcourse=default_course, attended=None)
+    ).exclude(studentpermission__sent=True)
+
+    course_serializer = CourseSerializer(student_courses, many=True)
+
+    if request.method == 'POST':
+        studentsession_id = request.data.get('session')
+        studentsession = StudentSession.objects.get(id=studentsession_id)
+        message = request.data.get('message')
+
+        student_permission, created = StudentPermission.objects.get_or_create(
+            studentsession=studentsession,
+            message=message,
+            sent=True,
+        )
+
+        # Check if the object was created before saving
+        if created:
+            student_permission.save()
+
+        serializer = StudentPermissionSerializer(student_permission)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    response_data = {
+        'sessions': StudentSessionSerializer(sessions, many=True).data,
+        'courses': course_serializer.data,
+    }
+    return Response(response_data)
