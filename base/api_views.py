@@ -77,8 +77,8 @@ def student_home(request, user_id):
 
 
 @api_view(['GET', 'POST'])
-def permission_api(request):
-    student = request.user.student
+def permission_api(request, user_id):
+    student = Student.objects.get(id=int(user_id))
     student_courses = StudentCourse.objects.filter(student=student)
     default_course = student_courses.first()
 

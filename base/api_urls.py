@@ -8,6 +8,6 @@ urlpatterns = [
     path('api/lecturer-login/', LecturerLoginAPIView.as_view(),
          name='lecturer_login'),
     path('api/student-home/<int:user_id>/', student_home, name='student_home'),
-    path('api/permission/', permission_api),
+    path('api/permission/<str:user_id>', permission_api),
 
 ]
