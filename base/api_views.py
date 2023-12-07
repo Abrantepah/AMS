@@ -88,7 +88,9 @@ def permission_api(request, user_id):
             studentcourse=default_course, attended=None)
     ).exclude(studentpermission__sent=True)
 
-    course_serializer = CourseSerializer(student_courses, many=True)
+    course_instances = [
+        student_course.course for student_course in student_courses]
+    course_serializer = CourseSerializer(course_instances, many=True)
 
     if request.method == 'POST':
         studentsession_id = request.data.get('session')
