@@ -79,7 +79,7 @@ def student_home(request, user_id):
 @api_view(['GET', 'POST'])
 def permission_api(request, user_id):
     student = Student.objects.get(id=user_id)
-    student_courses = Course.objects.filter(student=student)
+    student_courses = StudentCourse.objects.filter(student=student)
     default_course = student_courses.first()
 
     # Fetch sessions
