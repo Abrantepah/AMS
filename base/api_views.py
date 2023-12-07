@@ -77,17 +77,21 @@ def student_home(request, user_id):
 
 
 @api_view(['GET', 'POST'])
-def permission_api(request, user_id, course_id):
+def permission_api(request, user_id, course_id=None):
     student = Student.objects.get(id=user_id)
     student_courses = StudentCourse.objects.filter(student=student)
-    selected_studentcourse = StudentCourse.objects.get(
-        student=student, course_id=course_id)
+    if course_id is not None:
+        selected_studentcourse = StudentCourse.objects.get(
+            student=student, course_id=course_id)
 
     # Fetch sessions
-    sessions = StudentSession.objects.filter(
-        Q(studentcourse=selected_studentcourse, attended=False) | Q(
-            studentcourse=selected_studentcourse, attended=None)
-    ).exclude(studentpermission__sent=True)
+        sessions = StudentSession.objects.filter(
+            Q(studentcourse=selected_studentcourse, attended=False) | Q(
+                studentcourse=selected_studentcourse, attended=None)
+        ).exclude(studentpermission__sent=True)
+
+    else:
+        sessions = None
 
     course_instances = [
         student_course.course for student_course in student_courses]
