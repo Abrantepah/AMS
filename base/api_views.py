@@ -113,3 +113,7 @@ def permission_api(request):
         'courses': course_serializer.data,
     }
     return Response(response_data)
+
+
+# @api_view([''])
+# def session(request):
