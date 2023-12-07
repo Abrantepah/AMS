@@ -84,7 +84,7 @@ def permission_api(request, user_id, course_id=None):
         selected_studentcourse = StudentCourse.objects.get(
             student=student, course_id=course_id)
 
-    # Fetch sessions
+        # Fetch sessions
         sessions = StudentSession.objects.filter(
             Q(studentcourse=selected_studentcourse, attended=False) | Q(
                 studentcourse=selected_studentcourse, attended=None)
@@ -98,7 +98,7 @@ def permission_api(request, user_id, course_id=None):
     course_serializer = CourseSerializer(course_instances, many=True)
 
     if request.method == 'POST':
-        studentsession_id = request.data.get('session')
+        studentsession_id = request.data.get('sessionId')
         studentsession = StudentSession.objects.get(id=studentsession_id)
         message = request.data.get('message')
 
@@ -119,7 +119,7 @@ def permission_api(request, user_id, course_id=None):
         'sessions': StudentSessionSerializer(sessions, many=True).data,
         'courses': course_serializer.data,
     }
-    return Response(response_data)
+    return Response(response_data, status=status.HTTP_200_OK)
 
 
 # @api_view([''])
