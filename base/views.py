@@ -225,7 +225,7 @@ def MarkAttendance(request, code):
         return redirect('login')
 
     if request.method == 'POST':
-        # Check if the student is eligible to mark attendance
+        # Check if the student is eligible to mark attendanc
         if time_remaining > 0:
 
             attendance_type = request.POST.get('attendance_type')
