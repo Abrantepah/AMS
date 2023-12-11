@@ -20,6 +20,12 @@ class StudentPermissionSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class SessionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Session
+        fields = '__all__'
+
+
 class StudentSessionSerializer(serializers.ModelSerializer):
     class Meta:
         model = StudentSession
