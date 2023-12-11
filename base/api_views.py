@@ -126,12 +126,14 @@ def permission_api(request, user_id, course_id=None):
 
 
 @api_view(['GET', 'POST'])
-def verification_api(request, user_id, code):
+def verification_api(request, user_id):
 
     current_time = timezone.now()
+    error_message = None
 
     if request.method == 'POST':
         try:
+            code = request.data.get('verificationcode')
             verification_code = VerificationCode.objects.get(
                 code=code, used=False)
             session = verification_code.session
@@ -204,9 +206,10 @@ def verification_api(request, user_id, code):
                                     'session': session_serializer.data,
                                 }
                                 return Response(response_data, status=status.HTTP_200_OK)
+    return Response({error_message}, status=status.HTTP_200_OK)
 
 
-@api_view['GET', 'POST']
+@api_view(['GET', 'POST'])
 def MarkAttendance(request, user_id, code):
     verification_code = code
     lecturer = verification_code.lecturer
