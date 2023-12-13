@@ -200,18 +200,17 @@ def verification_api(request, user_id):
                                     verification_code.session)
 
                                 response_data = {
-                                    'success': 'successful login',
                                     'courses': course_serializer.data,
                                     'lecturer': lecturer_serializer.data,
                                     'session': session_serializer.data,
                                 }
-                                return Response(response_data, status=status.HTTP_200_OK)
+                                return Response(response_data, status=status.HTTP_202_ACCEPTED)
     return Response({error_message}, status=status.HTTP_200_OK)
 
 
 @api_view(['GET', 'POST'])
 def MarkAttendance(request, user_id, code):
-    verification_code = code
+    verification_code = VerificationCode.objects.get(code=code)
     lecturer = verification_code.lecturer
     course = verification_code.course
     session = verification_code.session
@@ -250,7 +249,7 @@ def MarkAttendance(request, user_id, code):
 
                 studentcode, created = StudentCode.objects.get_or_create(
                     student=request.user.student,
-                    code=code,
+                    code=verification_code,
                     defaults={'used': False}
                 )
                 if created:
