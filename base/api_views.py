@@ -130,6 +130,7 @@ def verification_api(request, user_id):
 
     current_time = timezone.now()
     error_message = None
+    student = Student.objects.get(id=user_id)
 
     if request.method == 'POST':
         try:
@@ -140,7 +141,7 @@ def verification_api(request, user_id):
         except VerificationCode.DoesNotExist:
             return Response({'error': 'code does not exist'}, status=status.HTTP_401_UNAUTHORIZED)
         else:
-            if verification_code.expiration_time <= current_time or StudentCode.objects.filter(code=code, student=request.user.student).exists():
+            if verification_code.expiration_time <= current_time or StudentCode.objects.filter(code=code, student=student).exists():
                 verification_code.used = True
                 verification_code.save()
                 return Response({'error': 'Verification code has expired'}, status=status.HTTP_401_UNAUTHORIZED)
@@ -178,7 +179,6 @@ def verification_api(request, user_id):
                     verification_code.used = False
                     session.save()
                     verification_code.save()
-                    student = Student.objects.get(id=user_id)
 
                     if student:
                         try:
