@@ -203,6 +203,7 @@ def verification_api(request, user_id):
                                     'lecturer': lecturer_serializer.data,
                                     'session': session_serializer.data,
                                 }
+
                                 return Response(response_data, status=status.HTTP_202_ACCEPTED)
     return Response({error_message}, status=status.HTTP_200_OK)
 
@@ -247,7 +248,7 @@ def MarkAttendance(request, user_id, code):
             if attendance_type == 'start':
 
                 studentcode, created = StudentCode.objects.get_or_create(
-                    student=request.user.student,
+                    student=student,
                     code=verification_code,
                     defaults={'used': False}
                 )
@@ -288,9 +289,6 @@ def MarkAttendance(request, user_id, code):
         session=session, attended_start=True).exists()
 
     response_data = {
-        'lecturer': LecturerSerializer(lecturer),
-        'course': CourseSerializer(course),
-        'session': SessionSerializer(displaysession),
         'time_remaining': time_remaining,
         'attendance_marked_start': attendance_marked_start,
     }
