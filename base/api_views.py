@@ -178,10 +178,9 @@ def verification_api(request, user_id):
                     verification_code.used = False
                     session.save()
                     verification_code.save()
+                    student = Student.objects.get(id=user_id)
 
-                    if not request.user.is_staff:
-                        student = Student.objects.get(id=user_id)
-
+                    if student:
                         try:
                             student_course = StudentCourse.objects.get(
                                 student=student, course=verification_code.course)
