@@ -1,5 +1,5 @@
 from django.urls import path
-from .api_views import get_students, get_lecturers, StudentLoginAPIView, LecturerLoginAPIView, student_home, permission_api, verification_api, MarkAttendance
+from .api_views import get_students, get_lecturers, StudentLoginAPIView, LecturerLoginAPIView, student_home, permission_api, verification_api, MarkAttendance, generateCode_api
 
 urlpatterns = [
     path('api/students/', get_students),
@@ -12,4 +12,6 @@ urlpatterns = [
          permission_api),
     path('api/verification_api/<int:user_id>/', verification_api),
     path('api/MarkAttendance/<int:user_id>/<str:code>/', MarkAttendance),
+    path('api/generateCode/<int:user_id>/', generateCode_api),
+    path('api/generateCode/<int:user_id>/<int:course_id>/', generateCode_api),
 ]

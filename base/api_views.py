@@ -9,6 +9,9 @@ from django.db.models import F, Q
 from datetime import timedelta
 from django.utils import timezone
 import math
+import string
+import secrets
+from django.shortcuts import get_object_or_404
 
 
 @api_view(['GET'])
@@ -23,8 +26,6 @@ def get_lecturers(request):
     lecturers = Lecturer.objects.all()
     serializer = LecturerSerializer(lecturers, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
-
-# Create other API views as needed
 
 
 class StudentLoginAPIView(APIView):
@@ -82,46 +83,48 @@ def student_home(request, user_id):
 @api_view(['GET', 'POST'])
 def permission_api(request, user_id, course_id=None):
     student = Student.objects.get(id=user_id)
-    student_courses = StudentCourse.objects.filter(student=student)
-    if course_id is not None:
-        selected_studentcourse = StudentCourse.objects.get(
-            student=student, course_id=course_id)
+    if student:
+        student_courses = StudentCourse.objects.filter(student=student)
+        if course_id is not None:
+            selected_studentcourse = StudentCourse.objects.get(
+                student=student, course_id=course_id)
 
-        # Fetch sessions
-        sessions = StudentSession.objects.filter(
-            Q(studentcourse=selected_studentcourse, attended=False) | Q(
-                studentcourse=selected_studentcourse, attended=None)
-        ).exclude(studentpermission__sent=True)
+            # Fetch sessions
+            sessions = StudentSession.objects.filter(
+                Q(studentcourse=selected_studentcourse, attended=False) | Q(
+                    studentcourse=selected_studentcourse, attended=None)
+            ).exclude(studentpermission__sent=True)
 
-    else:
-        sessions = None
+        else:
+            sessions = None
 
-    course_instances = [
-        student_course.course for student_course in student_courses]
-    course_serializer = CourseSerializer(course_instances, many=True)
+        course_instances = [
+            student_course.course for student_course in student_courses]
+        course_serializer = CourseSerializer(course_instances, many=True)
 
-    if request.method == 'POST':
-        studentsession_id = request.data.get('sessionId')
-        studentsession = StudentSession.objects.get(id=int(studentsession_id))
-        message = request.data.get('message')
+        if request.method == 'POST':
+            studentsession_id = request.data.get('sessionId')
+            studentsession = StudentSession.objects.get(
+                id=int(studentsession_id))
+            message = request.data.get('message')
 
-        student_permission, created = StudentPermission.objects.get_or_create(
-            studentsession=studentsession,
-            message=message,
-            sent=True,
-        )
+            student_permission, created = StudentPermission.objects.get_or_create(
+                studentsession=studentsession,
+                message=message,
+                sent=True,
+            )
 
-        # Check if the object was created before saving
-        if created:
-            student_permission.save()
+            # Check if the object was created before saving
+            if created:
+                student_permission.save()
 
-        serializer = StudentPermissionSerializer(student_permission)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+            serializer = StudentPermissionSerializer(student_permission)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-    response_data = {
-        'sessions': StudentSessionSerializer(sessions, many=True).data,
-        'courses': course_serializer.data,
-    }
+        response_data = {
+            'sessions': StudentSessionSerializer(sessions, many=True).data,
+            'courses': course_serializer.data,
+        }
     return Response(response_data, status=status.HTTP_200_OK)
 
 
@@ -292,5 +295,79 @@ def MarkAttendance(request, user_id, code):
         'time_remaining': time_remaining,
         'attendance_marked_start': attendance_marked_start,
     }
+
+    return Response(response_data, status=status.HTTP_200_OK)
+
+
+def generate_verification_code(lecturer, course, session, expiration_minutes, latitude, longitude):
+    # Your code to generate the verification code
+    alphabet = string.ascii_letters + string.digits
+    verification_code = ''.join(secrets.choice(alphabet) for i in range(6))
+
+    # Calculate expiration timestamp
+    current_time = timezone.now()
+    expiration_time = current_time + timedelta(minutes=expiration_minutes)
+
+    # Store the verification code with the associated lecturer, course, and session
+    code = VerificationCode.objects.create(
+        code=verification_code,
+        lecturer=lecturer,
+        course=course,
+        session=session,
+        expiration_time=expiration_time,
+        latitude=latitude,
+        longitude=longitude,
+    )
+    return code
+
+
+@api_view(['GET', 'POST'])
+def generateCode_api(request, user_id, course_id=None):
+
+    lecturer = Lecturer.objects.get(id=user_id)
+    lecturer_serializer = LecturerSerializer(lecturer)
+    if lecturer:
+        lecturer_courses = Course.objects.filter(lecturer=lecturer)
+
+        if course_id is not None:
+            # Filter the sessions for the default course and lecturer
+            default_course = Course.objects.get(id=course_id)
+            sessions = Session.objects.filter(
+                course=default_course)
+            available_sessions = [
+                session for session in sessions if not session.is_attended()]
+        else:
+            available_sessions = None
+
+        course_instances = [
+            lecturer_course for lecturer_course in lecturer_courses]
+        course_serializer = CourseSerializer(course_instances, many=True)
+
+        if request.method == 'POST':
+            selected_course = get_object_or_404(
+                Course, id=course_id)
+
+            selected_session_id = request.data.get('sessionId')
+            selected_session = get_object_or_404(
+                Session, id=selected_session_id)
+
+            selected_latitude = request.POST.get('latitude')
+            selected_longitude = request.POST.get('longitude')
+
+            # minutes it takes for code to expire
+            expiration_minutes = 3
+
+            # Generate a verification code
+            code = generate_verification_code(
+                lecturer, selected_course, selected_session, expiration_minutes, selected_latitude, selected_longitude)
+
+            # Pass the filtered sessions to the context
+            response_data = {'code': code.code}
+            return Response(response_data, status=status.HTTP_201_CREATED)
+
+        session_serializer = SessionSerializer(
+            available_sessions, many=True).data
+        response_data = {'lecturer': lecturer_serializer.data, 'courses': course_serializer.data,
+                         'sessions': session_serializer, }
 
     return Response(response_data, status=status.HTTP_200_OK)
