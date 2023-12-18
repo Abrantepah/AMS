@@ -2,8 +2,8 @@ from rest_framework.decorators import api_view
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from .models import Lecturer, Course, Student, StudentCourse, StudentSession, StudentPermission, VerificationCode, StudentCode, Session, Attendance
-from .serializers import StudentSerializer, LecturerSerializer, StudentPermissionSerializer, StudentSessionSerializer, CourseSerializer, SessionSerializer
+from .models import Lecturer, Course, Student, StudentCourse, StudentSession, StudentPermission, VerificationCode, StudentCode, Session, Attendance, Department
+from .serializers import StudentSerializer, LecturerSerializer, StudentPermissionSerializer, StudentSessionSerializer, CourseSerializer, SessionSerializer, StudentCourseSerializer
 from django.contrib.auth import authenticate, login
 from django.db.models import F, Q
 from datetime import timedelta
@@ -111,6 +111,8 @@ def permission_api(request, user_id, course_id=None):
             student_permission, created = StudentPermission.objects.get_or_create(
                 studentsession=studentsession,
                 message=message,
+                studentname=student.name,
+                index=student.index,
                 sent=True,
             )
 
@@ -208,7 +210,7 @@ def verification_api(request, user_id):
                                 }
 
                                 return Response(response_data, status=status.HTTP_202_ACCEPTED)
-    return Response({error_message}, status=status.HTTP_200_OK)
+    return Response('Message Fetched', status=status.HTTP_200_OK)
 
 
 @api_view(['GET', 'POST'])
@@ -371,3 +373,90 @@ def generateCode_api(request, user_id, course_id=None):
                          'sessions': session_serializer, }
 
     return Response(response_data, status=status.HTTP_200_OK)
+
+
+@api_view(['GET', 'POST'])
+def PermissionTable_api(request, user_id):
+    lecturer = Lecturer.objects.get(id=user_id)
+    lecturer_courses = Course.objects.filter(lecturer=lecturer)
+
+    studentcourses = StudentCourse.objects.filter(course__in=lecturer_courses)
+
+    if request.method == 'POST':
+        # Use request.POST to retrieve form data from a POST request
+        indexF = request.data.get('indexFilter')
+        courseF = request.data.get('courseFilter')
+        programmeF = request.data.get('programmeFilter')
+        yearF = request.data.get('yearFilter')
+        strikeF = request.data.get('strikesFilter')
+        nameF = request.data.get('nameFilter')
+
+    # Apply filters based on user input
+        if indexF:
+            studentcourses = StudentCourse.objects.filter(
+                student__index__icontains=indexF, course__lecturer=lecturer)
+        if courseF:
+            studentcourses = StudentCourse.objects.filter(
+                course__name=courseF, course__lecturer=lecturer)
+        if programmeF:
+            studentcourses = StudentCourse.objects.filter(
+                course__department=programmeF, course__lecturer=lecturer)
+        if yearF:
+            studentcourses = StudentCourse.objects.filter(
+                student__year=yearF, course__lecturer=lecturer)
+        if strikeF:
+            if strikeF == '4':
+                studentcourses = studentcourses.filter(
+                    strike__range=[4, 15], course__lecturer=lecturer)
+            else:
+                studentcourses = studentcourses.filter(
+                    strike=int(strikeF), course__lecturer=lecturer)
+        if nameF:
+            studentcourses = StudentCourse.objects.filter(
+                student__name__icontains=nameF, course__lecturer=lecturer)
+
+    sps = StudentPermission.objects.filter(
+        studentsession__studentcourse__in=studentcourses,
+        status=None
+    )
+
+    scsSerializer = StudentCourseSerializer(studentcourses, many=True).data
+
+    spsSerializer = StudentPermissionSerializer(sps, many=True).data
+    departments_with_lecturer = Department.objects.filter(
+        lecturer=lecturer)
+
+    lecturerCourses = CourseSerializer(lecturer_courses, many=True).data
+
+    # change permission status and update strike
+
+    response_data = {'studentcourses': scsSerializer,
+                     'studentpermissions': spsSerializer,
+                     }
+    return Response(response_data, status=status.HTTP_200_OK)
+
+
+# def get_file_content(request):
+#     permission_id = request.GET.get('permission_id')
+#     permission = get_object_or_404(StudentPermission, id=permission_id)
+#     content = permission.message  # Assuming message contains the file content
+#     return JsonResponse({'content': content})
+
+
+# def update_permission(request):
+#     permission_id = request.GET.get('permission_id')
+#     accept = request.GET.get('accept')
+
+#     permission = get_object_or_404(StudentPermission, id=permission_id)
+
+#     studentsession_id = permission.studentsession.id
+
+#     studentsession = StudentSession.objects.get(id=studentsession_id)
+#     # Update fields based on user's acceptance
+#     if accept.lower() == 'true':
+#         studentsession.attended = True
+#     permission.status = True
+#     permission.save()
+#     studentsession.save()
+
+#     return JsonResponse({'message': 'Permission updated successfully'})

@@ -148,6 +148,8 @@ def create_student_sessions(sender, instance, created, **kwargs):
 class StudentPermission(models.Model):
     studentsession = models.ForeignKey(
         StudentSession, on_delete=models.PROTECT)
+    studentname = models.CharField(max_length=60)
+    index = models.PositiveIntegerField()
     message = models.CharField(max_length=40, null=True)
     created = models.DateTimeField(auto_now_add=True)
     status = models.BooleanField(default=None, null=True)

@@ -659,6 +659,8 @@ def Permission(request):
         studentpermission, created = StudentPermission.objects.get_or_create(
             studentsession=studentsession,
             message=message,
+            studentname=student.name,
+            index=student.index,
             sent=True,
         )
 
