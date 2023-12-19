@@ -348,6 +348,8 @@ def generateCode_api(request, user_id, course_id=None):
 
     lecturer = Lecturer.objects.get(id=user_id)
     lecturer_serializer = LecturerSerializer(lecturer)
+    first_session = None
+
     if lecturer:
         lecturer_courses = Course.objects.filter(lecturer=lecturer)
 
@@ -360,34 +362,31 @@ def generateCode_api(request, user_id, course_id=None):
                 session for session in sessions if not session.is_attended()]
             first_session = available_sessions[0]
 
-        else:
-            first_session = None
+            if request.method == 'POST':
+                selected_course = get_object_or_404(
+                    Course, id=course_id)
+
+                selected_session_id = first_session
+                selected_session = get_object_or_404(
+                    Session, id=selected_session_id)
+
+                selected_latitude = request.POST.get('latitude')
+                selected_longitude = request.POST.get('longitude')
+
+            # minutes it takes for code to expire
+                expiration_minutes = 3
+
+            # Generate a verification code
+                code = generate_verification_code(
+                    lecturer, selected_course, selected_session, expiration_minutes, selected_latitude, selected_longitude)
+
+            # Pass the filtered sessions to the context
+                response_data = {'code': code.code}
+                return Response(response_data, status=status.HTTP_201_CREATED)
 
         course_instances = [
             lecturer_course for lecturer_course in lecturer_courses]
         course_serializer = CourseSerializer(course_instances, many=True)
-
-        if request.method == 'POST':
-            selected_course = get_object_or_404(
-                Course, id=course_id)
-
-            selected_session_id = first_session
-            selected_session = get_object_or_404(
-                Session, id=selected_session_id)
-
-            selected_latitude = request.POST.get('latitude')
-            selected_longitude = request.POST.get('longitude')
-
-            # minutes it takes for code to expire
-            expiration_minutes = 3
-
-            # Generate a verification code
-            code = generate_verification_code(
-                lecturer, selected_course, selected_session, expiration_minutes, selected_latitude, selected_longitude)
-
-            # Pass the filtered sessions to the context
-            response_data = {'code': code.code}
-            return Response(response_data, status=status.HTTP_201_CREATED)
 
         session_serializer = SessionSerializer(
             first_session).data
