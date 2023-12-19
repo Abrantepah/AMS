@@ -11,7 +11,7 @@ urlpatterns = [
     path('api/verification_api/<int:user_id>/', verification_api),
     path('api/MarkAttendance/<int:user_id>/<str:code>/', MarkAttendance),
     path('api/generateCode/<int:user_id>/', generateCode_api),
-    path('api/generateCode/<int:user_id>/<int:course_id>/', generateCode_api),
+    path('api/generateCode/<int:user_id>/<str:course_id>/', generateCode_api),
     path('api/PermissionTable_api/<int:user_id>/', PermissionTable_api),
     path('api/update_permission_api/<int:permission_id>/<str:messagestatus>/',
          update_permission_api),
