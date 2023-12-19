@@ -81,84 +81,81 @@ def student_home(request, user_id):
 
 
 @api_view(['GET', 'POST'])
-def permission_api(request, user_id, course_id=None):
+def permission_api(request, user_id):
     student = Student.objects.get(id=user_id)
+    current_time = timezone.now()
+
     if student:
-        student_courses = StudentCourse.objects.filter(student=student)
-        response_data = {}
-
-        if course_id is not None:
-            selected_studentcourse = StudentCourse.objects.get(
-                student=student, course_id=course_id)
-
-            # Fetch sessions
-            # Find the last session marked as False
-            last_false_session = StudentSession.objects.filter(
-                studentcourse=selected_studentcourse,
-                attended=False
-            ).order_by('-date', '-time').first()
-
-            # If there is a last false session, find the next successive sessions
-            if last_false_session:
-                sessions = StudentSession.objects.filter(
-                    studentcourse=selected_studentcourse,
-                    id__gt=last_false_session.id,  # Use id__gt directly
-                ).exclude(studentpermission__sent=True).order_by('date', 'time')[:2]
-            # If there is no last false session, start from the last session marked as None
+        if request.method == 'POST':
+            code = request.data.get('verificationcode')
+            message = request.data.get('message')
+            verification_code = VerificationCode.objects.get(
+                code=code, used=False)
+            session = verification_code.session
+            if verification_code.expiration_time <= current_time or StudentCode.objects.filter(code=code, student=student).exists():
+                verification_code.used = True
+                verification_code.save()
+                return Response({'error': 'Verification code has expired'}, status=status.HTTP_401_UNAUTHORIZED)
             else:
-                last_none_session = StudentSession.objects.filter(
-                    studentcourse=selected_studentcourse,
-                    attended=None
-                ).order_by('-date', '-time').first()
+                session.expiration_time = current_time + \
+                    timedelta(minutes=5)
+                verification_code.used = False
+                session.save()
+                verification_code.save()
 
-                # If there is a last none session, find the next successive sessions
-                if last_none_session:
-                    sessions = StudentSession.objects.filter(
-                        studentcourse=selected_studentcourse,
-                        id__gt=last_none_session.id,  # Use id__gt directly
-                    ).exclude(studentpermission__sent=True).order_by('date', 'time')[:2]
+                try:
+                    student_course = StudentCourse.objects.get(
+                        student=student, course=verification_code.course)
+                except StudentCourse.DoesNotExist:
+                    return Response({f'error': 'you are not enrolled in '}, status=status.HTTP_401_UNAUTHORIZED)
                 else:
-                    sessions = []  # No relevant sessions found
+                    if student.year != verification_code.course.year:
+                        return Response({"Enrollment year does not match the course."}, status=status.HTTP_401_UNAUTHORIZED)
+                    else:
+                        # load the message.success in a green-covered text
+                        course_serializer = CourseSerializer(
+                            verification_code.course)
+                        lecturer_serializer = LecturerSerializer(
+                            verification_code.lecturer)
+                        session_serializer = SessionSerializer(
+                            verification_code.session)
 
-                course_instances = [
-                    student_course.course for student_course in student_courses]
-                course_serializer = CourseSerializer(
-                    course_instances, many=True)
+                        studentsession_id = session.id
+                        studentsession = StudentSession.objects.get(
+                            id=int(studentsession_id))
 
-                if request.method == 'POST':
-                    studentsession_id = request.data.get('sessionId')
-                    studentsession = StudentSession.objects.get(
-                        id=int(studentsession_id))
-                    message = request.data.get('message')
+                        student_permission, created = StudentPermission.objects.get_or_create(
+                            studentsession=studentsession,
+                            message=message,
+                            studentname=student.name,
+                            index=student.index,
+                            sent=True,
+                        )
 
-                    student_permission, created = StudentPermission.objects.get_or_create(
-                        studentsession=studentsession,
-                        message=message,
-                        studentname=student.name,
-                        index=student.index,
-                        sent=True,
-                    )
+                       # Check if the object was created before saving
+                        if created:
+                            student_permission.save()
 
-                    # Check if the object was created before saving
-                    if created:
-                        student_permission.save()
+                        permissionserializer = StudentPermissionSerializer(
+                            student_permission)
 
-                    serializer = StudentPermissionSerializer(
-                        student_permission)
-                    return Response(serializer.data, status=status.HTTP_201_CREATED)
+                        response_data = {
+                            'studentpermission': permissionserializer.data,
+                            'courses': course_serializer.data,
+                            'lecturer': lecturer_serializer.data,
+                            'session': session_serializer.data,
+                        }
 
-                response_data = {
-                    'sessions': StudentSessionSerializer(sessions, many=True).data,
-                    'courses': course_serializer.data,
-                }
-        return Response(response_data, status=status.HTTP_200_OK)
+                        return Response(response_data, status=status.HTTP_202_ACCEPTED)
+
+        response_data = {}
+    return Response(response_data, status=status.HTTP_200_OK)
 
 
 @api_view(['GET', 'POST'])
 def verification_api(request, user_id):
 
     current_time = timezone.now()
-    error_message = None
     student = Student.objects.get(id=user_id)
 
     if request.method == 'POST':
@@ -234,13 +231,12 @@ def verification_api(request, user_id):
                                 }
 
                                 return Response(response_data, status=status.HTTP_202_ACCEPTED)
-    return Response('Message Fetched', status=status.HTTP_200_OK)
+    return Response('Code Fetched', status=status.HTTP_200_OK)
 
 
 @api_view(['GET', 'POST'])
 def MarkAttendance(request, user_id, code):
     verification_code = VerificationCode.objects.get(code=code)
-    lecturer = verification_code.lecturer
     course = verification_code.course
     session = verification_code.session
     student = Student.objects.get(id=user_id)
@@ -357,13 +353,15 @@ def generateCode_api(request, user_id, course_id=None):
 
         if course_id is not None:
             # Filter the sessions for the default course and lecturer
-            default_course = Course.objects.get(id=course_id)
+            course = Course.objects.get(id=course_id)
             sessions = Session.objects.filter(
-                course=default_course)
+                course=course)
             available_sessions = [
                 session for session in sessions if not session.is_attended()]
+            first_session = available_sessions[0]
+
         else:
-            available_sessions = None
+            first_session = None
 
         course_instances = [
             lecturer_course for lecturer_course in lecturer_courses]
@@ -392,7 +390,7 @@ def generateCode_api(request, user_id, course_id=None):
             return Response(response_data, status=status.HTTP_201_CREATED)
 
         session_serializer = SessionSerializer(
-            available_sessions, many=True).data
+            first_session).data
         response_data = {'lecturer': lecturer_serializer.data, 'courses': course_serializer.data,
                          'sessions': session_serializer, }
 
