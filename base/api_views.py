@@ -371,7 +371,7 @@ def generateCode_api(request, user_id, course_id=None):
             selected_course = get_object_or_404(
                 Course, id=course_id)
 
-            selected_session_id = request.data.get('sessionId')
+            selected_session_id = first_session
             selected_session = get_object_or_404(
                 Session, id=selected_session_id)
 
@@ -392,7 +392,7 @@ def generateCode_api(request, user_id, course_id=None):
         session_serializer = SessionSerializer(
             first_session).data
         response_data = {'lecturer': lecturer_serializer.data, 'courses': course_serializer.data,
-                         'sessions': session_serializer, }
+                         'session': session_serializer, }
 
     return Response(response_data, status=status.HTTP_200_OK)
 
