@@ -383,6 +383,7 @@ def PermissionTable_api(request, user_id):
     studentcourses = StudentCourse.objects.filter(course__in=lecturer_courses)
 
     if request.method == 'POST':
+
         # Use request.POST to retrieve form data from a POST request
         indexF = request.data.get('indexFilter')
         courseF = request.data.get('courseFilter')
@@ -436,27 +437,22 @@ def PermissionTable_api(request, user_id):
     return Response(response_data, status=status.HTTP_200_OK)
 
 
-# def get_file_content(request):
-#     permission_id = request.GET.get('permission_id')
-#     permission = get_object_or_404(StudentPermission, id=permission_id)
-#     content = permission.message  # Assuming message contains the file content
-#     return JsonResponse({'content': content})
+@api_view(['GET', 'POST'])
+def update_permission_api(request, permission_id, messagestatus):
 
+    if request.method == 'POST':
 
-# def update_permission(request):
-#     permission_id = request.GET.get('permission_id')
-#     accept = request.GET.get('accept')
+        permission = get_object_or_404(StudentPermission, id=permission_id)
 
-#     permission = get_object_or_404(StudentPermission, id=permission_id)
+        studentsession_id = permission.studentsession.id
 
-#     studentsession_id = permission.studentsession.id
+        studentsession = StudentSession.objects.get(id=studentsession_id)
+        # Update fields based on user's acceptance
+        if messagestatus.lower() == 'true':
+            studentsession.attended = True
+        permission.status = True
+        permission.save()
+        studentsession.save()
 
-#     studentsession = StudentSession.objects.get(id=studentsession_id)
-#     # Update fields based on user's acceptance
-#     if accept.lower() == 'true':
-#         studentsession.attended = True
-#     permission.status = True
-#     permission.save()
-#     studentsession.save()
-
-#     return JsonResponse({'message': 'Permission updated successfully'})
+        return Response({'permission Updated'}, status=status.HTTP_200_OK)
+    return Response({'message': 'Invalid method'}, status=status.HTTP_400_BAD_REQUEST)
