@@ -366,9 +366,7 @@ def generateCode_api(request, user_id, course_id=None):
                 selected_course = get_object_or_404(
                     Course, id=course_id)
 
-                selected_session_id = first_session
-                selected_session = get_object_or_404(
-                    Session, id=selected_session_id)
+                selected_session = first_session
 
                 selected_latitude = request.POST.get('latitude')
                 selected_longitude = request.POST.get('longitude')
