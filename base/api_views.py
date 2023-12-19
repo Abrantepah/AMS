@@ -85,73 +85,49 @@ def permission_api(request, user_id, course_id=None):
     student = Student.objects.get(id=user_id)
     if student:
         student_courses = StudentCourse.objects.filter(student=student)
-        response_data = {}
-
         if course_id is not None:
             selected_studentcourse = StudentCourse.objects.get(
                 student=student, course_id=course_id)
 
             # Fetch sessions
-            # Find the last session marked as False
-            last_false_session = StudentSession.objects.filter(
-                studentcourse=selected_studentcourse,
-                attended=False
-            ).order_by('-date', '-time').first()
+            sessions = StudentSession.objects.filter(
+                Q(studentcourse=selected_studentcourse, attended=False) | Q(
+                    studentcourse=selected_studentcourse, attended=None)
+            ).exclude(studentpermission__sent=True)
 
-            # If there is a last false session, find the next successive sessions
-            if last_false_session:
-                sessions = StudentSession.objects.filter(
-                    studentcourse=selected_studentcourse,
-                    id__gt=last_false_session.id,  # Use id__gt directly
-                ).exclude(studentpermission__sent=True).order_by('date', 'time')[:2]
-            # If there is no last false session, start from the last session marked as None
-            else:
-                last_none_session = StudentSession.objects.filter(
-                    studentcourse=selected_studentcourse,
-                    attended=None
-                ).order_by('-date', '-time').first()
+        else:
+            sessions = None
 
-                # If there is a last none session, find the next successive sessions
-                if last_none_session:
-                    sessions = StudentSession.objects.filter(
-                        studentcourse=selected_studentcourse,
-                        id__gt=last_none_session.id,  # Use id__gt directly
-                    ).exclude(studentpermission__sent=True).order_by('date', 'time')[:2]
-                else:
-                    sessions = []  # No relevant sessions found
+        course_instances = [
+            student_course.course for student_course in student_courses]
+        course_serializer = CourseSerializer(course_instances, many=True)
 
-                course_instances = [
-                    student_course.course for student_course in student_courses]
-                course_serializer = CourseSerializer(
-                    course_instances, many=True)
+        if request.method == 'POST':
+            studentsession_id = request.data.get('sessionId')
+            studentsession = StudentSession.objects.get(
+                id=int(studentsession_id))
+            message = request.data.get('message')
 
-                if request.method == 'POST':
-                    studentsession_id = request.data.get('sessionId')
-                    studentsession = StudentSession.objects.get(
-                        id=int(studentsession_id))
-                    message = request.data.get('message')
+            student_permission, created = StudentPermission.objects.get_or_create(
+                studentsession=studentsession,
+                message=message,
+                studentname=student.name,
+                index=student.index,
+                sent=True,
+            )
 
-                    student_permission, created = StudentPermission.objects.get_or_create(
-                        studentsession=studentsession,
-                        message=message,
-                        studentname=student.name,
-                        index=student.index,
-                        sent=True,
-                    )
+            # Check if the object was created before saving
+            if created:
+                student_permission.save()
 
-                    # Check if the object was created before saving
-                    if created:
-                        student_permission.save()
+            serializer = StudentPermissionSerializer(student_permission)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-                    serializer = StudentPermissionSerializer(
-                        student_permission)
-                    return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-                response_data = {
-                    'sessions': StudentSessionSerializer(sessions, many=True).data,
-                    'courses': course_serializer.data,
-                }
-        return Response(response_data, status=status.HTTP_200_OK)
+        response_data = {
+            'sessions': StudentSessionSerializer(sessions, many=True).data,
+            'courses': course_serializer.data,
+        }
+    return Response(response_data, status=status.HTTP_200_OK)
 
 
 @api_view(['GET', 'POST'])
