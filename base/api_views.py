@@ -372,8 +372,7 @@ def generateCode_api(request, user_id, course_id=None):
                 selected_longitude = request.POST.get('longitude')
 
             # minutes it takes for code to expire
-                expiration_minutes = 3
-
+                expiration_minutes = 15
             # Generate a verification code
                 code = generate_verification_code(
                     lecturer, selected_course, selected_session, expiration_minutes, selected_latitude, selected_longitude)
