@@ -157,6 +157,7 @@ def verification_api(request, user_id):
 
     current_time = timezone.now()
     student = Student.objects.get(id=user_id)
+    errorMessage = None
 
     if request.method == 'POST':
         try:
@@ -165,12 +166,14 @@ def verification_api(request, user_id):
                 code=code, used=False)
             session = verification_code.session
         except VerificationCode.DoesNotExist:
-            return Response({'error': 'code does not exist'}, status=status.HTTP_401_UNAUTHORIZED)
+            errorMessage = 'code does not exist'
+            return Response(errorMessage, status=status.HTTP_401_UNAUTHORIZED)
         else:
             if verification_code.expiration_time <= current_time or StudentCode.objects.filter(code=code, student=student).exists():
                 verification_code.used = True
                 verification_code.save()
-                return Response({'error': 'Verification code has expired'}, status=status.HTTP_401_UNAUTHORIZED)
+                errorMessage = 'Verification code has expired'
+                return Response(errorMessage, status=status.HTTP_401_UNAUTHORIZED)
             else:
                 # Get the student's location
                 student_latitude = float(request.data.get('latitude'))
@@ -198,7 +201,8 @@ def verification_api(request, user_id):
 
                 # Perform the radius check
                 if verification_code.expiration_time <= current_time or distance > max_distance:
-                    return Response({'error': 'you are not within the location radius'}, status=status.HTTP_401_UNAUTHORIZED)
+                    errorMessage = 'you are not within the location radius'
+                    return Response(errorMessage, status=status.HTTP_401_UNAUTHORIZED)
                 else:
                     session.expiration_time = current_time + \
                         timedelta(minutes=5)
@@ -211,10 +215,12 @@ def verification_api(request, user_id):
                             student_course = StudentCourse.objects.get(
                                 student=student, course=verification_code.course)
                         except StudentCourse.DoesNotExist:
-                            return Response({f'error': 'you are not enrolled in '}, status=status.HTTP_401_UNAUTHORIZED)
+                            errorMessage = 'you are not enrolled in'
+                            return Response(errorMessage, status=status.HTTP_401_UNAUTHORIZED)
                         else:
                             if student.year != verification_code.course.year:
-                                return Response({"Enrollment year does not match the course."}, status=status.HTTP_401_UNAUTHORIZED)
+                                errorMessage = "Enrollment year does not match the course."
+                                return Response(errorMessage, status=status.HTTP_401_UNAUTHORIZED)
                             else:
                                 # load the message.success in a green-covered text
                                 course_serializer = CourseSerializer(
@@ -231,7 +237,8 @@ def verification_api(request, user_id):
                                 }
 
                                 return Response(response_data, status=status.HTTP_202_ACCEPTED)
-    return Response('Code Fetched', status=status.HTTP_200_OK)
+    student = StudentSerializer(student).data
+    return Response(student, status=status.HTTP_200_OK)
 
 
 @api_view(['GET', 'POST'])
