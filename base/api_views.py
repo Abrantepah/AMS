@@ -92,6 +92,22 @@ def permission_api(request, user_id):
             verification_code = VerificationCode.objects.get(
                 code=code, used=False)
             session = verification_code.session
+
+            course = verification_code.course
+
+            studentcourse = StudentCourse.objects.get(
+                course=course, student=student)
+
+            studentsessions = StudentSession.objects.filter(
+                Q(studentcourse=studentcourse, attended=False) | Q(
+                    studentcourse=studentcourse, attended=None)
+            ).exclude(studentpermission__sent=True)
+
+            if studentsessions.exists():
+                studentsession = studentsessions.first()
+            else:
+                studentsession = None
+
             if verification_code.expiration_time <= current_time or StudentCode.objects.filter(code=code, student=student).exists():
                 verification_code.used = True
                 verification_code.save()
@@ -120,10 +136,6 @@ def permission_api(request, user_id):
                         session_serializer = SessionSerializer(
                             verification_code.session)
 
-                        studentsession_id = session.id
-                        studentsession = StudentSession.objects.get(
-                            id=int(studentsession_id))
-
                         student_permission, created = StudentPermission.objects.get_or_create(
                             studentsession=studentsession,
                             message=message,
@@ -135,6 +147,8 @@ def permission_api(request, user_id):
                        # Check if the object was created before saving
                         if created:
                             student_permission.save()
+                            verification_code.used = True
+                            verification_code.save()
 
                         permissionserializer = StudentPermissionSerializer(
                             student_permission)
@@ -255,12 +269,12 @@ def MarkAttendance(request, user_id, code):
     ).get(id=session_id)
 
 
-# Use F expressions to get the modulo 10 of the StudentSession ID
+# Use F expressions to get the modulo 15 of the StudentSession ID
     student_sessions = StudentSession.objects.annotate(
         student_session_modulo=(((F('id') - 1) % 15) + 1)
     ).filter(studentcourse=student_course)
 
-    # Filter for StudentSessions where the modulo 10 of the ID matches the Session ID
+    # Filter for StudentSessions where the modulo 15 of the ID matches the Session ID
     matching_sessions = student_sessions.filter(
         student_session_modulo=(((session_id-1) % 15) + 1))
 
