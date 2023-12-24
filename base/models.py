@@ -1,5 +1,5 @@
 # models.py
-
+import uuid
 from django.db import models
 from django.contrib.auth.models import User
 from django.db.models.signals import post_save
@@ -84,15 +84,19 @@ class Student(models.Model):
     index = models.PositiveIntegerField(unique=True)
     name = models.CharField(max_length=60)
     year = models.PositiveIntegerField()
-
-    #  make this field hidden
+    UUID = models.CharField(max_length=38, null=True, unique=True)
+    UUID_sent = models.BooleanField(default=False)
     Total_strike = models.PositiveIntegerField(default=0)
-
     programme = models.ForeignKey(
         Department, on_delete=models.SET_NULL, null=True)
 
     def __str__(self):
         return self.name
+
+    def save(self, *args, **kwargs):
+        if not self.UUID:
+            self.UUID = str(uuid.uuid4())
+        super().save(*args, **kwargs)
 
 
 class StudentCode(models.Model):
