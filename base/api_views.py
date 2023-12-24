@@ -191,7 +191,7 @@ def verification_api(request, user_id):
             else:
                 # Get the student's location
                 student_latitude = float(request.data.get('latitude'))
-                student_longitude = float(request.data.get('latitude'))
+                student_longitude = float(request.data.get('longitude'))
                 verification_latitude = float(verification_code.latitude)
                 verification_longitude = float(verification_code.longitude)
 
