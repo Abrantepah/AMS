@@ -191,7 +191,7 @@ def verification_api(request, user_id):
             else:
                 # Get the student's location
                 student_latitude = float(request.data.get('latitude'))
-                student_longitude = float(request.data.get('longitude'))
+                student_longitude = float(request.data.get('latitude'))
                 verification_latitude = float(verification_code.latitude)
                 verification_longitude = float(verification_code.longitude)
 
@@ -211,7 +211,7 @@ def verification_api(request, user_id):
                 distance = radius * c  # Distance in kilometers
 
                 # Assuming you want to allow a maximum distance of, for example, 1 kilometer
-                max_distance = 0.05  # Change to 1.0 for kilometers
+                max_distance = 0.10  # Change to 1.0 for kilometers
 
                 # Perform the radius check
                 if verification_code.expiration_time <= current_time or distance > max_distance:
@@ -389,8 +389,8 @@ def generateCode_api(request, user_id, course_id=None):
 
                 selected_session = first_session
 
-                selected_latitude = request.POST.get('latitude')
-                selected_longitude = request.POST.get('longitude')
+                selected_latitude = request.data.get('latitude')
+                selected_longitude = request.data.get('longitude')
 
             # minutes it takes for code to expire
                 expiration_minutes = 15
