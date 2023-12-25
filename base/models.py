@@ -84,9 +84,9 @@ class Student(models.Model):
     index = models.PositiveIntegerField(unique=True)
     name = models.CharField(max_length=60)
     year = models.PositiveIntegerField()
-    UUID = models.CharField(max_length=38, null=True, unique=True)
+    UUID = models.CharField(max_length=38, null=True, blank=True, unique=True)
     UUID_sent = models.BooleanField(default=False)
-    Total_strike = models.PositiveIntegerField(default=0)
+    Total_strike = models.PositiveIntegerField(default=0, editable=False)
     programme = models.ForeignKey(
         Department, on_delete=models.SET_NULL, null=True)
 
@@ -94,7 +94,7 @@ class Student(models.Model):
         return self.name
 
     def save(self, *args, **kwargs):
-        if not self.UUID:
+        if self.UUID is None or not self.UUID.strip():
             self.UUID = str(uuid.uuid4())
         super().save(*args, **kwargs)
 
