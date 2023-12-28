@@ -41,7 +41,7 @@ class StudentLoginAPIView(APIView):
         if user and Student.objects.filter(user=user).exists():
             student = Student.objects.get(user=user)
 
-            if uuid_code is not None:
+            if uuid_code is not '':
                 if student.UUID == uuid_code:
                     serializer = StudentSerializer(student).data
                     return Response(serializer, status=status.HTTP_200_OK)
