@@ -56,11 +56,7 @@ class StudentLoginAPIView(APIView):
                     student.UUID_sent = True
                     student.save()
                     serializer = StudentSerializer(student).data
-                    response_data = {
-                        'student': serializer,
-                        'sentUUID': student.UUID,
-                    }
-                    return Response(response_data, status=status.HTTP_200_OK)
+                    return Response(serializer, status=status.HTTP_200_OK)
         error_message = 'no student with these credentials'
         return Response(error_message, status=status.HTTP_401_UNAUTHORIZED)
 
