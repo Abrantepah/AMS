@@ -46,7 +46,7 @@ class StudentLoginAPIView(APIView):
                     serializer = StudentSerializer(student).data
                     return Response(serializer, status=status.HTTP_200_OK)
                 else:
-                    error_message = 'invalid login credentials'
+                    error_message = 'wrong device, please use your own device for the attendance'
                     return Response(error_message, status=status.HTTP_401_UNAUTHORIZED)
             else:
                 if student.UUID_sent:
@@ -57,8 +57,9 @@ class StudentLoginAPIView(APIView):
                     student.save()
                     serializer = StudentSerializer(student).data
                     return Response(serializer, status=status.HTTP_200_OK)
-        error_message = 'no student with these credentials'
-        return Response(error_message, status=status.HTTP_401_UNAUTHORIZED)
+        else:
+            error_message = 'no student with these credentials'
+            return Response(error_message, status=status.HTTP_401_UNAUTHORIZED)
 
 
 class LecturerLoginAPIView(APIView):
