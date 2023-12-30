@@ -41,7 +41,7 @@ class StudentLoginAPIView(APIView):
         if user and Student.objects.filter(user=user).exists():
             student = Student.objects.get(user=user)
 
-            if uuid_code is not '':
+            if uuid_code != '':
                 if student.UUID == uuid_code:
                     serializer = StudentSerializer(student).data
                     return Response(serializer, status=status.HTTP_200_OK)
@@ -359,6 +359,12 @@ def generate_verification_code(lecturer, course, session, expiration_minutes, la
     # Your code to generate the verification code
     alphabet = string.ascii_letters + string.digits
     verification_code = ''.join(secrets.choice(alphabet) for i in range(6))
+
+    again = VerificationCode.objects.filter(code=verification_code).exists()
+    while again:
+        verification_code = ''.join(secrets.choice(alphabet) for i in range(6))
+        again = VerificationCode.objects.filter(
+            code=verification_code).exists()
 
     # Calculate expiration timestamp
     current_time = timezone.now()

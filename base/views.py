@@ -33,7 +33,7 @@ def student_login(request):
             # Check if the user has a related Student object
             if Student.objects.filter(user=user).exists():
                 # Redirect to the verify code page for students
-                return redirect('verify')
+                return redirect('permission')
             elif Lecturer.objects.filter(user=user).exists():
                 return redirect('login')
         else:
@@ -120,77 +120,78 @@ def generate_verification_code(lecturer, course, session, expiration_minutes, la
     return code
 
 
-@login_required(login_url='/')
-def VerifyCode(request):
-    error_message = None
-    current_time = timezone.now()
+# verify the code and proceed to the student home with the code
+# @login_required(login_url='/')
+# def VerifyCode(request):
+#     error_message = None
+#     current_time = timezone.now()
 
-    if request.method == 'POST':
-        code = request.POST.get('code')
-        try:
-            verification_code = VerificationCode.objects.get(
-                code=code, used=False)
-            session = verification_code.session
-        except VerificationCode.DoesNotExist:
-            error_message = 'Invalid Verification code. Please try again.'
-        else:
-            if verification_code.expiration_time <= current_time or StudentCode.objects.filter(code=code, student=request.user.student).exists():
-                verification_code.used = True
-                verification_code.save()
-                error_message = 'Verification code has expired.'
-            else:
-                # Get the student's location
-                student_latitude = float(request.POST.get('latitude'))
-                student_longitude = float(request.POST.get('longitude'))
-                verification_latitude = float(verification_code.latitude)
-                verification_longitude = float(verification_code.longitude)
+#     if request.method == 'POST':
+#         code = request.POST.get('code')
+#         try:
+#             verification_code = VerificationCode.objects.get(
+#                 code=code, used=False)
+#             session = verification_code.session
+#         except VerificationCode.DoesNotExist:
+#             error_message = 'Invalid Verification code. Please try again.'
+#         else:
+#             if verification_code.expiration_time <= current_time or StudentCode.objects.filter(code=code, student=request.user.student).exists():
+#                 verification_code.used = True
+#                 verification_code.save()
+#                 error_message = 'Verification code has expired.'
+#             else:
+#                 # Get the student's location
+#                 student_latitude = float(request.POST.get('latitude'))
+#                 student_longitude = float(request.POST.get('longitude'))
+#                 verification_latitude = float(verification_code.latitude)
+#                 verification_longitude = float(verification_code.longitude)
 
-                # Calculate the distance between the two sets of coordinates using the Haversine formula
-                radius = 6371  # Earth's radius in kilometers
-                lat1 = math.radians(student_latitude)
-                lon1 = math.radians(student_longitude)
-                lat2 = math.radians(verification_latitude)
-                lon2 = math.radians(verification_longitude)
+#                 # Calculate the distance between the two sets of coordinates using the Haversine formula
+#                 radius = 6371  # Earth's radius in kilometers
+#                 lat1 = math.radians(student_latitude)
+#                 lon1 = math.radians(student_longitude)
+#                 lat2 = math.radians(verification_latitude)
+#                 lon2 = math.radians(verification_longitude)
 
-                delta_lat = lat2 - lat1
-                delta_lon = lon2 - lon1
+#                 delta_lat = lat2 - lat1
+#                 delta_lon = lon2 - lon1
 
-                a = math.sin(delta_lat / 2) ** 2 + math.cos(lat1) * \
-                    math.cos(lat2) * math.sin(delta_lon / 2) ** 2
-                c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
-                distance = radius * c  # Distance in kilometers
+#                 a = math.sin(delta_lat / 2) ** 2 + math.cos(lat1) * \
+#                     math.cos(lat2) * math.sin(delta_lon / 2) ** 2
+#                 c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
+#                 distance = radius * c  # Distance in kilometers
 
-                # Assuming you want to allow a maximum distance of, for example, 1 kilometer
-                max_distance = 0.05  # Change to 1.0 for kilometers
+#                 # Assuming you want to allow a maximum distance of, for example, 1 kilometer
+#                 max_distance = 0.05  # Change to 1.0 for kilometers
 
-                # Perform the radius check
-                if verification_code.expiration_time <= current_time or distance > max_distance:
-                    error_message = 'you are not within the location radius.'
-                else:
-                    session.expiration_time = current_time + \
-                        timedelta(minutes=5)
-                    verification_code.used = False
-                    session.save()
-                    verification_code.save()
+#                 # Perform the radius check
+#                 if verification_code.expiration_time <= current_time or distance > max_distance:
+#                     error_message = 'you are not within the location radius.'
+#                 else:
+#                     session.expiration_time = current_time + \
+#                         timedelta(minutes=5)
+#                     verification_code.used = False
+#                     session.save()
+#                     verification_code.save()
 
-                    if not request.user.is_staff:
-                        student = Student.objects.get(user=request.user)
+#                     if not request.user.is_staff:
+#                         student = Student.objects.get(user=request.user)
 
-                        try:
-                            student_course = StudentCourse.objects.get(
-                                student=student, course=verification_code.course)
-                        except StudentCourse.DoesNotExist:
-                            error_message = f"You are not enrolled in {verification_code.course}. Invalid login credentials. Please try again."
-                        else:
-                            if student.year != verification_code.course.year:
-                                error_message = "Enrollment year does not match the course. Check details and try again."
-                            else:
-                                # load the message.success in a green-covered text
-                                messages.success(
-                                    request, 'Verification successful. You can now log in.')
-                                return redirect('student_home', code=code)
+#                         try:
+#                             student_course = StudentCourse.objects.get(
+#                                 student=student, course=verification_code.course)
+#                         except StudentCourse.DoesNotExist:
+#                             error_message = f"You are not enrolled in {verification_code.course}. Invalid login credentials. Please try again."
+#                         else:
+#                             if student.year != verification_code.course.year:
+#                                 error_message = "Enrollment year does not match the course. Check details and try again."
+#                             else:
+#                                 # load the message.success in a green-covered text
+#                                 messages.success(
+#                                     request, 'Verification successful. You can now log in.')
+#                                 return redirect('student_home', code=code)
 
-    return render(request, 'base/verify_code.html', {'error_message': error_message})
+#     return render(request, 'base/verify_code.html', {'error_message': error_message})
 
 
 @login_required(login_url='/')
@@ -391,9 +392,13 @@ def StudentsTable(request):
     if lecturer_courses.exists():
         default_course_id = lecturer_courses.first().id
         default_course = Course.objects.get(id=default_course_id)
+        display = 'Course: ' + default_course.name + \
+            ' (Year:' + str(default_course.year) + ')'
+
     else:
         # Handle the case where no courses are associated with the lecturer
         default_course = None
+        display = ''
 
     sessions = Session.objects.filter(course=default_course).annotate(
         student_session_modulo=((F('id') - 1) % 15) + 1
@@ -401,7 +406,7 @@ def StudentsTable(request):
 
     # Get all students enrolled in the courses related to the lecturer
     students = Student.objects.filter(
-        studentcourse__course__in=lecturer_courses)
+        studentcourse__course=default_course)
 
     departments_with_lecturer = Department.objects.filter(
         lecturer=lecturer)
@@ -419,16 +424,23 @@ def StudentsTable(request):
         if indexF:
             students = Student.objects.filter(
                 index__icontains=indexF,  studentcourse__course__lecturer=lecturer)
+            display = 'Index Number: ' + indexF
         if courseF:
             students = Student.objects.filter(
                 studentcourse__course__name=courseF, studentcourse__course__lecturer=lecturer)
             default_course = Course.objects.get(name=courseF)
+            display = 'Course: ' + default_course.name + \
+                ' (Year:' + str(default_course.year) + ')'
+
         if programmeF:
             students = Student.objects.filter(
                 programme=programmeF, studentcourse__course__lecturer=lecturer)
+            programmeName = Department.objects.get(id=programmeF)
+            display = 'Programme: ' + str(programmeName.dname)
         if yearF:
             students = Student.objects.filter(
                 year=yearF, studentcourse__course__lecturer=lecturer)
+            display = 'Year: ' + yearF
         if strikeF:
             if strikeF == '4':
                 students = Student.objects.filter(studentcourse__strike__range=[
@@ -436,12 +448,16 @@ def StudentsTable(request):
             else:
                 students = Student.objects.filter(studentcourse__strike=int(
                     strikeF), studentcourse__course__lecturer=lecturer)
+            display = 'Number of Absences: ' + strikeF
         if nameF:
             students = Student.objects.filter(
                 name__icontains=nameF, studentcourse__course__lecturer=lecturer)
+            display = 'Name: ' + nameF
     else:
         students = Student.objects.filter(
-            studentcourse__course__in=lecturer_courses)
+            studentcourse__course=default_course)
+        display = 'Course: ' + default_course.name + \
+            ' (Year:' + str(default_course.year) + ')'
 
     Tsessions = Session.objects.filter(
         attendance__attended=True, course=default_course)
@@ -454,7 +470,7 @@ def StudentsTable(request):
     for student in students:
         try:
             studentcourse = StudentCourse.objects.get(
-                student=student, course__lecturer=lecturer, course__year=default_course.year)
+                student=student, course__lecturer=lecturer, course__year=student.year)
         except:
             message = 'nothing'
 
@@ -518,7 +534,7 @@ def StudentsTable(request):
                'sessions': sessions,
                'lecturer_courses': lecturer_courses,
                'departments': departments_with_lecturer,
-
+               'displayFilter': display
                }
     return render(request, 'base/Students.html', context)
 
@@ -635,43 +651,65 @@ def Help(request):
 
 @login_required(login_url='/')
 def Permission(request):
-
     student = request.user.student
+    error_message = ''
+    success_message = ''
 
-    studentcourses = StudentCourse.objects.filter(student=student)
+    if student and request.method == 'POST':
+        try:
+            code = request.POST.get('verificationcode')
+            message = request.POST.get('message')
+            verification_code = VerificationCode.objects.get(
+                code=code, used=False)
+            session = verification_code.session
+            course = verification_code.course
+            student_course = StudentCourse.objects.get(
+                student=student, course=course)
+            studentsessions = StudentSession.objects.filter(
+                Q(studentcourse=student_course, attended=False) | Q(
+                    studentcourse=student_course, attended=None)
+            ).exclude(studentpermission__sent=True)
+        except VerificationCode.DoesNotExist:
+            error_message = 'Wrong verification code'
+        except StudentCourse.DoesNotExist:
+            error_message = 'You are not enrolled in this course'
+        except Exception as e:
+            error_message = str(e)
 
-    default_course = studentcourses.first()
+        if not error_message:
+            if studentsessions.exists():
+                studentsession = studentsessions.first()
+            else:
+                studentsession = None
 
-    # Filter sessions and annotate the student_session_modulo and exclude studentsession that have an existing studentpermission
-    sessions = StudentSession.objects.filter(
-        Q(studentcourse=default_course, attended=False) | Q(
-            studentcourse=default_course, attended=None)
-    ).exclude(studentpermission__sent=True).annotate(
-        student_session_modulo=((F('id') - 1) % 15) + 1
-    )
+            current_time = timezone.now()
+            if verification_code.expiration_time <= current_time or StudentCode.objects.filter(code=code, student=student).exists():
+                verification_code.used = True
+                verification_code.save()
+                error_message = 'Verification code has expired'
+            else:
+                session.expiration_time = current_time + timedelta(minutes=5)
+                verification_code.used = False
+                session.save()
+                verification_code.save()
 
-    if request.method == 'POST':
+                student_permission, created = StudentPermission.objects.get_or_create(
+                    studentsession=studentsession,
+                    message=message,
+                    studentname=student.name,
+                    index=student.index,
+                    sent=True,
+                )
 
-        studentsession_id = request.POST.get('session')
-        studentsession = StudentSession.objects.get(id=studentsession_id)
-        message = request.POST.get('message')
+                if created:
+                    student_permission.save()
+                    verification_code.used = True
+                    verification_code.save()
+                    success_message = 'Message sent successfully'
+                    # Consider using redirect after a successful post to avoid re-posting on page refresh
+                    return render(request, 'base/permission_page.html', {'success_message': success_message})
 
-        studentpermission, created = StudentPermission.objects.get_or_create(
-            studentsession=studentsession,
-            message=message,
-            studentname=student.name,
-            index=student.index,
-            sent=True,
-        )
-
-# Check if the object was created before saving
-        if created:
-            studentpermission.save()
-
-    context = {'studentcourses': studentcourses,
-               'student': student, 'sessions': sessions}
-
-    return render(request, 'base/permission_page.html', context)
+    return render(request, 'base/permission_page.html', {'error_message': error_message, 'success_message': success_message})
 
 
 def get_sessions(request):

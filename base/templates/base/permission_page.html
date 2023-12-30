@@ -8,67 +8,61 @@
     <title>Permission Request</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
     <style>
-       .background-image {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Arial', sans-serif;
             background-image: url("{% static 'images/katangahall.jpg' %}");
             background-size: cover;
             background-position: center;
-            filter: blur(3px);
-            z-index: -1;
-        }
-   
-        .permissionContain {
             display: flex;
-            flex-direction: column; /* Display login/logout links above the form */
             align-items: center;
             justify-content: center;
             height: 100vh;
-            margin: 0;
-            font-family: Arial, sans-serif;
+        }
+
+        .container {
+            position: relative;
+            width: 100%;
+            text-align: center; /* Center text in container */
         }
 
         .login-logout {
-            margin-bottom: 20px; /* Add space between links and form */
-            width: 70px;
-            padding: 10px;
-            margin-bottom: 16px;
-            border-radius: 4px;
-            box-sizing: border-box;
-            font-size: 16px;
-            background-color: #4CAF50;
-            color: white;
-            cursor: pointer;
-            text-decoration: none;
-            transition: 0.3ms;
-          }
+            color: #3b983e;
+        }
 
-          .login-logout:hover{
+        .login-logout:hover {
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             background-color: #3b983e;
-          }
+        }
 
-        form {
-            background-color: rgba(255, 255, 255, 0.745);
+        .permission-form {
+            background-color: rgba(255, 255, 255, 0.9);
             max-width: 400px;
             width: 100%;
             padding: 20px;
             border: 1px solid #ccc;
             border-radius: 8px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            box-sizing: border-box;
+            margin: 0 auto; /* Center the form */
         }
 
-        .message {
-            width: 360px;
-            height: 150px;
+        form {
+            margin-top: 20px;
         }
 
-        h1 {
-            text-align: center;
+        h2 {
             color: #333;
+            margin-bottom: 20px;
+        }
+
+        h5 {
+            color: green;
+        }
+
+        h5 span{
+            color: red;
         }
 
         label {
@@ -77,8 +71,8 @@
             color: #555;
         }
 
-        select,
-        button {
+        input,
+        textarea {
             width: 100%;
             padding: 10px;
             margin-bottom: 16px;
@@ -89,9 +83,17 @@
         }
 
         button {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 16px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-size: 16px;
             background-color: #4CAF50;
             color: white;
             cursor: pointer;
+            transition: 0.3s;
         }
 
         button:hover {
@@ -101,82 +103,35 @@
 </head>
 
 <body>
-  <div class="background-image"></div>  
 
-    <div class="permissionContain">
-        {% if request.user.is_authenticated %}
-        <a class="login-logout" href="{% url 'logout'  %}">Logout</a>
-        {% else %}
-        <a class="login-logout" href="{% url 'login'  %}">Login</a>
-        {% endif %}
+    <div class="container">
 
-        <form action="" method="POST" id="permissionForm">
-            {% csrf_token %}
+        <div class="permission-form">
+            <form action="" method="POST" id="permissionForm">
+                {% csrf_token %}
 
-            <h1>Permission Request</h1>
+                <h2>Request Permission</h2>
 
-            <!-- Course Selection -->
-            <label for="course">Select Course:</label>
-            <select id="course" name="course">
-                {% for course in studentcourses %}
-                <option value="{{ course.course.id }}">{{ course.course.name }}</option>
-                {% endfor %}
-            </select>
+                <!-- Verification Code -->
+                <label for="verificationcode">Enter Verification Code:</label>
+                <input required type="text" name="verificationcode" value="{{ q }}">
 
-            <!-- Session Selection -->
-            <label for="session">Select Session:</label>
-            <select id="session" name="session">
-                {% for session in sessions %}
-                <option value="{{ session.id }}">Session {{ session.student_session_modulo }}</option>
-                {% endfor %}
-                <!-- Options will be dynamically populated using JavaScript -->
-            </select>
+                <!-- Message -->
+                <label for="message">Enter Message:</label>
+                <textarea required name="message" value="{{ q }}" id="message" placeholder="Reason, please make it brief"></textarea>
 
-            <textarea class="message" name="message" value="{{ q }}" id="message" cols="51" rows="10" placeholder="Reason, please make it brief"></textarea>
+                <h5>{{success_message}} <span>{{error_message}}</span></h5>
 
-            <button type="submit">Send Permission Request</button>
-        </form>
+                <!-- Submit Button -->
+                <button type="submit">Send Permission Request</button>
+                <a class="login-logout" href="{% url 'logout'  %}">Logout</a>
+            </form>
+        </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
-    <script>
-        // Function to fetch and populate sessions based on the selected course
-        function populateSessions(selectedCourseId) {
-            var xhr = new XMLHttpRequest();
-            xhr.open('GET', `/get_sessions/?course_id=${selectedCourseId}`, true);
-            xhr.onreadystatechange = function() {
-                if (xhr.readyState === XMLHttpRequest.DONE) {
-                    if (xhr.status === 200) {
-                        var data = JSON.parse(xhr.responseText);
-                        var sessionDropdown = document.getElementById('session');
-
-                        // Clear existing options
-                        sessionDropdown.innerHTML = '';
-
-                        // Add new options for sessions
-                        for (var session of data.sessions) {
-                            var option = document.createElement('option');
-                            option.value = session.id;
-                            option.textContent = 'Session ' + (((session.id - 1) % 15) + 1);
-                            sessionDropdown.appendChild(option);
-                        }
-                    } else {
-                        // Handle error
-                        console.error('Failed to fetch sessions for the selected course.');
-                    }
-                }
-            };
-            xhr.send();
-        }
-
-        // Add event listener to the course dropdown
-        document.getElementById('course').addEventListener('change', function() {
-            var selectedCourseId = this.value;
-            console.log(selectedCourseId);
-            populateSessions(selectedCourseId);
-        });
-    </script>
-
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
+        crossorigin="anonymous"></script>
 </body>
 
 </html>
