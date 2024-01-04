@@ -1,7 +1,9 @@
 # models.py
+import re
 import uuid
 from django.db import models
 from django.contrib.auth.models import User
+from django.utils.text import slugify
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.utils import timezone
@@ -25,6 +27,34 @@ class Lecturer(models.Model):
 
     def __str__(self):
         return self.name
+
+    def save(self, *args, **kwargs):
+        # Extract initials from the name (excluding titles like "Prof." or "Rev.")
+        initials = [name_part[0].lower() for name_part in re.sub(
+            r'\b(?:Prof\.|Rev\.|Dr\.|Mr\.|Mrs\.|Miss\.)\b', '', self.name).split()]
+
+        # Concatenate the initials and the last name to form the username
+        username = ''.join(initials) + slugify(self.name.split()[-1]).lower()
+
+        # Create a User instance
+        user, created = User.objects.get_or_create(
+            username=username,
+            defaults={
+                'first_name': self.name.split()[0],
+                'last_name': self.name.split()[-1],
+                'email': f"{username}@example.com"
+            }
+        )
+
+        # Set a unique random password if the user is newly created
+        if created:
+            user.set_password(User.objects.make_random_password())
+            user.save()
+
+        # Link the User instance to the Lecturer instance
+        self.user = user
+
+        super().save(*args, **kwargs)
 
 
 class Course(models.Model):
@@ -86,6 +116,7 @@ class Student(models.Model):
     year = models.PositiveIntegerField()
     UUID = models.CharField(max_length=38, null=True, blank=True, unique=True)
     UUID_sent = models.BooleanField(default=False)
+    # i will add all the strikes gained from the courses not attended and save them here
     Total_strike = models.PositiveIntegerField(default=0, editable=False)
     programme = models.ForeignKey(
         Department, on_delete=models.SET_NULL, null=True)
@@ -96,6 +127,31 @@ class Student(models.Model):
     def save(self, *args, **kwargs):
         if self.UUID is None or not self.UUID.strip():
             self.UUID = str(uuid.uuid4())
+
+        # Extract initials from the first and last names
+        initials = [name_part[0].lower() for name_part in self.name.split()]
+
+        # Concatenate the initials and the last name to form the username
+        username = ''.join(initials) + slugify(self.name.split()[-1]).lower()
+
+        # Create a User instance
+        user, created = User.objects.get_or_create(
+            username=username,
+            defaults={
+                'first_name': self.name.split()[0],
+                'last_name': self.name.split()[-1],
+                'email': f"{username}@example.com"
+            }
+        )
+
+        # Set a unique random password if the user is newly created
+        if created:
+            user.set_password(User.objects.make_random_password())
+            user.save()
+
+        # Link the User instance to the Student instance
+        self.user = user
+
         super().save(*args, **kwargs)
 
 
