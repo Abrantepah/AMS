@@ -224,7 +224,7 @@ def verification_api(request, user_id):
                 distance = radius * c  # Distance in kilometers
 
                 # Assuming you want to allow a maximum distance of, for example, 1 kilometer
-                max_distance = 0.20  # Change to 1.0 for kilometers
+                max_distance = 0.02  # Change to 1.0 for kilometers
 
                 # Perform the radius check
                 if verification_code.expiration_time <= current_time or distance > max_distance:
