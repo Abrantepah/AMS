@@ -1,4 +1,4 @@
-name,code,department,year,lecturer,lecturer_ssn
+name,code,department,year,lecturer,lecturer_reference
 Data Structures,324,Computer Science,3,Prof. Hayfron Acquah,9876543
 Numerical Analysis,201,Computer Science,2,Prof. Hayfron Acquah,9876543
 Database Management,234,Computer Science,2,Rev. Prof. Kwame Ofosuhene Peasah,4356231

@@ -33,12 +33,13 @@ def get_lecturers(request):
 class StudentLoginAPIView(APIView):
     def post(self, request, *args, **kwargs):
         username = request.data.get('username')
+        reference = request.data.get('reference')
         password = request.data.get('password')
         uuid_code = request.data.get('uuidcode')
         error_message = None
         user = authenticate(request, username=username, password=password)
 
-        if user and Student.objects.filter(user=user).exists():
+        if user and Student.objects.filter(user=user, reference=reference).exists():
             student = Student.objects.get(user=user)
 
             if uuid_code != '':
@@ -66,11 +67,12 @@ class LecturerLoginAPIView(APIView):
     def post(self, request, *args, **kwargs):
         username = request.data.get('username')
         password = request.data.get('password')
+        reference = request.data.get('reference')
 
         # Authenticate the user based on reference, username, and password
         user = authenticate(request, username=username, password=password)
 
-        if user is not None and Lecturer.objects.filter(user=user).exists():
+        if user is not None and Lecturer.objects.filter(user=user, reference=reference).exists():
             # User credentials are valid, log in the user
             login(request, user)
 
@@ -80,7 +82,8 @@ class LecturerLoginAPIView(APIView):
             return Response(serializer.data, status=status.HTTP_200_OK)
         else:
             # User credentials are invalid, return an error response
-            return Response({'error': 'Invalid login credentials'}, status=status.HTTP_401_UNAUTHORIZED)
+            error_message = 'Invalid login credentials'
+            return Response(error_message, status=status.HTTP_401_UNAUTHORIZED)
 
 
 @api_view(['GET'])

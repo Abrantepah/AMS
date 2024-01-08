@@ -1,5 +1,4 @@
 # models.py
-import re
 import uuid
 from django.db import models
 from django.contrib.auth.models import User
@@ -8,6 +7,9 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.utils import timezone
 from django.core.validators import MaxValueValidator, MinValueValidator
+from django.core.mail import send_mail
+from django.template.loader import render_to_string
+from django.utils.html import strip_tags
 
 
 class Department(models.Model):
@@ -21,7 +23,7 @@ class Department(models.Model):
 class Lecturer(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     name = models.CharField(max_length=60)
-    SN = models.PositiveIntegerField(unique=True)
+    reference = models.PositiveIntegerField(unique=True)
     department = models.ForeignKey(
         Department, on_delete=models.SET_NULL, null=True)
 
@@ -29,19 +31,35 @@ class Lecturer(models.Model):
         return self.name
 
     def save(self, *args, **kwargs):
-        # Extract initials from the name (excluding titles like "Prof." or "Rev.")
-        initials = [name_part[0].lower() for name_part in re.sub(
-            r'\b(?:Prof\.|Rev\.|Dr\.|Mr\.|Mrs\.|Miss\.)\b', '', self.name).split()]
+        # Define a list of titles to be excluded
+        titles_to_exclude = ["Prof.", "Rev.", "Dr.", "Mr.", "Mrs.", "Miss."]
 
-        # Concatenate the initials and the last name to form the username
-        username = ''.join(initials) + slugify(self.name.split()[-1]).lower()
+        # Split the name based on titles
+        for title in titles_to_exclude:
+            full_name = self.name.replace(title, '')
+
+        # Remove extra spaces and get the name part
+        name_without_title = ' '.join(full_name.split()).strip()
+
+        # Split the name into parts
+        name_parts = name_without_title.split()
+
+        # Extract initials from non-title parts of the name (excluding the last name)
+        initials = [name_part[0].lower()
+                    for name_part in name_parts[:-1] if name_part]
+
+        # Concatenate the initials to form the username
+        username = ''.join(initials)
+
+        # Append the last name to the username
+        username += slugify(name_parts[-1]).lower()
 
         # Create a User instance
         user, created = User.objects.get_or_create(
             username=username,
             defaults={
-                'first_name': self.name.split()[0],
-                'last_name': self.name.split()[-1],
+                'first_name': name_parts[0] if name_parts else "",
+                'last_name': name_parts[-1] if name_parts else "",
                 'email': f"{username}@example.com"
             }
         )
@@ -114,6 +132,7 @@ class Student(models.Model):
     index = models.PositiveIntegerField(unique=True)
     name = models.CharField(max_length=60)
     year = models.PositiveIntegerField()
+    email = models.EmailField(null=True)
     UUID = models.CharField(max_length=38, null=True, blank=True, unique=True)
     UUID_sent = models.BooleanField(default=False)
     # i will add all the strikes gained from the courses not attended and save them here
@@ -128,26 +147,65 @@ class Student(models.Model):
         if self.UUID is None or not self.UUID.strip():
             self.UUID = str(uuid.uuid4())
 
-        # Extract initials from the first and last names
-        initials = [name_part[0].lower() for name_part in self.name.split()]
+        # Split the name into parts
+        name_parts = self.name.split()
 
-        # Concatenate the initials and the last name to form the username
-        username = ''.join(initials) + slugify(self.name.split()[-1]).lower()
+        # Extract initials from middle names (if available) and the first name
+        initials = [name_part[0].lower()
+                    for name_part in name_parts[:-1] if name_part]
+
+        # Concatenate the initials to form the username
+        username = ''.join(initials) + slugify(name_parts[-1]).lower()
 
         # Create a User instance
         user, created = User.objects.get_or_create(
             username=username,
             defaults={
-                'first_name': self.name.split()[0],
-                'last_name': self.name.split()[-1],
-                'email': f"{username}@example.com"
+                'first_name': name_parts[0],
+                'last_name': name_parts[-1],
+                'email': self.email  # Use the student's email for the User instance
             }
         )
 
-        # Set a unique random password if the user is newly created
-        if created:
-            user.set_password(User.objects.make_random_password())
+        # Check if the user is newly created or if the password has been changed
+        if created or not user.has_usable_password():
+            # User is newly created or has the default password
+            password = User.objects.make_random_password()
+            user.set_password(password)
             user.save()
+
+            try:
+                # Send an email with a link to set the password
+                subject = 'Your Student Account Details'
+                message = render_to_string('base/student_details_email.html', {
+                    'username': username,
+                    'firstname': name_parts[0],
+                    'reference': self.reference,
+                })
+                plain_message = strip_tags(message)
+
+                send_mail(
+                    subject,
+                    plain_message,
+                    'abrantepahidan@gmail.com',
+                    [self.email],
+                    html_message=message,
+                )
+
+            except Exception as e:
+                print(f"Error sending email: {e}")
+
+        else:
+            # User already exists and has a usable password
+            # You can implement logic here to require old password and set new password
+            # For example, use Django's built-in password change forms
+
+            # Example:
+            old_password = "old_password"
+            new_password = "new_password"
+            if user.check_password(old_password):
+                user.set_password(new_password)
+                user.save()
 
         # Link the User instance to the Student instance
         self.user = user

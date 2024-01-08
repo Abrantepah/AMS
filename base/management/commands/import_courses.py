@@ -22,7 +22,7 @@ class Command(BaseCommand):
             # Iterate over the rows and create Lecturer objects
             for row in csv_reader:
                 # Extract data from the row
-                name, code, department, year, lecturer, lecturer_ssn = row
+                name, code, department, year, lecturer, lecturer_reference = row
 
                 # Get or create the Department object
                 department, created = Department.objects.get_or_create(
@@ -30,7 +30,7 @@ class Command(BaseCommand):
                 )
 
                 lecturer, created = Lecturer.objects.get_or_create(
-                    name=lecturer, SN=lecturer_ssn
+                    name=lecturer, reference=lecturer_reference
                 )
 
                 # Create a Lecturer object
