@@ -1,3 +1,4 @@
+<!-- student_details_email.html -->
 <!DOCTYPE html>
 <html>
 <body>
@@ -9,12 +10,21 @@
 <ul>
   <li><strong>Default Username:</strong> {{ username }}</li>
   <li><strong>Reference:</strong> {{ reference }}</li>
-  <li><strong>Default Password:</strong> {{ password }}</li>
 </ul>
 
+
+<p>Set your user password using <a href="{% url 'login' %}"><strong>this link</strong></a></p>
+
+<p>When requested for a password, enter the following temporary, randomly-generated password:</p>
+
+<p>{{ password }}</p>
+
 <p>You will be prompted to log in for the initial access using these credentials; you can modify them afterward</p>
+
 
 <p>Thank you!</p>
 
 </body>
 </html>
+
+

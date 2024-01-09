@@ -23,7 +23,7 @@ class Command(BaseCommand):
             for row in csv_reader:
                 # Extract data from the row
                 # Assuming your CSV has columns for name, SN, and department
-                name, reference, department_name = row
+                name, reference, department_name, email = row
 
                 # Get or create the Department object
                 department, created = Department.objects.get_or_create(
@@ -34,7 +34,8 @@ class Command(BaseCommand):
                 Lecturer.objects.create(
                     name=name,
                     reference=reference,
-                    department=department
+                    department=department,
+                    email=email,
                 )
 
         self.stdout.write(self.style.SUCCESS('Data import completed.'))

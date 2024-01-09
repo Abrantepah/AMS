@@ -1,6 +1,6 @@
 from django.utils.text import slugify
 # Example name
-full_name = "Prof. Kate Appiah"
+full_name = "Rev. Prof. Kate Appiah"
 
 # Define a list of titles to be excluded
 titles_to_exclude = ["Prof.", "Rev.", "Dr.", "Mr.", "Mrs.", "Miss."]
@@ -24,7 +24,6 @@ username = ''.join(initials)
 
 # Append the last name to the username
 username += slugify(name_parts[-1]).lower()
-
 # First name is the first part
 first_name = name_parts[0] if name_parts else ""
 
@@ -36,4 +35,5 @@ print("Last name:", last_name)
 print("username: ", username)
 
 
-print(name_without_title)
+print(name_parts)
+print(full_name)

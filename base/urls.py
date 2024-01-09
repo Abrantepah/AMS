@@ -6,6 +6,12 @@ from . import views
 urlpatterns = [
     path('', views.student_login, name="login"),
     path('lecturer_login/', views.Lecturer_login, name="lecturer_login"),
+    path('email_password/',
+         views.email_password, name="email_password"),
+    path('changedefaultpassword/',
+         views.changeDefaultPassword, name="changedefaultpassword"),
+    path('password_reset_complete/', views.password_reset_complete,
+         name='password_reset_complete'),
     path('logout/', views.logoutUser, name="logout"),
     #     path('studenthome/<str:code>/', views.StudentHome, name="student_home"),
     path('lecturerhome/', views.LecturerHome, name="lecturer_home"),

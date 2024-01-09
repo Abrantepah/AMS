@@ -15,14 +15,12 @@ from django.utils import timezone
 import math
 from django.db.models import F, Q
 
-# from .decorators import restrict_to_router
 
-
-# @restrict_to_router
 def student_login(request):
     if request.method == 'POST':
         username = request.POST['username']
         password = request.POST['password']
+        reference = request.POST['reference']
 
         # Authenticate the user based on reference, username, and password
         user = authenticate(request, username=username, password=password)
@@ -30,10 +28,16 @@ def student_login(request):
         if user is not None:
             # User credentials are valid, log in the user
             login(request, user)
+
+            if Student.objects.filter(user=user, reference=reference, passwordChanged=False).exists():
+                return redirect('changedefaultpassword')
+            elif Lecturer.objects.filter(user=user, reference=reference, passwordChanged=False).exists():
+                return redirect('changedefaultpassword')
             # Check if the user has a related Student object
-            if Student.objects.filter(user=user).exists():
+            elif Student.objects.filter(user=user, reference=reference).exists():
                 # Redirect to the verify code page for students
                 return redirect('permission')
+
             elif Lecturer.objects.filter(user=user).exists():
                 return redirect('login')
         else:
@@ -48,6 +52,7 @@ def Lecturer_login(request):
     if request.method == 'POST':
         username = request.POST['username']
         password = request.POST['password']
+        reference = request.POST['reference']
 
         # Authenticate the user based on reference, username, and password
         user = authenticate(request, username=username, password=password)
@@ -56,7 +61,7 @@ def Lecturer_login(request):
             # User credentials are valid, log in the user
             login(request, user)
             # Check if the user has a related Student object
-            if Student.objects.filter(user=user).exists():
+            if Student.objects.filter(user=user, reference=reference).exists():
                 # Redirect to the verify code page for students
                 return redirect('login')
             elif Lecturer.objects.filter(user=user).exists():
@@ -68,6 +73,64 @@ def Lecturer_login(request):
             return render(request, 'base/lecturer_login.html', {'error_message': error_message})
 
     return render(request, 'base/lecturer_login.html')
+
+
+def email_password(request):
+    # add a timer to the message sent, if expired, make link expired
+
+    return render(request, 'base/user_details_email.html/')
+
+
+@login_required(login_url='/')
+def changeDefaultPassword(request):
+    error_message = ''
+
+    try:
+        if request.user.is_authenticated:
+            user = request.user
+    except User.DoesNotExist:
+        user = None
+        print('User does not exist')
+
+    if user:
+        try:
+            if Student.objects.filter(user=user, passwordChanged=False).exists():
+                allow_user = user
+                student = Student.objects.get(
+                    user=user, passwordChanged=False)
+            elif Lecturer.objects.filter(user=user, passwordChanged=False).exists():
+                allow_user = user
+                lecturer = Lecturer.objects.get(
+                    user=user, passwordChanged=False)
+        except Student.DoesNotExist or Lecturer.DoesNotExist:
+            student = None
+            lecturer = None
+            return redirect('password_reset_complete')
+
+        if student or lecturer:
+            if request.method == "POST":
+                first_password = request.POST.get('first_input')
+                second_password = request.POST.get('second_input')
+
+                if str(first_password) == str(second_password):
+                    password = second_password
+                    allow_user.set_password(password)
+                    allow_user.save()
+                    if student:
+                        student.passwordChanged = True
+                        student.save()
+                    elif lecturer:
+                        lecturer.passwordChanged = True
+                        lecturer.save()
+                    return redirect('password_reset_complete')
+                else:
+                    error_message = 'Password mismatched'
+
+    return render(request, 'base/password.html', {'error_message': error_message})
+
+
+def password_reset_complete(request):
+    return render(request, 'base/password_reset_complete.html')
 
 
 def logoutUser(request):

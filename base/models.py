@@ -23,7 +23,9 @@ class Department(models.Model):
 class Lecturer(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     name = models.CharField(max_length=60)
-    reference = models.PositiveIntegerField(unique=True)
+    reference = models.CharField(max_length=12, unique=True)
+    email = models.EmailField(null=True, unique=True)
+    passwordChanged = models.BooleanField(default=False)
     department = models.ForeignKey(
         Department, on_delete=models.SET_NULL, null=True)
 
@@ -31,12 +33,14 @@ class Lecturer(models.Model):
         return self.name
 
     def save(self, *args, **kwargs):
+        full_name = self.name
+
         # Define a list of titles to be excluded
         titles_to_exclude = ["Prof.", "Rev.", "Dr.", "Mr.", "Mrs.", "Miss."]
 
         # Split the name based on titles
         for title in titles_to_exclude:
-            full_name = self.name.replace(title, '')
+            full_name = full_name.replace(title, '')
 
         # Remove extra spaces and get the name part
         name_without_title = ' '.join(full_name.split()).strip()
@@ -54,22 +58,50 @@ class Lecturer(models.Model):
         # Append the last name to the username
         username += slugify(name_parts[-1]).lower()
 
+        first_name = name_parts[0] if name_parts else ""
+
+        # Last name is the rest of the parts
+        last_name = name_parts[-1] if name_parts else ""
+
         # Create a User instance
         user, created = User.objects.get_or_create(
             username=username,
             defaults={
-                'first_name': name_parts[0] if name_parts else "",
-                'last_name': name_parts[-1] if name_parts else "",
-                'email': f"{username}@example.com"
+                'first_name': first_name,
+                'last_name': last_name,
+                'email': self.email
             }
         )
 
-        # Set a unique random password if the user is newly created
         if created:
-            user.set_password(User.objects.make_random_password())
+            password = User.objects.make_random_password()
+            user.set_password(password)
             user.save()
 
-        # Link the User instance to the Lecturer instance
+            try:
+                # Send an email with a link to set the password
+                subject = 'Your Lecturer Account Details'
+                message = render_to_string('base/user_details_email.html', {
+                    'username': username,
+                    'firstname': name_parts[0],
+                    'reference': self.reference,
+                    'password': password,
+
+                })
+                plain_message = strip_tags(message)
+
+                send_mail(
+                    subject,
+                    plain_message,
+                    'christianidanfrowne@gmail.com',
+                    [self.email],
+                    html_message=message,
+                )
+
+            except Exception as e:
+                print(f"Error sending email: {e}")
+
+        # Link the User instance to the Student instance
         self.user = user
 
         super().save(*args, **kwargs)
@@ -128,13 +160,14 @@ def create_sessions(sender, instance, created, **kwargs):
 
 class Student(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    reference = models.PositiveIntegerField(unique=True)
-    index = models.PositiveIntegerField(unique=True)
-    name = models.CharField(max_length=60)
+    reference = models.CharField(max_length=12, unique=True)
+    index = models.CharField(max_length=12, unique=True)
+    name = models.CharField(max_length=70)
     year = models.PositiveIntegerField()
-    email = models.EmailField(null=True)
+    email = models.EmailField(null=True, unique=True)
     UUID = models.CharField(max_length=38, null=True, blank=True, unique=True)
     UUID_sent = models.BooleanField(default=False)
+    passwordChanged = models.BooleanField(default=False)
     # i will add all the strikes gained from the courses not attended and save them here
     Total_strike = models.PositiveIntegerField(default=0, editable=False)
     programme = models.ForeignKey(
@@ -167,45 +200,32 @@ class Student(models.Model):
             }
         )
 
-        # Check if the user is newly created or if the password has been changed
-        if created or not user.has_usable_password():
-            # User is newly created or has the default password
+        if created:
             password = User.objects.make_random_password()
             user.set_password(password)
             user.save()
 
             try:
                 # Send an email with a link to set the password
-                subject = 'Your Student Account Details'
-                message = render_to_string('base/student_details_email.html', {
+                subject = 'Your Attendance Account Details'
+                message = render_to_string('base/user_details_email.html', {
                     'username': username,
                     'firstname': name_parts[0],
                     'reference': self.reference,
+                    'password': password,
                 })
                 plain_message = strip_tags(message)
 
                 send_mail(
                     subject,
                     plain_message,
-                    'abrantepahidan@gmail.com',
+                    'christianidanfrowne@gmail.com',
                     [self.email],
                     html_message=message,
                 )
 
             except Exception as e:
                 print(f"Error sending email: {e}")
-
-        else:
-            # User already exists and has a usable password
-            # You can implement logic here to require old password and set new password
-            # For example, use Django's built-in password change forms
-
-            # Example:
-            old_password = "old_password"
-            new_password = "new_password"
-            if user.check_password(old_password):
-                user.set_password(new_password)
-                user.save()
 
         # Link the User instance to the Student instance
         self.user = user
