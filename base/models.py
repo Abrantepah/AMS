@@ -10,6 +10,7 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 from django.core.mail import send_mail
 from django.template.loader import render_to_string
 from django.utils.html import strip_tags
+from django.db import IntegrityError
 
 
 class Department(models.Model):
@@ -26,8 +27,7 @@ class Lecturer(models.Model):
     reference = models.CharField(max_length=12, unique=True)
     email = models.EmailField(null=True, unique=True)
     passwordChanged = models.BooleanField(default=False)
-    department = models.ForeignKey(
-        Department, on_delete=models.SET_NULL, null=True)
+    department = models.ManyToManyField(Department)
 
     def __str__(self):
         return self.name
@@ -109,8 +109,9 @@ class Lecturer(models.Model):
 
 class Course(models.Model):
     name = models.CharField(max_length=40)
-    code = models.PositiveIntegerField(unique=True)
-    department = models.ForeignKey(Department, on_delete=models.CASCADE)
+    code = models.CharField(max_length=13, unique=True)
+    department = models.ManyToManyField(Department)
+    # numgroups = models.PositiveIntegerField(default=1)
     year = models.PositiveIntegerField(
         validators=[
             MinValueValidator(1),
@@ -131,7 +132,7 @@ class Session(models.Model):
     date = models.DateField()
     time = models.TimeField()
     expiration_time = models.DateTimeField(default=timezone.now(
-    ) + timezone.timedelta(minutes=40))  # Initial expiration time
+    ) + timezone.timedelta(minutes=10))  # Initial expiration time
 
     def is_attended(self):
         return self.attendance_set.filter(attended=True).exists()
@@ -148,6 +149,7 @@ class Session(models.Model):
 @receiver(post_save, sender=Course)
 def create_sessions(sender, instance, created, **kwargs):
     if created:
+        #   for i in range(instance.numgroups):
         for i in range(15):
             session = Session.objects.create(
                 course=instance,
@@ -158,13 +160,21 @@ def create_sessions(sender, instance, created, **kwargs):
             )
 
 
+class Usernames_only(models.Model):
+    save_usernames = models.CharField(max_length=50, unique=True)
+
+    def __str__(self):
+        return self.save_usernames
+
+
 class Student(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     reference = models.CharField(max_length=12, unique=True)
     index = models.CharField(max_length=12, unique=True)
     name = models.CharField(max_length=70)
     year = models.PositiveIntegerField()
-    email = models.EmailField(null=True, unique=True)
+    # group = models.PositiveIntegerField(null=True)
+    # email = models.EmailField(null=True, unique=True)
     UUID = models.CharField(max_length=38, null=True, blank=True, unique=True)
     UUID_sent = models.BooleanField(default=False)
     passwordChanged = models.BooleanField(default=False)
@@ -188,46 +198,67 @@ class Student(models.Model):
                     for name_part in name_parts[:-1] if name_part]
 
         # Concatenate the initials to form the username
-        username = ''.join(initials) + slugify(name_parts[-1]).lower()
+        base_username = ''.join(initials) + slugify(name_parts[-1]).lower()
 
-        # Create a User instance
-        user, created = User.objects.get_or_create(
-            username=username,
-            defaults={
-                'first_name': name_parts[0],
-                'last_name': name_parts[-1],
-                'email': self.email  # Use the student's email for the User instance
-            }
-        )
+        # Create a User instance with a unique username
+        user_created = False
+        suffix = 1
+        while not user_created:
+            try:
+                usernames_instance = Usernames_only.objects.get(
+                    save_usernames=base_username)
+                base_username = f"{base_username}{suffix}"
+            except Usernames_only.DoesNotExist:
+                pass
+
+            # Create an instance of Usernames_only and save it to the database
+            usernames_instance, created = Usernames_only.objects.get_or_create(
+                save_usernames=base_username
+            )
+            usernames_instance.save()
+
+            # Attempt to create a User instance with the generated username
+            user, created = User.objects.get_or_create(
+                username=base_username,
+                defaults={
+                    'first_name': name_parts[0],
+                    'last_name': name_parts[-1],
+                    # 'email': self.email  # Use the student's email for the User instance
+                }
+            )
+            user_created = True
+
+            # If a username clash occurs, increment the suffix and try again
+            suffix += 1
 
         if created:
-            password = User.objects.make_random_password()
-            user.set_password(password)
+            # password = User.objects.make_random_password()
+            user.set_password("CS2024")
             user.save()
 
-            try:
-                # Send an email with a link to set the password
-                subject = 'Your Attendance Account Details'
-                message = render_to_string('base/user_details_email.html', {
-                    'username': username,
-                    'firstname': name_parts[0],
-                    'reference': self.reference,
-                    'password': password,
-                })
-                plain_message = strip_tags(message)
+            # try:
+            #     # Send an email with a link to set the password
+            #     subject = 'Your Student Account Details'
+            #     message = render_to_string('base/user_details_email.html', {
+            #         'username': username,
+            #         'firstname': name_parts[0],
+            #         'reference': self.reference,
+            #         'password': password,
+            #     })
+            #     plain_message = strip_tags(message)
 
-                send_mail(
-                    subject,
-                    plain_message,
-                    'christianidanfrowne@gmail.com',
-                    [self.email],
-                    html_message=message,
-                )
+            #     send_mail(
+            #         subject,
+            #         plain_message,
+            #         'christianidanfrowne@gmail.com',
+            #         [self.email],
+            #         html_message=message,
+            #     )
 
-            except Exception as e:
-                print(f"Error sending email: {e}")
+            # except Exception as e:
+            #     print(f"Error sending email: {e}")
 
-        # Link the User instance to the Student instance
+            # Link the User instance to the Student instance
         self.user = user
 
         super().save(*args, **kwargs)

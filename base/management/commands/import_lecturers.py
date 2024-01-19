@@ -23,19 +23,21 @@ class Command(BaseCommand):
             for row in csv_reader:
                 # Extract data from the row
                 # Assuming your CSV has columns for name, SN, and department
-                name, reference, department_name, email = row
-
-                # Get or create the Department object
-                department, created = Department.objects.get_or_create(
-                    dname=department_name,
-                )
+                name, reference, department_names, email = row
 
                 # Create a Lecturer object
-                Lecturer.objects.create(
+                lecturer = Lecturer.objects.create(
                     name=name,
                     reference=reference,
-                    department=department,
                     email=email,
                 )
+
+                # Split the department_names and associate with the course
+                for department_name in department_names.split(','):
+                    department_name = department_name.strip()
+                    department, created = Department.objects.get_or_create(
+                        dname=department_name,
+                    )
+                    lecturer.department.add(department)
 
         self.stdout.write(self.style.SUCCESS('Data import completed.'))

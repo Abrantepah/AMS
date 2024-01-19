@@ -1,5 +1,2 @@
-name,reference,department_name,email
-Prof. Hayfron Acquah,9876543,Computer Science,abrantepahidan@gmail.com
-Rev. Prof. Kwame Ofosuhene Peasah,4356231,Computer Science
-Prof. Kate Appiah,3456215,Chemical Engineering
-Prof. Asare Bediako,2329572,Information Technology
+name,reference,department_names,email
+Rev. Dr. Kwame Ofosuhene Peasah,1234567,"Computer Science (A), Computer Science (B)",abrantepahidan@gmail.com
