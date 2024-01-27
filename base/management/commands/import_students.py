@@ -10,7 +10,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **kwargs):
         # Path to your CSV file
-        csv_file_path = 'base/csvFiles/csB.csv'
+        csv_file_path = 'base/csvFiles/CSM 183.csv'
 
         # Open the CSV file
         with open(csv_file_path, 'r') as csv_file:
@@ -23,15 +23,15 @@ class Command(BaseCommand):
             # Iterate over the rows and create Lecturer objects
             for row in csv_reader:
                 # Extract data from the row
-                reference, surname, othername = row
+                # reference, surname, othername = row
 
-                name = othername + ' ' + surname
-                # reference, department_name, name = row
+                # name = othername + ' ' + surname
+                reference, department_name, name = row
 
-                # name_parts = name.split(', ')
-                # formatted_name = ' '.join(name_parts[::-1])
+                name_parts = name.split(', ')
+                formatted_name = ' '.join(name_parts[::-1])
 
-                # formatted_department = department_name.title()
+                formatted_department = department_name.title()
 
                 while True:
                     index = str(random.randint(100000, 999999))
@@ -41,13 +41,13 @@ class Command(BaseCommand):
                 # department_name = "Computer Science (B)"
                 # Get or create the Department object
                 department, created = Department.objects.get_or_create(
-                    dname="Computer Science (B)",
+                    dname=formatted_department,
                 )
 
                 # Create a Lecturer object
                 Student.objects.create(
                     reference=reference,
-                    name=name,
+                    name=formatted_name,
                     year=1,
                     programme=department,
                     index=index

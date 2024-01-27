@@ -33,7 +33,7 @@ def get_lecturers(request):
 class StudentLoginAPIView(APIView):
     def post(self, request, *args, **kwargs):
         username = request.data.get('username')
-        reference = request.data.get('reference')
+        reference = request.data.get('username')
         password = request.data.get('password')
         uuid_code = request.data.get('uuidcode')
         error_message = None
@@ -67,7 +67,7 @@ class LecturerLoginAPIView(APIView):
     def post(self, request, *args, **kwargs):
         username = request.data.get('username')
         password = request.data.get('password')
-        reference = request.data.get('reference')
+        reference = request.data.get('username')
 
         # Authenticate the user based on reference, username, and password
         user = authenticate(request, username=username, password=password)

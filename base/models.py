@@ -65,7 +65,7 @@ class Lecturer(models.Model):
 
         # Create a User instance
         user, created = User.objects.get_or_create(
-            username=username,
+            username=self.reference,
             defaults={
                 'first_name': first_name,
                 'last_name': last_name,
@@ -219,7 +219,7 @@ class Student(models.Model):
 
             # Attempt to create a User instance with the generated username
             user, created = User.objects.get_or_create(
-                username=base_username,
+                username=self.reference,
                 defaults={
                     'first_name': name_parts[0],
                     'last_name': name_parts[-1],

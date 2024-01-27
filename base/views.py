@@ -18,7 +18,7 @@ from django.db.models import F, Q
 
 def student_login(request):
     if request.method == 'POST':
-        username = request.POST['username']
+        username = request.POST['reference']
         password = request.POST['password']
         reference = request.POST['reference']
 
@@ -50,7 +50,7 @@ def student_login(request):
 
 def Lecturer_login(request):
     if request.method == 'POST':
-        username = request.POST['username']
+        username = request.POST['reference']
         password = request.POST['password']
         reference = request.POST['reference']
 
