@@ -10,7 +10,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **kwargs):
         # Path to your CSV file
-        csv_file_path = 'base/csvFiles/CSM 183.csv'
+        csv_file_path = 'base/csvFiles/chemistry.csv'
 
         # Open the CSV file
         with open(csv_file_path, 'r') as csv_file:
@@ -26,29 +26,29 @@ class Command(BaseCommand):
                 # reference, surname, othername = row
 
                 # name = othername + ' ' + surname
-                reference, department_name, name = row
+                name, reference = row
 
                 name_parts = name.split(', ')
                 formatted_name = ' '.join(name_parts[::-1])
 
-                formatted_department = department_name.title()
+                # formatted_department = department_name.title()
 
                 while True:
                     index = str(random.randint(100000, 999999))
                     if not Student.objects.filter(index=index).exists():
                         break
 
-                # department_name = "Computer Science (B)"
+                department_name = "Chemistry"
                 # Get or create the Department object
                 department, created = Department.objects.get_or_create(
-                    dname=formatted_department,
+                    dname=department_name,
                 )
 
                 # Create a Lecturer object
                 Student.objects.create(
                     reference=reference,
                     name=formatted_name,
-                    year=1,
+                    year=2,
                     programme=department,
                     index=index
                 )
