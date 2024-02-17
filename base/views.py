@@ -31,15 +31,12 @@ def student_login(request):
 
             if Student.objects.filter(user=user, reference=reference, passwordChanged=False).exists():
                 return redirect('changedefaultpassword')
-            elif Lecturer.objects.filter(user=user, reference=reference, passwordChanged=False).exists():
-                return redirect('changedefaultpassword')
+            elif Lecturer.objects.filter(user=user, reference=reference).exists():
+                return redirect('lecturer_login')
             # Check if the user has a related Student object
             elif Student.objects.filter(user=user, reference=reference).exists():
                 # Redirect to the verify code page for students
                 return redirect('permission')
-
-            elif Lecturer.objects.filter(user=user).exists():
-                return redirect('login')
         else:
             # User credentials are invalid, show an error message
             error_message = 'Invalid login credentials. Please try again.'
@@ -60,11 +57,13 @@ def Lecturer_login(request):
         if user is not None:
             # User credentials are valid, log in the user
             login(request, user)
-            # Check if the user has a related Student object
-            if Student.objects.filter(user=user, reference=reference).exists():
-                # Redirect to the verify code page for students
+
+            if Lecturer.objects.filter(user=user, reference=reference, passwordChanged=False).exists():
+                return redirect('changedefaultpassword')
+            elif Student.objects.filter(user=user, reference=reference).exists():
                 return redirect('login')
-            elif Lecturer.objects.filter(user=user).exists():
+
+            elif Lecturer.objects.filter(user=user, reference=reference).exists():
                 # Redirect to the dashboard or any desired page after successful login
                 return redirect('lecturer_home')
         else:
@@ -90,24 +89,24 @@ def changeDefaultPassword(request):
             user = request.user
     except User.DoesNotExist:
         user = None
-        print('User does not exist')
+        return redirect('login')
 
     if user:
         try:
             if Student.objects.filter(user=user, passwordChanged=False).exists():
                 allow_user = user
                 student = Student.objects.get(
-                    user=user, passwordChanged=False)
+                    user=user)
+                lecturer = None
             elif Lecturer.objects.filter(user=user, passwordChanged=False).exists():
                 allow_user = user
                 lecturer = Lecturer.objects.get(
-                    user=user, passwordChanged=False)
-        except Student.DoesNotExist or Lecturer.DoesNotExist:
-            student = None
-            lecturer = None
+                    user=user)
+                student = None
+        except student and lecturer is None:
             return redirect('password_reset_complete')
 
-        if student or lecturer:
+        if lecturer or student:
             if request.method == "POST":
                 first_password = request.POST.get('first_input')
                 second_password = request.POST.get('second_input')
