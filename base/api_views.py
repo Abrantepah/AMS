@@ -6,7 +6,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from .models import Lecturer, Course, Student, StudentCourse, StudentSession, StudentPermission, VerificationCode, StudentCode, Session, Attendance, Department
 from .serializers import StudentSerializer, LecturerSerializer, StudentPermissionSerializer, StudentSessionSerializer, CourseSerializer, SessionSerializer, StudentCourseSerializer
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login, logout
 from django.db.models import F, Q
 from datetime import timedelta
 from django.utils import timezone
@@ -84,6 +84,13 @@ class LecturerLoginAPIView(APIView):
             # User credentials are invalid, return an error response
             error_message = 'Invalid login credentials'
             return Response(error_message, status=status.HTTP_401_UNAUTHORIZED)
+
+
+@api_view(['POST'])
+def logoutUser(request):
+
+    logout(request)
+    return redirect('login')
 
 
 @api_view(['GET'])

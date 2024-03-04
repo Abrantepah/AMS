@@ -36,7 +36,8 @@ def student_login(request):
             # Check if the user has a related Student object
             elif Student.objects.filter(user=user, reference=reference).exists():
                 # Redirect to the verify code page for students
-                return redirect('permission')
+                return redirect('verify')
+                # return redirect('permission')
         else:
             # User credentials are invalid, show an error message
             error_message = 'Invalid login credentials. Please try again.'
@@ -183,77 +184,77 @@ def generate_verification_code(lecturer, course, session, expiration_minutes, la
 
 
 # verify the code and proceed to the student home with the code
-# @login_required(login_url='/')
-# def VerifyCode(request):
-#     error_message = None
-#     current_time = timezone.now()
+@login_required(login_url='/')
+def VerifyCode(request):
+    error_message = None
+    current_time = timezone.now()
 
-#     if request.method == 'POST':
-#         code = request.POST.get('code')
-#         try:
-#             verification_code = VerificationCode.objects.get(
-#                 code=code, used=False)
-#             session = verification_code.session
-#         except VerificationCode.DoesNotExist:
-#             error_message = 'Invalid Verification code. Please try again.'
-#         else:
-#             if verification_code.expiration_time <= current_time or StudentCode.objects.filter(code=code, student=request.user.student).exists():
-#                 verification_code.used = True
-#                 verification_code.save()
-#                 error_message = 'Verification code has expired.'
-#             else:
-#                 # Get the student's location
-#                 student_latitude = float(request.POST.get('latitude'))
-#                 student_longitude = float(request.POST.get('longitude'))
-#                 verification_latitude = float(verification_code.latitude)
-#                 verification_longitude = float(verification_code.longitude)
+    if request.method == 'POST':
+        code = request.POST.get('code')
+        try:
+            verification_code = VerificationCode.objects.get(
+                code=code, used=False)
+            session = verification_code.session
+        except VerificationCode.DoesNotExist:
+            error_message = 'Invalid Verification code. Please try again.'
+        else:
+            if verification_code.expiration_time <= current_time or StudentCode.objects.filter(code=code, student=request.user.student).exists():
+                verification_code.used = True
+                verification_code.save()
+                error_message = 'Verification code has expired.'
+            else:
+                # Get the student's location
+                student_latitude = float(request.POST.get('latitude'))
+                student_longitude = float(request.POST.get('longitude'))
+                verification_latitude = float(verification_code.latitude)
+                verification_longitude = float(verification_code.longitude)
 
-#                 # Calculate the distance between the two sets of coordinates using the Haversine formula
-#                 radius = 6371  # Earth's radius in kilometers
-#                 lat1 = math.radians(student_latitude)
-#                 lon1 = math.radians(student_longitude)
-#                 lat2 = math.radians(verification_latitude)
-#                 lon2 = math.radians(verification_longitude)
+                # Calculate the distance between the two sets of coordinates using the Haversine formula
+                radius = 6371  # Earth's radius in kilometers
+                lat1 = math.radians(student_latitude)
+                lon1 = math.radians(student_longitude)
+                lat2 = math.radians(verification_latitude)
+                lon2 = math.radians(verification_longitude)
 
-#                 delta_lat = lat2 - lat1
-#                 delta_lon = lon2 - lon1
+                delta_lat = lat2 - lat1
+                delta_lon = lon2 - lon1
 
-#                 a = math.sin(delta_lat / 2) ** 2 + math.cos(lat1) * \
-#                     math.cos(lat2) * math.sin(delta_lon / 2) ** 2
-#                 c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
-#                 distance = radius * c  # Distance in kilometers
+                a = math.sin(delta_lat / 2) ** 2 + math.cos(lat1) * \
+                    math.cos(lat2) * math.sin(delta_lon / 2) ** 2
+                c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
+                distance = radius * c  # Distance in kilometers
 
-#                 # Assuming you want to allow a maximum distance of, for example, 1 kilometer
-#                 max_distance = 0.05  # Change to 1.0 for kilometers
+                # Assuming you want to allow a maximum distance of, for example, 1 kilometer
+                max_distance = 0.05  # Change to 1.0 for kilometers
 
-#                 # Perform the radius check
-#                 if verification_code.expiration_time <= current_time or distance > max_distance:
-#                     error_message = 'you are not within the location radius.'
-#                 else:
-#                     session.expiration_time = current_time + \
-#                         timedelta(minutes=5)
-#                     verification_code.used = False
-#                     session.save()
-#                     verification_code.save()
+                # Perform the radius check
+                if verification_code.expiration_time <= current_time or distance > max_distance:
+                    error_message = 'you are not within the location radius.'
+                else:
+                    session.expiration_time = current_time + \
+                        timedelta(minutes=5)
+                    verification_code.used = False
+                    session.save()
+                    verification_code.save()
 
-#                     if not request.user.is_staff:
-#                         student = Student.objects.get(user=request.user)
+                    if not request.user.is_staff:
+                        student = Student.objects.get(user=request.user)
 
-#                         try:
-#                             student_course = StudentCourse.objects.get(
-#                                 student=student, course=verification_code.course)
-#                         except StudentCourse.DoesNotExist:
-#                             error_message = f"You are not enrolled in {verification_code.course}. Invalid login credentials. Please try again."
-#                         else:
-#                             if student.year != verification_code.course.year:
-#                                 error_message = "Enrollment year does not match the course. Check details and try again."
-#                             else:
-#                                 # load the message.success in a green-covered text
-#                                 messages.success(
-#                                     request, 'Verification successful. You can now log in.')
-#                                 return redirect('student_home', code=code)
+                        try:
+                            student_course = StudentCourse.objects.get(
+                                student=student, course=verification_code.course)
+                        except StudentCourse.DoesNotExist:
+                            error_message = f"You are not enrolled in {verification_code.course}. Invalid login credentials. Please try again."
+                        else:
+                            if student.year != verification_code.course.year:
+                                error_message = "Enrollment year does not match the course. Check details and try again."
+                            else:
+                                # load the message.success in a green-covered text
+                                messages.success(
+                                    request, 'Verification successful. You can now log in.')
+                                return redirect('student_home', code=code)
 
-#     return render(request, 'base/verify_code.html', {'error_message': error_message})
+    return render(request, 'base/verify_code.html', {'error_message': error_message})
 
 
 @login_required(login_url='/')
