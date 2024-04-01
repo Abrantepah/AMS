@@ -1,0 +1,1 @@
+const n={}.hasOwnProperty;function p(t,e){const r=typeof e=="string"&&o(t)&&t.type==="element"&&t.properties&&n.call(t.properties,e)&&t.properties[e];return r!=null&&r!==!1}function o(t){return!!(t&&typeof t=="object"&&"type"in t)}export{p as h};

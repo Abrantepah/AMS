@@ -1,0 +1,1 @@
+import{m as n}from"./mdast-util-from-markdown-d6783c52.js";import"./micromark-7d81d632.js";var d=e,o=n;function e(a){var r=this;this.Parser=s;function s(t){return o(t,Object.assign({},r.data("settings"),a,{extensions:r.data("micromarkExtensions")||[],mdastExtensions:r.data("fromMarkdownExtensions")||[]}))}}export{d as r};
