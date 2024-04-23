@@ -1,1 +1,0 @@
-import{m as o}from"./mdast-util-to-hast-8e9d18d8.js";var f=o,k=h;function h(r,u){return r&&!r.process&&(u=r,r=null),r?l(r,u):p(u)}function l(r,u){return e;function e(m,n,t){r.run(f(m,u),n,a);function a(c){t(c)}}}function p(r){return u;function u(e){return f(e,r)}}export{k as r};
