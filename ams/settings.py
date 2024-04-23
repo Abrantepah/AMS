@@ -28,7 +28,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
-CSRF_TRUSTED_ORIGINS = ['*']
+CSRF_TRUSTED_ORIGINS = ['https://knust-ams.up.railway.app']
 
 
 # Application definition
@@ -69,7 +69,12 @@ LOGIN_URL = '/'
 
 ROOT_URLCONF = 'ams.urls'
 
-CORS_ALLOW_ALL_ORIGINS = True
+# CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:5173",
+    # Add any other origins as needed
+]
+
 
 TEMPLATES = [
     {
