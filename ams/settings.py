@@ -63,17 +63,20 @@ MIDDLEWARE = [
 
 ]
 
+CORS_ALLOW_ALL_ORIGINS = True
+
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:5173",
+    # Add any other origins as needed
+]
+
+
 # ROUTER_ALLOWED_IP_RANGE = '102.176.75.255'  # Specify the IP range
 
 LOGIN_URL = '/'
 
 ROOT_URLCONF = 'ams.urls'
 
-# CORS_ALLOW_ALL_ORIGINS = True
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5173",
-    # Add any other origins as needed
-]
 
 
 TEMPLATES = [
