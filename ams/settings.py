@@ -40,10 +40,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'corsheaders',
-
     'base.apps.BaseConfig',
     'rest_framework',
+    'corsheaders',
     # 'ipware',
 
 ]
@@ -51,8 +50,8 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
     'corsheaders.middleware.CorsMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -63,12 +62,11 @@ MIDDLEWARE = [
 
 ]
 
-CORS_ALLOW_ALL_ORIGINS = True
 
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5173",
-    # Add any other origins as needed
-]
+# CORS_ALLOWED_ORIGINS = [
+#     "http://localhost:5173",
+#     # Add any other origins as needed
+# ]
 
 
 # ROUTER_ALLOWED_IP_RANGE = '102.176.75.255'  # Specify the IP range
@@ -192,3 +190,6 @@ PASSWORD_HASHERS = [
     'django.contrib.auth.hashers.PBKDF2PasswordHasher',
     'django.contrib.auth.hashers.BCryptSHA256PasswordHasher',
 ]
+
+
+CORS_ALLOW_ALL_ORIGINS = True
