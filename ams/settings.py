@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'corsheaders',
 
     'base.apps.BaseConfig',
     'rest_framework',
@@ -51,6 +52,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -61,16 +63,27 @@ MIDDLEWARE = [
 
 ]
 
+CORS_ALLOW_ALL_ORIGINS = True
+
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:5173",
+    # Add any other origins as needed
+]
+
+
 # ROUTER_ALLOWED_IP_RANGE = '102.176.75.255'  # Specify the IP range
 
 LOGIN_URL = '/'
 
 ROOT_URLCONF = 'ams.urls'
 
+
+
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [
+            # os.path.join(BASE_DIR, 'frontend/build')
             BASE_DIR / 'templates'
         ],
         'APP_DIRS': True,
@@ -162,6 +175,10 @@ STATIC_URL = '/static/'
 # ]
 
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+
+# STATICFILES_DIRS = [
+#     os.path.join(BASE_DIR, 'frontend/build/static'),
+# ]
 
 STATICFILES_DIRS = os.path.join(BASE_DIR, 'static'),
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')

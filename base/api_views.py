@@ -35,29 +35,33 @@ class StudentLoginAPIView(APIView):
         username = request.data.get('username')
         reference = request.data.get('username')
         password = request.data.get('password')
-        uuid_code = request.data.get('uuidcode')
+        # uuid_code = request.data.get('uuidcode')
         error_message = None
         user = authenticate(request, username=username, password=password)
 
         if user and Student.objects.filter(user=user, reference=reference).exists():
             student = Student.objects.get(user=user)
+            
+            #this is for flutter device specifics
+            # if uuid_code != '':
+            #     if student.UUID == uuid_code:
+            #         serializer = StudentSerializer(student).data
+            #         return Response(serializer, status=status.HTTP_200_OK)
+            #     else:
+            #         error_message = 'wrong device, please use your own device for the attendance'
+            #         return Response(error_message, status=status.HTTP_401_UNAUTHORIZED)
+            # else:
+            #     if student.UUID_sent:
+            #         error_message = 'wrong device, please use your own device for the attendance'
+            #         return Response(error_message, status=status.HTTP_401_UNAUTHORIZED)
+            #     else:
+            #         student.UUID_sent = True
+            #         student.save()
+            #         serializer = StudentSerializer(student).data
+            #         return Response(serializer, status=status.HTTP_200_OK)
 
-            if uuid_code != '':
-                if student.UUID == uuid_code:
-                    serializer = StudentSerializer(student).data
-                    return Response(serializer, status=status.HTTP_200_OK)
-                else:
-                    error_message = 'wrong device, please use your own device for the attendance'
-                    return Response(error_message, status=status.HTTP_401_UNAUTHORIZED)
-            else:
-                if student.UUID_sent:
-                    error_message = 'wrong device, please use your own device for the attendance'
-                    return Response(error_message, status=status.HTTP_401_UNAUTHORIZED)
-                else:
-                    student.UUID_sent = True
-                    student.save()
-                    serializer = StudentSerializer(student).data
-                    return Response(serializer, status=status.HTTP_200_OK)
+            serializer = StudentSerializer(student).data
+            return Response(serializer, status=status.HTTP_200_OK)
         else:
             error_message = 'no student with these credentials'
             return Response(error_message, status=status.HTTP_401_UNAUTHORIZED)

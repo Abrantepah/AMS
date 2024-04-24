@@ -43,12 +43,12 @@ def student_login(request):
             error_message = 'Invalid login credentials. Please try again.'
             return render(request, 'base/login_page.html', {'error_message': error_message})
 
-    return render(request, 'base/login_page.html')
+    return render(request, 'base/login_page.html') #add the student login template here
 
 
 def Lecturer_login(request):
     if request.method == 'POST':
-        username = request.POST['reference']
+        username = request.POST['reference'] 
         password = request.POST['password']
         reference = request.POST['reference']
 
@@ -72,7 +72,7 @@ def Lecturer_login(request):
             error_message = 'Invalid login credentials. Please try again.'
             return render(request, 'base/lecturer_login.html', {'error_message': error_message})
 
-    return render(request, 'base/lecturer_login.html')
+    return render(request, 'base/lecturer_login.html') 
 
 
 def email_password(request):
