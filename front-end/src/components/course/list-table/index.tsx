@@ -28,6 +28,15 @@ import { PaginationTotal } from "../../paginationTotal";
 import { EyeOutlined, SearchOutlined } from "@ant-design/icons";
 import { useLocation } from "react-router-dom";
 
+interface ICourse {
+    id: number;
+    name: string;
+    code: string;
+    year: number;
+    lecturer: number;
+    department: number[];
+}
+
 export const CourseListTable = () => {
   const { token } = theme.useToken();
   const t = useTranslate();
@@ -35,55 +44,48 @@ export const CourseListTable = () => {
   const { pathname } = useLocation();
   const { showUrl } = useNavigation();
 
-  const { tableProps, sorters, filters } = useTable<IProduct, HttpError>({
-    resource: "courses",
+  const { tableProps } = useTable<ICourse, HttpError>({
+    resource: `generateCode/${1}`,
     filters: {
       initial: [
-        {
-          field: "description",
-          operator: "contains",
-          value: "",
-        },
         {
           field: "name",
           operator: "contains",
           value: "",
         },
         {
-          field: "category.id",
+          field: "code",
           operator: "in",
           value: [],
         },
         {
-          field: "isActive",
+          field: "year",
           operator: "in",
           value: [],
         },
       ],
-    },
+    }, 
   });
+  // @ts-ignore
+  const allCourses = tableProps.dataSource?.courses ?? []
+  
+  console.log(allCourses);
+  
 
-  const { selectProps: categorySelectProps, queryResult } =
-    useSelect<ICategory>({
-      resource: "categories",
-      optionLabel: "title",
-      optionValue: "id",
-      defaultValue: getDefaultFilter("category.id", filters, "in"),
-    });
+  // const { selectProps: categorySelectProps, queryResult } =
+  //   useSelect<ICategory>({
+  //     resource: "categories",
+  //     optionLabel: "title",
+  //     optionValue: "id",
+  //     defaultValue: getDefaultFilter("category.id", filters, "in"),
+  //   });
 
-  const categories = queryResult?.data?.data || [];
+  // const categories = queryResult?.data?.data || [];
 
   return (
     <Table
       {...tableProps}
-      rowKey="id"
-      scroll={{ x: true }}
-      pagination={{
-        ...tableProps.pagination,
-        showTotal: (total) => (
-          <PaginationTotal total={total} entityName="courses" />
-        ),
-      }}
+      dataSource={allCourses}
     >
       <Table.Column
         title={
@@ -113,7 +115,7 @@ export const CourseListTable = () => {
               color: filtered ? token.colorPrimary : undefined,
             }} onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined}          />
         )}
-        defaultFilteredValue={getDefaultFilter("id", filters, "eq")}
+        // defaultFilteredValue={getDefaultFilter("id", filters, "eq")}
         filterDropdown={(props) => (
           <FilterDropdown {...props}>
             <InputNumber
@@ -124,7 +126,7 @@ export const CourseListTable = () => {
           </FilterDropdown>
         )}
       />
-      <Table.Column
+      {/* <Table.Column
         title={t("Course Image")}
         dataIndex="images"
         key="images"
@@ -137,7 +139,7 @@ export const CourseListTable = () => {
             />
           );
         }}
-      />
+      /> */}
       <Table.Column
         title={t("Course Name")}
         dataIndex="name"
@@ -148,10 +150,10 @@ export const CourseListTable = () => {
               color: filtered ? token.colorPrimary : undefined,
             }} onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined}          />
         )}
-        defaultFilteredValue={getDefaultFilter("name", filters, "contains")}
+        // defaultFilteredValue={getDefaultFilter("name", filters, "contains")}
         filterDropdown={(props) => (
           <FilterDropdown {...props}>
-            <Input placeholder={t("name")} />
+            <Input placeholder={t("course name")} />
           </FilterDropdown>
         )}
         render={(value: string) => {
@@ -167,24 +169,23 @@ export const CourseListTable = () => {
         }}
       />
       <Table.Column
-        title={t("course description")}
-        dataIndex="description"
-        key="description"
-        width={432}
+        title={t("Code")}
+        dataIndex="code"
+        key="code"
         filterIcon={(filtered) => (
           <SearchOutlined
             style={{
               color: filtered ? token.colorPrimary : undefined,
-            }} onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined}          />
+              }} onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined}          />
         )}
-        defaultFilteredValue={getDefaultFilter(
-          "description",
-          filters,
-          "contains",
-        )}
+        // defaultFilteredValue={getDefaultFilter(
+        //   "description",
+        //   filters,
+        //   "contains",
+        // )}
         filterDropdown={(props) => (
           <FilterDropdown {...props}>
-            <Input placeholder={t("course description")} />
+            <Input placeholder={t("course code")} />
           </FilterDropdown>
         )}
         render={(description: string) => {
@@ -202,12 +203,12 @@ export const CourseListTable = () => {
         }}
       />
       <Table.Column
-        title={t("course price")}
-        dataIndex="price"
-        key="price"
+        title={t("Year")}
+        dataIndex="year"
+        key="year"
         align="right"
         sorter
-        defaultSortOrder={getDefaultSortOrder("price", sorters)}
+        // defaultSortOrder={getDefaultSortOrder("price", sorters)}
         render={(price: number) => {
           return (
             <NumberField
@@ -217,20 +218,16 @@ export const CourseListTable = () => {
                 fontVariantNumeric: "tabular-nums",
                 whiteSpace: "nowrap",
               }}
-              options={{
-                style: "currency",
-                currency: "USD",
-              }}
             />
           );
         }}
       />
-      <Table.Column<IProduct>
+      {/* <Table.Column<IProduct>
         title={t("category")}
         dataIndex={["category", "title"]}
         key="category.id"
         width={128}
-        defaultFilteredValue={getDefaultFilter("category.id", filters, "in")}
+        // defaultFilteredValue={getDefaultFilter("category.id", filters, "in")}
         filterDropdown={(props) => {
           return (
             <FilterDropdown
@@ -238,7 +235,7 @@ export const CourseListTable = () => {
               selectedKeys={props.selectedKeys.map((item) => Number(item))}
             >
               <Select
-                {...categorySelectProps}
+                // {...categorySelectProps}
                 style={{ width: "200px" }}
                 allowClear
                 mode="multiple"
@@ -262,8 +259,8 @@ export const CourseListTable = () => {
             </Typography.Text>
           );
         }}
-      />
-      <Table.Column
+      /> */}
+      {/* <Table.Column
         title={t("Active Courses")}
         dataIndex="isActive"
         key="isActive"
@@ -290,13 +287,13 @@ export const CourseListTable = () => {
         render={(isActive: boolean) => {
           return <ProductStatus value={isActive} />;
         }}
-      />
+      /> */}
       <Table.Column
-        title={t("table.actions")}
+        title={t("Details")}
         key="actions"
         fixed="right"
         align="center"
-        render={(_, record: IProduct) => {
+        render={(_, record: ICourse) => {
           return (
             <Button
               icon={<EyeOutlined onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined} />}

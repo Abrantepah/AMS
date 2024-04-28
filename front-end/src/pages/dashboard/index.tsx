@@ -83,7 +83,7 @@ export const DashboardPage: React.FC = () => {
         </CreateButton>
       )}
     >
-      <Row gutter={[16, 30]}>
+      <Row gutter={[16, 32]}>
         <Col md={24}>
           <Row gutter={[30, 30]}>
             <Col xl={{ span: 8 }} lg={10} md={10} sm={24} xs={24}>
