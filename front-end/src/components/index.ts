@@ -9,7 +9,7 @@ export * from "./order";
 export * from "./paginationTotal";
 export * from "./customer/userStatus";
 export * from "./customer";
-export * from "./product";
+export * from "./course";
 export * from "./drawer";
 export * from "./categories";
 export * from "./store";

@@ -1,14 +1,14 @@
 import { useGetToPath, useGo } from "@refinedev/core";
-import { ProductDrawerForm } from "../../components/product/drawer-form";
+import { CourseDrawerForm } from "../../components/course/drawer-form";
 import { useSearchParams } from "react-router-dom";
 
-export const ProductCreate = () => {
+export const CourseCreate = () => {
   const getToPath = useGetToPath();
   const [searchParams] = useSearchParams();
   const go = useGo();
 
   return (
-    <ProductDrawerForm
+    <CourseDrawerForm
       action="create"
       onMutationSuccess={() => {
         go({

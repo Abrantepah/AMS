@@ -1,6 +1,6 @@
 import { useGo, useNavigation, useTranslate } from "@refinedev/core";
 import { CreateButton, List } from "@refinedev/antd";
-import { ProductListCard, ProductListTable } from "../../components";
+import { CourseListCard, CourseListTable } from "../../components";
 import { PropsWithChildren, useState } from "react";
 import { AppstoreOutlined, UnorderedListOutlined } from "@ant-design/icons";
 import { Segmented } from "antd";
@@ -8,7 +8,7 @@ import { useLocation } from "react-router-dom";
 
 type View = "table" | "card";
 
-export const ProductList = ({ children }: PropsWithChildren) => {
+export const CourseList = ({ children }: PropsWithChildren) => {
   const go = useGo();
   const { replace } = useNavigation();
   const { pathname } = useLocation();
@@ -41,12 +41,12 @@ export const ProductList = ({ children }: PropsWithChildren) => {
             {
               label: "",
               value: "table",
-              icon: <UnorderedListOutlined />,
+              icon: <UnorderedListOutlined onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined} />,
             },
             {
               label: "",
               value: "card",
-              icon: <AppstoreOutlined />,
+              icon: <AppstoreOutlined onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined} />,
             },
           ]}
           onChange={handleViewChange}
@@ -57,7 +57,7 @@ export const ProductList = ({ children }: PropsWithChildren) => {
           size="large"
           onClick={() => {
             return go({
-              to: `${createUrl("products")}`,
+              to: `${createUrl("courses")}`,
               query: {
                 to: pathname,
               },
@@ -68,12 +68,12 @@ export const ProductList = ({ children }: PropsWithChildren) => {
             });
           }}
         >
-          {t("products.actions.add")}
+          {t("Add Course")}
         </CreateButton>,
       ]}
     >
-      {view === "table" && <ProductListTable />}
-      {view === "card" && <ProductListCard />}
+      {view === "table" && <CourseListTable />}
+      {view === "card" && <CourseListCard />}
       {children}
     </List>
   );

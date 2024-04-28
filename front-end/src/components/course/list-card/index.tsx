@@ -24,7 +24,7 @@ import { useMemo } from "react";
 import { useStyles } from "./styled";
 import { useLocation } from "react-router-dom";
 
-export const ProductListCard = () => {
+export const CourseListCard = () => {
   const { styles, cx } = useStyles();
   const { token } = theme.useToken();
   const t = useTranslate();
@@ -37,6 +37,7 @@ export const ProductListCard = () => {
     filters,
     setFilters,
   } = useSimpleList<IProduct, HttpError>({
+    resource: "courses",
     pagination: {
       current: 1,
       pageSize: 12,
@@ -105,62 +106,6 @@ export const ProductListCard = () => {
   return (
     <>
       <Divider style={{ margin: "16px 0px" }} />
-      <Flex
-        wrap="nowrap"
-        gap={12}
-        style={{
-          width: "100%",
-          overflowX: "auto",
-        }}
-      >
-        <Tag
-          style={{ padding: "4px 10px 4px 10px", cursor: "pointer" }}
-          color={!hasCategoryFilter ? token.colorPrimary : undefined}
-          icon={<TagOutlined />}
-          onClick={() => {
-            setFilters([
-              {
-                field: "category.id",
-                operator: "in",
-                value: [],
-              },
-            ]);
-          }}
-        >
-          {t("products.filter.allCategories.label")}
-        </Tag>
-        {!categoryIsLoading &&
-          categories.map((category) => (
-            <Tag
-              key={category.id}
-              color={
-                categoryFilters?.includes(category.id) ? "orange" : undefined
-              }
-              style={{
-                padding: "4px 10px 4px 10px",
-                cursor: "pointer",
-              }}
-              onClick={() => {
-                handleOnTagClick(category.id);
-              }}
-            >
-              {category.title}
-            </Tag>
-          ))}
-
-        {categoryIsLoading &&
-          Array.from({ length: 10 }).map((_, index) => (
-            <Skeleton.Button
-              key={index}
-              style={{
-                width: "108px",
-                height: "30px",
-              }}
-              active
-            />
-          ))}
-      </Flex>
-      <Divider style={{ margin: "16px 0px" }} />
       <List
         {...productListProps}
         pagination={{
@@ -212,18 +157,10 @@ export const ProductListCard = () => {
                       });
                     }}
                     className={cx(styles.viewButton, "viewButton")}
-                    icon={<EyeOutlined />}
+                    icon={<EyeOutlined onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined} />}
                   >
                     View
                   </Tag>
-                  <img
-                    src={item.images[0].url}
-                    alt={item.images[0].name}
-                    style={{
-                      aspectRatio: 288 / 160,
-                      objectFit: "cover",
-                    }}
-                  />
                 </>
               }
               actions={[

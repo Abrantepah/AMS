@@ -36,11 +36,11 @@ import { AuthPage } from "./components/pages/auth";
 import { CustomerShow, CustomerList } from "./pages/customers";
 import { CourierList, CourierCreate, CourierEdit } from "./pages/couriers";
 import {
-  ProductList,
-  ProductCreate,
-  ProductEdit,
-  ProductShow,
-} from "./pages/products";
+  CourseList,
+  CourseCreate,
+  CourseEdit,
+  CourseShow,
+} from "./pages/courses";
 import { StoreCreate, StoreEdit, StoreList } from "./pages/stores";
 import { CategoryList } from "./pages/categories";
 import { useTranslation } from "react-i18next";
@@ -100,6 +100,16 @@ const App: React.FC = () => {
                 },
               },
               {
+                name: "courses",
+                list: "/courses",
+                create: "/courses/new",
+                edit: "/courses/:id/edit",
+                show: "/courses/:id",
+                meta: {
+                  icon: <UnorderedListOutlined onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined} />,
+                },
+              },
+              {
                 name: "orders",
                 list: "/orders",
                 show: "/orders/:id",
@@ -113,16 +123,6 @@ const App: React.FC = () => {
                 show: "/customers/:id",
                 meta: {
                   icon: <UserOutlined onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined} />,
-                },
-              },
-              {
-                name: "products",
-                list: "/products",
-                create: "/products/new",
-                edit: "/products/:id/edit",
-                show: "/products/:id",
-                meta: {
-                  icon: <UnorderedListOutlined onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined} />,
                 },
               },
               {
@@ -193,16 +193,16 @@ const App: React.FC = () => {
                 </Route>
 
                 <Route
-                  path="/products"
+                  path="/courses"
                   element={
-                    <ProductList>
+                    <CourseList>
                       <Outlet />
-                    </ProductList>
+                    </CourseList>
                   }
                 >
-                  <Route path="new" element={<ProductCreate />} />
-                  <Route path=":id" element={<ProductShow />} />
-                  <Route path=":id/edit" element={<ProductEdit />} />
+                  <Route path="new" element={<CourseCreate />} />
+                  <Route path=":id" element={<CourseShow />} />
+                  <Route path=":id/edit" element={<CourseEdit />} />
                 </Route>
 
                 <Route path="/stores">

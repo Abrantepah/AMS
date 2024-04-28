@@ -1,43 +1,29 @@
-import { useNavigation } from "@refinedev/core";
+import { useList, useNavigation } from "@refinedev/core";
 import { NumberField, useTable } from "@refinedev/antd";
 import { Typography, Table, theme, Space, Flex } from "antd";
 
-import { OrderActions } from "../../../components";
+import { OrderActions } from "../..";
 
 import { IOrder } from "../../../interfaces";
 import { useStyles } from "./styled";
 import { getUniqueListWithCount } from "../../../utils";
 
-export const RecentOrders: React.FC = () => {
+export const RecentCourses: React.FC = () => {
   const { token } = theme.useToken();
   const { styles } = useStyles();
 
-  const { tableProps } = useTable<IOrder>({
-    resource: "orders",
-    initialSorter: [
-      {
-        field: "createdAt",
-        order: "desc",
-      },
-    ],
-    initialPageSize: 10,
-    permanentFilter: [
-      {
-        field: "status.text",
-        operator: "eq",
-        value: "Pending",
-      },
-    ],
-    syncWithLocation: false,
+  const { data:courseData } = useList({
+    resource: "generateCode/1",
+    
   });
 
   const { show } = useNavigation();
+  console.log(courseData)
 
   return (
     <Table
-      {...tableProps}
+      {...courseData}
       pagination={{
-        ...tableProps.pagination,
         hideOnSinglePage: true,
         showSizeChanger: false,
         className: styles.pagination,
@@ -45,7 +31,7 @@ export const RecentOrders: React.FC = () => {
       showHeader={false}
       rowKey="id"
     >
-      <Table.Column<IOrder>
+      {/* <Table.Column<IOrder>
         dataIndex="orderNumber"
         className={styles.column}
         render={(_, record) => (
@@ -154,7 +140,7 @@ export const RecentOrders: React.FC = () => {
         className={styles.column}
         align="end"
         render={(_, record) => <OrderActions record={record} />}
-      />
+      /> */}
     </Table>
   );
 };

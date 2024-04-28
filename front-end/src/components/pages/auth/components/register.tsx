@@ -7,6 +7,7 @@ import {
   useActiveAuthProvider,
   useLink,
   useLogin,
+  useRegister,
   useRouterContext,
   useRouterType,
   useTranslate,
@@ -64,7 +65,7 @@ export const RegisterPage: React.FC<RegisterProps> = ({
   const ActiveLink = routerType === "legacy" ? LegacyLink : Link;
 
   const authProvider = useActiveAuthProvider();
-  const { mutate: register, isLoading } = useLogin<LoginFormTypes>({
+  const { mutate: register, isLoading } = useRegister<LoginFormTypes>({
     v3LegacyAuthProviderCompatible: Boolean(authProvider?.isLegacy),
   });
 
@@ -203,30 +204,41 @@ export const RegisterPage: React.FC<RegisterProps> = ({
           form={form}
           onFinish={(values) => register(values)}
           requiredMark={false}
+          initialValues={{
+            remember: false,
+          }}
           {...formProps}
         >
           <Form.Item
-            name="email"
-            label={translate("Staff ID")}
+            // name="email"
+            name={"reference"}
+            label={translate("Reference")}
             rules={[
               { required: true },
               {
-                type: "email",
-                message: translate("Invalid staff Id"),
+                // type: "number",
+                message: translate(
+                  "Invalid reference number"
+                ),
               },
             ]}
           >
             <Input
               size="large"
-              placeholder={translate("Staff ID")}
+              placeholder={translate( "Reference number")}
             />
           </Form.Item>
           <Form.Item
             name="password"
-            label={translate("pages.register.fields.password", "Password")}
+            label={translate("pages.login.fields.password", "Password")}
             rules={[{ required: true }]}
           >
-            <Input type="password" placeholder="●●●●●●●●" size="large" />
+            <Input
+              type="password"
+              autoComplete="current-password"
+              placeholder="●●●●●●●●"
+              size="large"
+            />
           </Form.Item>
           {/* <div
             style={{
@@ -262,17 +274,19 @@ export const RegisterPage: React.FC<RegisterProps> = ({
               </ActiveLink>
             )}
           </div> */}
-          <Form.Item>
-            <Button
-              type="primary"
-              size="large"
-              htmlType="submit"
-              loading={isLoading}
-              block
-            >
-              {translate("Login")}
-            </Button>
-          </Form.Item>
+          {!hideForm && (
+            <Form.Item>
+              <Button
+                type="primary"
+                size="large"
+                htmlType="submit"
+                loading={isLoading}
+                block
+              >
+                {translate("Login")}
+              </Button>
+            </Form.Item>
+          )}
         </Form>
       )}
     </Card>

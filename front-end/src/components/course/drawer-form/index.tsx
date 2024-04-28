@@ -33,7 +33,7 @@ type Props = {
   onMutationSuccess?: () => void;
 };
 
-export const ProductDrawerForm = (props: Props) => {
+export const CourseDrawerForm = (props: Props) => {
   const getToPath = useGetToPath();
   const [searchParams] = useSearchParams();
   const go = useGo();
@@ -85,7 +85,7 @@ export const ProductDrawerForm = (props: Props) => {
   const images = Form.useWatch("images", formProps.form);
   const image = images?.[0] || null;
   const previewImageURL = image?.url || image?.response?.url;
-  const title = props.action === "edit" ? null : t("products.actions.add");
+  const title = props.action === "edit" ? null : t("Add New Course");
 
   return (
     <Drawer
@@ -142,7 +142,7 @@ export const ProductDrawerForm = (props: Props) => {
                   alt="Product Image"
                 />
                 <Button
-                  icon={<UploadOutlined />}
+                  icon={<UploadOutlined onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined} />}
                   style={{
                     marginTop: "auto",
                     marginBottom: "16px",
@@ -153,14 +153,14 @@ export const ProductDrawerForm = (props: Props) => {
                     }),
                   }}
                 >
-                  {t("products.fields.images.description")}
+                  {t("Course description")}
                 </Button>
               </Flex>
             </Upload.Dragger>
           </Form.Item>
           <Flex vertical>
             <Form.Item
-              label={t("products.fields.name")}
+              label={t("course name")}
               name="name"
               className={styles.formItem}
               rules={[
@@ -172,7 +172,7 @@ export const ProductDrawerForm = (props: Props) => {
               <Input />
             </Form.Item>
             <Form.Item
-              label={t("products.fields.description")}
+              label={t("Course description")}
               name="description"
               className={styles.formItem}
               rules={[
@@ -184,7 +184,7 @@ export const ProductDrawerForm = (props: Props) => {
               <Input.TextArea rows={6} />
             </Form.Item>
             <Form.Item
-              label={t("products.fields.price")}
+              label={t("Course price")}
               name="price"
               className={styles.formItem}
               rules={[
@@ -196,7 +196,7 @@ export const ProductDrawerForm = (props: Props) => {
               <InputNumber prefix={"$"} style={{ width: "150px" }} />
             </Form.Item>
             <Form.Item
-              label={t("products.fields.category")}
+              label={t("Course category")}
               name={["category", "id"]}
               className={styles.formItem}
               rules={[
@@ -208,7 +208,7 @@ export const ProductDrawerForm = (props: Props) => {
               <Select {...categorySelectProps} />
             </Form.Item>
             <Form.Item
-              label={t("products.fields.isActive.label")}
+              label={t("Course Status")}
               name="isActive"
               className={styles.formItem}
               initialValue={true}
@@ -218,11 +218,11 @@ export const ProductDrawerForm = (props: Props) => {
                 size="large"
                 options={[
                   {
-                    label: t("products.fields.isActive.true"),
+                    label: t("Active"),
                     value: true,
                   },
                   {
-                    label: t("products.fields.isActive.false"),
+                    label: t("Completed"),
                     value: false,
                   },
                 ]}

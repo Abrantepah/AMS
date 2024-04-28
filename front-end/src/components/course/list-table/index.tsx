@@ -28,7 +28,7 @@ import { PaginationTotal } from "../../paginationTotal";
 import { EyeOutlined, SearchOutlined } from "@ant-design/icons";
 import { useLocation } from "react-router-dom";
 
-export const ProductListTable = () => {
+export const CourseListTable = () => {
   const { token } = theme.useToken();
   const t = useTranslate();
   const go = useGo();
@@ -36,6 +36,7 @@ export const ProductListTable = () => {
   const { showUrl } = useNavigation();
 
   const { tableProps, sorters, filters } = useTable<IProduct, HttpError>({
+    resource: "courses",
     filters: {
       initial: [
         {
@@ -80,7 +81,7 @@ export const ProductListTable = () => {
       pagination={{
         ...tableProps.pagination,
         showTotal: (total) => (
-          <PaginationTotal total={total} entityName="products" />
+          <PaginationTotal total={total} entityName="courses" />
         ),
       }}
     >
@@ -110,8 +111,7 @@ export const ProductListTable = () => {
           <SearchOutlined
             style={{
               color: filtered ? token.colorPrimary : undefined,
-            }}
-          />
+            }} onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined}          />
         )}
         defaultFilteredValue={getDefaultFilter("id", filters, "eq")}
         filterDropdown={(props) => (
@@ -119,13 +119,13 @@ export const ProductListTable = () => {
             <InputNumber
               addonBefore="#"
               style={{ width: "100%" }}
-              placeholder={t("products.filter.id.placeholder")}
+              placeholder={t("Filter courses")}
             />
           </FilterDropdown>
         )}
       />
       <Table.Column
-        title={t("products.fields.images.label")}
+        title={t("Course Image")}
         dataIndex="images"
         key="images"
         render={(images: IProduct["images"]) => {
@@ -139,20 +139,19 @@ export const ProductListTable = () => {
         }}
       />
       <Table.Column
-        title={t("products.fields.name")}
+        title={t("Course Name")}
         dataIndex="name"
         key="name"
         filterIcon={(filtered) => (
           <SearchOutlined
             style={{
               color: filtered ? token.colorPrimary : undefined,
-            }}
-          />
+            }} onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined}          />
         )}
         defaultFilteredValue={getDefaultFilter("name", filters, "contains")}
         filterDropdown={(props) => (
           <FilterDropdown {...props}>
-            <Input placeholder={t("products.filter.name.placeholder")} />
+            <Input placeholder={t("name")} />
           </FilterDropdown>
         )}
         render={(value: string) => {
@@ -168,7 +167,7 @@ export const ProductListTable = () => {
         }}
       />
       <Table.Column
-        title={t("products.fields.description")}
+        title={t("course description")}
         dataIndex="description"
         key="description"
         width={432}
@@ -176,8 +175,7 @@ export const ProductListTable = () => {
           <SearchOutlined
             style={{
               color: filtered ? token.colorPrimary : undefined,
-            }}
-          />
+            }} onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined}          />
         )}
         defaultFilteredValue={getDefaultFilter(
           "description",
@@ -186,7 +184,7 @@ export const ProductListTable = () => {
         )}
         filterDropdown={(props) => (
           <FilterDropdown {...props}>
-            <Input placeholder={t("products.filter.description.placeholder")} />
+            <Input placeholder={t("course description")} />
           </FilterDropdown>
         )}
         render={(description: string) => {
@@ -204,7 +202,7 @@ export const ProductListTable = () => {
         }}
       />
       <Table.Column
-        title={t("products.fields.price")}
+        title={t("course price")}
         dataIndex="price"
         key="price"
         align="right"
@@ -228,7 +226,7 @@ export const ProductListTable = () => {
         }}
       />
       <Table.Column<IProduct>
-        title={t("products.fields.category")}
+        title={t("category")}
         dataIndex={["category", "title"]}
         key="category.id"
         width={128}
@@ -244,7 +242,7 @@ export const ProductListTable = () => {
                 style={{ width: "200px" }}
                 allowClear
                 mode="multiple"
-                placeholder={t("products.filter.category.placeholder")}
+                placeholder={t("category")}
               />
             </FilterDropdown>
           );
@@ -266,7 +264,7 @@ export const ProductListTable = () => {
         }}
       />
       <Table.Column
-        title={t("products.fields.isActive.label")}
+        title={t("Active Courses")}
         dataIndex="isActive"
         key="isActive"
         sorter
@@ -278,13 +276,13 @@ export const ProductListTable = () => {
               style={{ width: "200px" }}
               allowClear
               mode="multiple"
-              placeholder={t("products.filter.isActive.placeholder")}
+              placeholder={t("Active course")}
             >
               <Select.Option value="true">
-                {t("products.fields.isActive.true")}
+                {t("Active")}
               </Select.Option>
               <Select.Option value="false">
-                {t("products.fields.isActive.false")}
+                {t("Completed")}
               </Select.Option>
             </Select>
           </FilterDropdown>
@@ -301,10 +299,10 @@ export const ProductListTable = () => {
         render={(_, record: IProduct) => {
           return (
             <Button
-              icon={<EyeOutlined />}
+              icon={<EyeOutlined onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined} />}
               onClick={() => {
                 return go({
-                  to: `${showUrl("products", record.id)}`,
+                  to: `${showUrl("courses", record.id)}`,
                   query: {
                     to: pathname,
                   },

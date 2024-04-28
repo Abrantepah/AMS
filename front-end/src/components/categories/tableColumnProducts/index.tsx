@@ -1,9 +1,9 @@
 import { Flex, Popover, Avatar } from "antd";
 import { ICategory, IProduct } from "../../../interfaces";
 import { HttpError, useList } from "@refinedev/core";
-import { ProductDrawerForm } from "../../product/drawer-form";
+import { CourseDrawerForm } from "../../course/drawer-form";
 import { useState } from "react";
-import { ProductDrawerShow } from "../../product/drawer-show";
+import { CourseDrawerShow } from "../../course/drawer-show";
 
 type Props = {
   category: ICategory;
@@ -77,7 +77,7 @@ export const TableCategoryProductColumn = ({ category }: Props) => {
       </Flex>
       {productId &&
         (drawerAction === "show" ? (
-          <ProductDrawerShow
+          <CourseDrawerShow
             id={productId}
             onEdit={() => {
               setDrawerAction("edit");
@@ -87,7 +87,7 @@ export const TableCategoryProductColumn = ({ category }: Props) => {
             }}
           />
         ) : (
-          <ProductDrawerForm
+          <CourseDrawerForm
             action="edit"
             id={productId}
             onMutationSuccess={() => {

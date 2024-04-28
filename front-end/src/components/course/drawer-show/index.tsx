@@ -31,7 +31,7 @@ type Props = {
   onEdit?: () => void;
 };
 
-export const ProductDrawerShow = (props: Props) => {
+export const CourseDrawerShow = (props: Props) => {
   const getToPath = useGetToPath();
   const [searchParams] = useSearchParams();
   const go = useGo();
@@ -128,7 +128,7 @@ export const ProductDrawerShow = (props: Props) => {
             {
               label: (
                 <Typography.Text type="secondary">
-                  {t("products.fields.price")}
+                  {t("Course price")}
                 </Typography.Text>
               ),
               value: (
@@ -144,7 +144,7 @@ export const ProductDrawerShow = (props: Props) => {
             {
               label: (
                 <Typography.Text type="secondary">
-                  {t("products.fields.category")}
+                  {t("Course category")}
                 </Typography.Text>
               ),
               value: <Typography.Text>{category?.title}</Typography.Text>,
@@ -189,7 +189,7 @@ export const ProductDrawerShow = (props: Props) => {
           }}
         />
         <Button
-          icon={<EditOutlined />}
+          icon={<EditOutlined onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined} />}
           onClick={() => {
             if (props?.onEdit) {
               return props.onEdit();
