@@ -17,7 +17,7 @@ import {
 } from "@ant-design/icons";
 import { useMemo, useState } from "react";
 import { CreateButton, List, NumberField } from "@refinedev/antd";
-import { useApiUrl, useGo, useList, useNavigation } from "@refinedev/core";
+import { useApiUrl, useGo, useList, useNavigation, useShow } from "@refinedev/core";
 import { useLocation } from "react-router-dom";
 import dayjs from "dayjs";
 import { ICourses} from "../../interfaces";
@@ -49,24 +49,13 @@ export const DashboardPage: React.FC = () => {
   const { listUrl } = useNavigation();
   const pathname = useLocation()
 
-    const { data: lecturerCourses } = useList({
-    resource: "generateCode/1",
+    const { queryResult: lecturerCourses } = useShow({
+      resource: "generateCode",
+      id: 1
   });
 
-  const courses = useMemo(() => {
-      // @ts-ignore
-      const data = lecturerCourses?.data ?? {};
-      if (!data)
-        return {
-          data: [],
-      };
+  const courses = lecturerCourses.data?.data.courses ?? [];
 
-    return {
-      data: data,
-    };
-    }, [lecturerCourses]);
-  // @ts-ignore
-  // console.log(courses.data.courses.length);
   
 
   return (
@@ -128,9 +117,9 @@ export const DashboardPage: React.FC = () => {
                   }}
                 >
                   
-                  {/* {
+                  {
                     // @ts-ignore
-                    courses.data.courses.length} */}
+                    courses.length}
                 </Typography>
               </CardWithPlot>
             </Col>

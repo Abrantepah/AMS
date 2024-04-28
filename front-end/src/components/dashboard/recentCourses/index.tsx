@@ -1,146 +1,91 @@
-import { useList, useNavigation } from "@refinedev/core";
+import { useGo, useList, useNavigation, useShow } from "@refinedev/core";
 import { NumberField, useTable } from "@refinedev/antd";
-import { Typography, Table, theme, Space, Flex } from "antd";
-
-import { OrderActions } from "../..";
+import { Typography, Table, theme, Space, Flex, Card, Tag, List, Divider } from "antd";
+import { useStyles } from "../../course/list-card/styled";
+import { OrderActions, PaginationTotal, ProductStatus } from "../..";
 
 import { IOrder } from "../../../interfaces";
-import { useStyles } from "./styled";
+// import { useStyles } from "./styled";
 import { getUniqueListWithCount } from "../../../utils";
+import { EyeOutlined } from "@ant-design/icons";
 
 export const RecentCourses: React.FC = () => {
+  const go = useGo();
+  const { showUrl } = useNavigation()
   const { token } = theme.useToken();
-  const { styles } = useStyles();
+  const { styles, cx } = useStyles();
 
-  const { data:courseData } = useList({
-    resource: "generateCode/1",
+  const { queryResult:courseData } = useShow({
+    resource: "generateCode",
+    id: 1
     
   });
 
+  const courses = courseData.data?.data.courses ?? [];
+
   const { show } = useNavigation();
-  console.log(courseData)
+  console.log(courses)
 
   return (
-    <Table
-      {...courseData}
-      pagination={{
-        hideOnSinglePage: true,
-        showSizeChanger: false,
-        className: styles.pagination,
-      }}
-      showHeader={false}
-      rowKey="id"
-    >
-      {/* <Table.Column<IOrder>
-        dataIndex="orderNumber"
-        className={styles.column}
-        render={(_, record) => (
-          <Typography.Link
-            strong
-            onClick={() => show("orders", record.id)}
-            style={{
-              whiteSpace: "nowrap",
-              color: token.colorTextHeading,
-            }}
-          >
-            #{record.orderNumber}
-          </Typography.Link>
-        )}
-      />
-      <Table.Column<IOrder>
-        dataIndex="id"
-        className={styles.column}
-        render={(_, record) => {
-          return (
-            <Space
-              size={0}
-              direction="vertical"
-              style={{
-                maxWidth: "220px",
-              }}
-            >
-              <Typography.Text
-                style={{
-                  fontSize: 14,
+    <>
+      {courses.map((item: any) => (
+        <Card
+          hoverable
+          bordered={false}
+          className={styles.card}
+          styles={{
+            body: {
+              padding: 16,
+            },
+            cover: {
+              position: "relative",
+            },
+            actions: {
+              marginTop: "auto",
+            },
+          }}
+          cover={
+            <>
+              <Tag
+                onClick={() => {
+                  // return go({
+                  //   to: `${showUrl("courses", item.id)}`,
+                  //   query: {
+                  //     to: pathname,
+                  //   },
+                  //   options: {
+                  //     keepQuery: true,
+                  //   },
+                  //   type: "replace",
+                  // });
                 }}
+                className={cx(styles.viewButton, "viewButton")}
+                icon={<EyeOutlined onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined} />}
               >
-                {record?.user?.firstName} {record?.user?.lastName}
-              </Typography.Text>
-              <Typography.Text
-                ellipsis
-                style={{
-                  fontSize: 12,
-                }}
-                type="secondary"
-              >
-                {record?.user?.addresses?.[0]?.text}
-              </Typography.Text>
-            </Space>
-          );
-        }}
-      />
-      <Table.Column<IOrder>
-        dataIndex="products"
-        className={styles.column}
-        render={(products: IOrder["products"]) => {
-          if (!products.length) {
-            return <Typography.Text>-</Typography.Text>;
+                View
+              </Tag>
+            </>
           }
+        >
+          <Card.Meta
+            title={
+              <Flex>
+                <Typography.Title
+                  level={5}
+                  ellipsis={{
+                  rows: 1,
+                  tooltip: item.name,
+                  }}
+                >
+                  {item.name}
+                </Typography.Title>
 
-          const uniqueProducts = getUniqueListWithCount<
-            IOrder["products"][number]
-          >({ list: products, field: "id" });
-
-          return (
-            <Space
-              size={0}
-              direction="vertical"
-              style={{
-                maxWidth: "220px",
-              }}
-            >
-              {uniqueProducts.map((product) => (
-                <Flex key={product.id} gap={4}>
-                  <Typography.Text ellipsis>{product.name}</Typography.Text>
-                  <span
-                    style={{
-                      color: token.colorTextSecondary,
-                    }}
-                  >
-                    x{product.count}
-                  </span>
-                </Flex>
-              ))}
-            </Space>
-          );
-        }}
-      />
-      <Table.Column<IOrder>
-        dataIndex="amount"
-        className={styles.column}
-        align="end"
-        render={(amount) => {
-          return (
-            <NumberField
-              value={amount / 100}
-              style={{
-                whiteSpace: "nowrap",
-              }}
-              options={{
-                style: "currency",
-                currency: "USD",
-              }}
-            />
-          );
-        }}
-      />
-      <Table.Column<IOrder>
-        fixed="right"
-        key="actions"
-        className={styles.column}
-        align="end"
-        render={(_, record) => <OrderActions record={record} />}
-      /> */}
-    </Table>
+              </Flex>
+            }
+            description={item.code}
+          />
+        </Card>
+      ))}        
+    </>
   );
 };
