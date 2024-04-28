@@ -44,7 +44,7 @@ export const CourseListTable = () => {
   const { pathname } = useLocation();
   const { showUrl } = useNavigation();
 
-  const { tableProps } = useTable<ICourse, HttpError>({
+  const { tableProps, filters, sorters } = useTable<ICourse, HttpError>({
     resource: `generateCode/${1}`,
     filters: {
       initial: [
@@ -150,7 +150,7 @@ export const CourseListTable = () => {
               color: filtered ? token.colorPrimary : undefined,
             }} onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined}          />
         )}
-        // defaultFilteredValue={getDefaultFilter("name", filters, "contains")}
+        defaultFilteredValue={getDefaultFilter("name", filters, "contains")}
         filterDropdown={(props) => (
           <FilterDropdown {...props}>
             <Input placeholder={t("course name")} />
@@ -178,11 +178,11 @@ export const CourseListTable = () => {
               color: filtered ? token.colorPrimary : undefined,
               }} onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined}          />
         )}
-        // defaultFilteredValue={getDefaultFilter(
-        //   "description",
-        //   filters,
-        //   "contains",
-        // )}
+        defaultFilteredValue={getDefaultFilter(
+          "description",
+          filters,
+          "contains",
+        )}
         filterDropdown={(props) => (
           <FilterDropdown {...props}>
             <Input placeholder={t("course code")} />
@@ -208,7 +208,7 @@ export const CourseListTable = () => {
         key="year"
         align="right"
         sorter
-        // defaultSortOrder={getDefaultSortOrder("price", sorters)}
+        defaultSortOrder={getDefaultSortOrder("price", sorters)}
         render={(price: number) => {
           return (
             <NumberField

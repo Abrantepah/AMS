@@ -24,6 +24,16 @@ import { useMemo } from "react";
 import { useStyles } from "./styled";
 import { useLocation } from "react-router-dom";
 
+
+interface ICourse {
+    id: number;
+    name: string;
+    code: string;
+    year: number;
+    lecturer: number;
+    department: number[];
+}
+
 export const CourseListCard = () => {
   const { styles, cx } = useStyles();
   const { token } = theme.useToken();
@@ -33,11 +43,11 @@ export const CourseListCard = () => {
   const { showUrl } = useNavigation();
 
   const {
-    listProps: productListProps,
+    listProps: courseListProps,
     filters,
     setFilters,
-  } = useSimpleList<IProduct, HttpError>({
-    resource: "courses",
+  } = useSimpleList<ICourse, HttpError>({
+    resource: `generateCode/${1}`,
     pagination: {
       current: 1,
       pageSize: 12,
@@ -45,75 +55,81 @@ export const CourseListCard = () => {
     filters: {
       initial: [
         {
-          field: "category.id",
+          field: "courses.id",
           operator: "in",
           value: [],
         },
       ],
     },
   });
+// @ts-ignore
+  const allCourses = courseListProps.dataSource?.courses ?? []
 
-  const { data: categoryData, isLoading: categoryIsLoading } = useList<
-    ICategory,
-    HttpError
-  >({
-    resource: "categories",
-    pagination: {
-      mode: "off",
-    },
-  });
-  const categories = categoryData?.data || [];
+  console.log(allCourses);
+  
 
-  const categoryFilters = useMemo(() => {
-    const filter = filters.find((filter) => {
-      if ("field" in filter) {
-        return filter.field === "category.id";
-      }
+  // const { data: categoryData, isLoading: categoryIsLoading } = useList<
+  //   ICategory,
+  //   HttpError
+  // >({
+  //   resource: "categories",
+  //   pagination: {
+  //     mode: "off",
+  //   },
+  // });
+  // const categories = categoryData?.data || [];
 
-      return false;
-    });
+  // const categoryFilters = useMemo(() => {
+  //   const filter = filters.find((filter) => {
+  //     if ("field" in filter) {
+  //       return filter.field === "category.id";
+  //     }
 
-    const filterValues = filter?.value?.map((value: string | number) =>
-      Number(value),
-    );
+  //     return false;
+  //   });
 
-    return {
-      operator: filter?.operator || "in",
-      value: (filterValues || []) as number[],
-    };
-  }, [filters]).value;
+  //   const filterValues = filter?.value?.map((value: string | number) =>
+  //     Number(value),
+  //   );
 
-  const hasCategoryFilter = categoryFilters?.length > 0;
+  //   return {
+  //     operator: filter?.operator || "in",
+  //     value: (filterValues || []) as number[],
+  //   };
+  // }, [filters]).value;
 
-  const handleOnTagClick = (categoryId: number) => {
-    const newFilters = categoryFilters;
-    const hasCurrentFilter = newFilters.includes(categoryId);
-    if (hasCurrentFilter) {
-      newFilters.splice(newFilters.indexOf(categoryId), 1);
-    } else {
-      newFilters.push(categoryId);
-    }
+  // const hasCategoryFilter = categoryFilters?.length > 0;
 
-    setFilters([
-      {
-        field: "category.id",
-        operator: "in",
-        value: newFilters,
-      },
-    ]);
-  };
+  // const handleOnTagClick = (categoryId: number) => {
+  //   const newFilters = categoryFilters;
+  //   const hasCurrentFilter = newFilters.includes(categoryId);
+  //   if (hasCurrentFilter) {
+  //     newFilters.splice(newFilters.indexOf(categoryId), 1);
+  //   } else {
+  //     newFilters.push(categoryId);
+  //   }
+
+  //   setFilters([
+  //     {
+  //       field: "category.id",
+  //       operator: "in",
+  //       value: newFilters,
+  //     },
+  //   ]);
+  // };
 
   return (
     <>
       <Divider style={{ margin: "16px 0px" }} />
       <List
-        {...productListProps}
+        {...courseListProps}
         pagination={{
-          ...productListProps.pagination,
+          ...allCourses.pagination,
           showTotal: (total) => (
-            <PaginationTotal total={total} entityName={"products"} />
+            <PaginationTotal total={total} entityName={"courses"} />
           ),
         }}
+        dataSource={allCourses}
         grid={{
           gutter: [16, 16],
           column: 4,
@@ -127,12 +143,16 @@ export const CourseListCard = () => {
         renderItem={(item) => (
           <List.Item style={{ height: "100%" }}>
             <Card
+              key={
+              // @ts-ignore
+                `data-${item.id}`
+              }
               hoverable
               bordered={false}
               className={styles.card}
               styles={{
                 body: {
-                  padding: 16,
+                  padding: "50px 20px",
                 },
                 cover: {
                   position: "relative",
@@ -141,12 +161,26 @@ export const CourseListCard = () => {
                   marginTop: "auto",
                 },
               }}
+              onClick={() => {
+                      return go({
+                        // @ts-ignore
+                        to: `${showUrl("courses", item.id)}`,
+                        query: {
+                          to: pathname,
+                        },
+                        options: {
+                          keepQuery: true,
+                        },
+                        type: "replace",
+                      });
+                    }}
               cover={
                 <>
                   <Tag
                     onClick={() => {
                       return go({
-                        to: `${showUrl("products", item.id)}`,
+                        // @ts-ignore
+                        to: `${showUrl("courses", item.id)}`,
                         query: {
                           to: pathname,
                         },
@@ -163,24 +197,24 @@ export const CourseListCard = () => {
                   </Tag>
                 </>
               }
-              actions={[
-                <Flex
-                  key="actions"
-                  justify="space-between"
-                  style={{
-                    padding: "0 16px",
-                  }}
-                >
-                  <Typography.Text key="category.title">
-                    {
-                      categories.find(
-                        (category) => category.id === item.category.id,
-                      )?.title
-                    }
-                  </Typography.Text>
-                  <ProductStatus key="status" value={item.isActive} />
-                </Flex>,
-              ]}
+              // actions={[
+              //   <Flex
+              //     key="actions"
+              //     justify="space-between"
+              //     style={{
+              //       padding: "0 16px",
+              //     }}
+              //   >
+              //     <Typography.Text key="category.title">
+              //       {
+              //         categories.find(
+              //           (category) => category.id === item.category.id,
+              //         )?.title
+              //       }
+              //     </Typography.Text>
+              //     <ProductStatus key="status" value={item.isActive} />
+              //   </Flex>,
+              // ]}
             >
               <Card.Meta
                 title={
@@ -189,26 +223,36 @@ export const CourseListCard = () => {
                       level={5}
                       ellipsis={{
                         rows: 1,
+                        // @ts-ignore
                         tooltip: item.name,
                       }}
                     >
-                      {item.name}
+                      {
+                        // @ts-ignore
+                        item.name
+                      }
                     </Typography.Title>
 
                     <NumberField
-                      value={item.price}
+                      value={
+                        // @ts-ignore
+                        item.year
+                      }
                       style={{
                         paddingLeft: "8px",
                         marginLeft: "auto",
                       }}
-                      options={{
-                        style: "currency",
-                        currency: "USD",
-                      }}
+                      // options={{
+                      //   style: "currency",
+                      //   currency: "USD",
+                      // }}
                     />
                   </Flex>
                 }
-                description={item.description}
+                description={
+                        // @ts-ignore
+                  item.code
+                }
               />
             </Card>
           </List.Item>
