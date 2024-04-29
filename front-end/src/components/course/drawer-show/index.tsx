@@ -18,7 +18,7 @@ import {
   Typography,
   theme,
 } from "antd";
-import { useSearchParams } from "react-router-dom";
+import { useLocation, useSearchParams } from "react-router-dom";
 import { Drawer } from "../../drawer";
 import { ICategory, IProduct } from "../../../interfaces";
 import { DeleteButton, NumberField } from "@refinedev/antd";
@@ -32,6 +32,8 @@ type Props = {
 };
 
 export const CourseDrawerShow = (props: Props) => {
+  const { listUrl } = useNavigation()
+  const pathname = useLocation()
   const getToPath = useGetToPath();
   const [searchParams] = useSearchParams();
   const go = useGo();
@@ -63,13 +65,14 @@ export const CourseDrawerShow = (props: Props) => {
 
     go({
       to:
-        searchParams.get("to") ??
-        getToPath({
-          action: "list",
-        }) ??
-        "",
+        // searchParams.get("to") ??
+        // getToPath({
+        //   action: "list",
+        // }) ??
+
+        `${listUrl("courses")}`,
       query: {
-        to: undefined,
+        to: pathname,
       },
       options: {
         keepQuery: true,
@@ -81,7 +84,7 @@ export const CourseDrawerShow = (props: Props) => {
   return (
     <Drawer
       open={true}
-      width={breakpoint.sm ? "378px" : "100%"}
+      width={breakpoint.sm ? "80%" : "100%"}
       zIndex={1001}
       onClose={handleDrawerClose}
     >

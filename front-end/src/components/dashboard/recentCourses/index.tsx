@@ -8,9 +8,11 @@ import { IOrder } from "../../../interfaces";
 // import { useStyles } from "./styled";
 import { getUniqueListWithCount } from "../../../utils";
 import { CheckCircleOutlined, EyeOutlined } from "@ant-design/icons";
+import { useLocation } from "react-router-dom";
 
 export const RecentCourses: React.FC = () => {
   const go = useGo();
+  const { pathname } = useLocation();
   const { showUrl } = useNavigation()
   const { token } = theme.useToken();
   const { styles, cx } = useStyles();
@@ -46,20 +48,32 @@ export const RecentCourses: React.FC = () => {
                   marginTop: "auto",
                 },
               }}
+              onClick={() => {
+                return go({
+                  to: `${showUrl("courses", item.id)}`,
+                  query: {
+                    to: pathname,
+                  },
+                  options: {
+                    keepQuery: true,
+                  },
+                  type: "replace",
+                });
+              }}
               cover={
                 <>
                   <Tag
                     onClick={() => {
-                      // return go({
-                      //   to: `${showUrl("courses", item.id)}`,
-                      //   query: {
-                      //     to: pathname,
-                      //   },
-                      //   options: {
-                      //     keepQuery: true,
-                      //   },
-                      //   type: "replace",
-                      // });
+                      return go({
+                        to: `${showUrl("courses", item.id)}`,
+                        query: {
+                          to: pathname,
+                        },
+                        options: {
+                          keepQuery: true,
+                        },
+                        type: "replace",
+                      });
                     }}
                     className={cx(styles.viewButton, "viewButton")}
                     icon={<EyeOutlined onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined} />}

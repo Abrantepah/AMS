@@ -109,48 +109,48 @@ const App: React.FC = () => {
                   icon: <UnorderedListOutlined onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined} />,
                 },
               },
-              {
-                name: "orders",
-                list: "/orders",
-                show: "/orders/:id",
-                meta: {
-                  icon: <ShoppingOutlined onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined} />,
-                },
-              },
-              {
-                name: "users",
-                list: "/customers",
-                show: "/customers/:id",
-                meta: {
-                  icon: <UserOutlined onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined} />,
-                },
-              },
-              {
-                name: "categories",
-                list: "/categories",
-                meta: {
-                  icon: <TagsOutlined onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined} />,
-                },
-              },
-              {
-                name: "stores",
-                list: "/stores",
-                create: "/stores/new",
-                edit: "/stores/:id/edit",
-                meta: {
-                  icon: <ShopOutlined onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined} />,
-                },
-              },
-              {
-                name: "couriers",
-                list: "/couriers",
-                create: "/couriers/new",
-                edit: "/couriers/:id/edit",
-                show: "/couriers/:id",
-                meta: {
-                  icon: <BikeWhiteIcon onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined} />,
-                },
-              },
+              // {
+              //   name: "orders",
+              //   list: "/orders",
+              //   show: "/orders/:id",
+              //   meta: {
+              //     icon: <ShoppingOutlined onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined} />,
+              //   },
+              // },
+              // {
+              //   name: "users",
+              //   list: "/customers",
+              //   show: "/customers/:id",
+              //   meta: {
+              //     icon: <UserOutlined onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined} />,
+              //   },
+              // },
+              // {
+              //   name: "categories",
+              //   list: "/categories",
+              //   meta: {
+              //     icon: <TagsOutlined onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined} />,
+              //   },
+              // },
+              // {
+              //   name: "stores",
+              //   list: "/stores",
+              //   create: "/stores/new",
+              //   edit: "/stores/:id/edit",
+              //   meta: {
+              //     icon: <ShopOutlined onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined} />,
+              //   },
+              // },
+              // {
+              //   name: "couriers",
+              //   list: "/couriers",
+              //   create: "/couriers/new",
+              //   edit: "/couriers/:id/edit",
+              //   show: "/couriers/:id",
+              //   meta: {
+              //     icon: <BikeWhiteIcon onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined} />,
+              //   },
+              // },
             ]}
           >
             <Routes>
@@ -176,7 +176,7 @@ const App: React.FC = () => {
               >
                 <Route index element={<DashboardPage />} />
 
-                <Route path="/orders">
+                {/* <Route path="/orders">
                   <Route index element={<OrderList />} />
                   <Route path=":id" element={<OrderShow />} />
                 </Route>
@@ -190,7 +190,7 @@ const App: React.FC = () => {
                   }
                 >
                   <Route path=":id" element={<CustomerShow />} />
-                </Route>
+                </Route> */}
 
                 <Route
                   path="/courses"
@@ -205,7 +205,7 @@ const App: React.FC = () => {
                   <Route path=":id/edit" element={<CourseEdit />} />
                 </Route>
 
-                <Route path="/stores">
+                {/* <Route path="/stores">
                   <Route index element={<StoreList />} />
                   <Route path="new" element={<StoreCreate />} />
                   <Route path=":id/edit" element={<StoreEdit />} />
@@ -226,7 +226,7 @@ const App: React.FC = () => {
                   </Route>
 
                   <Route path=":id/edit" element={<CourierEdit />} />
-                </Route>
+                </Route> */}
               </Route>
 
               <Route
