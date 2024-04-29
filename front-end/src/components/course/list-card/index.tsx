@@ -1,12 +1,13 @@
 import {
   HttpError,
+  useGetIdentity,
   useGo,
   useList,
   useNavigation,
   useTranslate,
 } from "@refinedev/core";
 import { NumberField, useSimpleList } from "@refinedev/antd";
-import { ICategory, IProduct } from "../../../interfaces";
+import { ICategory, IIdentity, IProduct } from "../../../interfaces";
 import {
   Card,
   Divider,
@@ -37,6 +38,7 @@ interface ICourse {
 export const CourseListCard = () => {
   const { styles, cx } = useStyles();
   const { token } = theme.useToken();
+  const { data: user } = useGetIdentity<IIdentity>();
   const t = useTranslate();
   const go = useGo();
   const { pathname } = useLocation();
@@ -47,7 +49,7 @@ export const CourseListCard = () => {
     filters,
     setFilters,
   } = useSimpleList<ICourse, HttpError>({
-    resource: `generateCode/${1}`,
+    resource: `generateCode/${user?.id}`,
     pagination: {
       current: 1,
       pageSize: 12,

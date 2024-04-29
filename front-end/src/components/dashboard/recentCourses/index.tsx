@@ -1,10 +1,10 @@
-import { useGo, useList, useNavigation, useShow } from "@refinedev/core";
+import { useGetIdentity, useGo, useList, useNavigation, useShow } from "@refinedev/core";
 import { NumberField, useTable } from "@refinedev/antd";
 import { Typography, Table, theme, Space, Flex, Card, Tag, List, Divider, Row, Col } from "antd";
 import { useStyles } from "../../course/list-card/styled";
 import { CardWithPlot, OrderActions, PaginationTotal, ProductStatus } from "../..";
 
-import { IOrder } from "../../../interfaces";
+import { IIdentity, IOrder } from "../../../interfaces";
 // import { useStyles } from "./styled";
 import { getUniqueListWithCount } from "../../../utils";
 import { CheckCircleOutlined, EyeOutlined } from "@ant-design/icons";
@@ -14,13 +14,13 @@ export const RecentCourses: React.FC = () => {
   const go = useGo();
   const { pathname } = useLocation();
   const { showUrl } = useNavigation()
+  const { data: user } = useGetIdentity<IIdentity>();
   const { token } = theme.useToken();
   const { styles, cx } = useStyles();
 
   const { queryResult:courseData } = useShow({
     resource: "generateCode",
-    id: 1
-    
+    id: user?.id
   });
 
   const courses = courseData.data?.data.courses ?? [];

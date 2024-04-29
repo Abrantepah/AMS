@@ -1,6 +1,7 @@
 import {
   BaseKey,
   HttpError,
+  useGetIdentity,
   useGetToPath,
   useGo,
   useNavigation,
@@ -18,9 +19,9 @@ import {
   Typography,
   theme,
 } from "antd";
-import { useLocation, useSearchParams } from "react-router-dom";
+import { useLocation, useParams, useSearchParams } from "react-router-dom";
 import { Drawer } from "../../drawer";
-import { ICategory, IProduct } from "../../../interfaces";
+import { ICategory, IIdentity, IProduct } from "../../../interfaces";
 import { DeleteButton, NumberField } from "@refinedev/antd";
 import { ProductStatus } from "../status";
 import { EditOutlined } from "@ant-design/icons";
@@ -36,6 +37,8 @@ export const CourseDrawerShow = (props: Props) => {
   const pathname = useLocation()
   const getToPath = useGetToPath();
   const [searchParams] = useSearchParams();
+  const params = useParams();
+  const { data: user } = useGetIdentity<IIdentity>();
   const go = useGo();
   const { editUrl } = useNavigation();
   const t = useTranslate();
@@ -43,19 +46,13 @@ export const CourseDrawerShow = (props: Props) => {
   const breakpoint = Grid.useBreakpoint();
 
   const { queryResult } = useShow<IProduct, HttpError>({
-    resource: "products",
-    id: props?.id, // when undefined, id will be read from the URL.
+    resource: `generateCode/${user?.id}`,
+    id: params.id,
   });
-  const product = queryResult.data?.data;
+  const courses = queryResult.data?.data;
 
-  const { data: categoryData } = useOne<ICategory, HttpError>({
-    resource: "categories",
-    id: product?.category?.id,
-    queryOptions: {
-      enabled: !!product?.category?.id,
-    },
-  });
-  const category = categoryData?.data;
+  console.log(user);
+  
 
   const handleDrawerClose = () => {
     if (props?.onClose) {
@@ -88,20 +85,10 @@ export const CourseDrawerShow = (props: Props) => {
       zIndex={1001}
       onClose={handleDrawerClose}
     >
-      <Flex vertical align="center" justify="center">
-        <Avatar
-          shape="square"
-          style={{
-            aspectRatio: 1,
-            objectFit: "contain",
-            width: "240px",
-            height: "240px",
-            margin: "16px auto",
-            borderRadius: "8px",
-          }}
-          src={product?.images?.[0].url}
-          alt={product?.images?.[0].name}
-        />
+      <Flex vertical align="left" justify="center" style={{margin: "20px"}}>
+        <Typography.Title>
+          CSM 183: Introduction to Computers
+        </Typography.Title>
       </Flex>
       <Flex
         vertical
@@ -115,9 +102,9 @@ export const CourseDrawerShow = (props: Props) => {
             padding: "16px",
           }}
         >
-          <Typography.Title level={5}>{product?.name}</Typography.Title>
+          <Typography.Title level={5}>{courses?.name}</Typography.Title>
           <Typography.Text type="secondary">
-            {product?.description}
+            {courses?.description}
           </Typography.Text>
         </Flex>
         <Divider
@@ -136,7 +123,7 @@ export const CourseDrawerShow = (props: Props) => {
               ),
               value: (
                 <NumberField
-                  value={product?.price || 0}
+                  value={courses?.price || 0}
                   options={{
                     style: "currency",
                     currency: "USD",
@@ -150,7 +137,7 @@ export const CourseDrawerShow = (props: Props) => {
                   {t("Course category")}
                 </Typography.Text>
               ),
-              value: <Typography.Text>{category?.title}</Typography.Text>,
+              // value: <Typography.Text>{category?.title}</Typography.Text>,
             },
             {
               label: (
@@ -158,7 +145,7 @@ export const CourseDrawerShow = (props: Props) => {
                   {t("products.fields.isActive.label")}
                 </Typography.Text>
               ),
-              value: <ProductStatus value={!!product?.isActive} />,
+              value: <ProductStatus value={!!courses?.isActive} />,
             },
           ]}
           renderItem={(item) => {
@@ -185,7 +172,7 @@ export const CourseDrawerShow = (props: Props) => {
       >
         <DeleteButton
           type="text"
-          recordItemId={product?.id}
+          recordItemId={courses?.id}
           resource="products"
           onSuccess={() => {
             handleDrawerClose();
@@ -199,7 +186,7 @@ export const CourseDrawerShow = (props: Props) => {
             }
 
             return go({
-              to: `${editUrl("products", product?.id || "")}`,
+              to: `${editUrl("products", courses?.id || "")}`,
               query: {
                 to: "/products",
               },

@@ -1,6 +1,7 @@
 import {
   HttpError,
   getDefaultFilter,
+  useGetIdentity,
   useGo,
   useNavigation,
   useTranslate,
@@ -12,7 +13,7 @@ import {
   useSelect,
   useTable,
 } from "@refinedev/antd";
-import { ICategory, IProduct } from "../../../interfaces";
+import { ICategory, IIdentity, IProduct } from "../../../interfaces";
 import {
   Avatar,
   Button,
@@ -40,12 +41,13 @@ interface ICourse {
 export const CourseListTable = () => {
   const { token } = theme.useToken();
   const t = useTranslate();
+  const { data: user } = useGetIdentity<IIdentity>();
   const go = useGo();
   const { pathname } = useLocation();
   const { showUrl } = useNavigation();
 
   const { tableProps, filters, sorters } = useTable<ICourse, HttpError>({
-    resource: `generateCode/${1}`,
+    resource: `generateCode/${user?.id}`,
     filters: {
       initial: [
         {

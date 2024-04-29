@@ -17,10 +17,10 @@ import {
 } from "@ant-design/icons";
 import { useMemo, useState } from "react";
 import { CreateButton, List, NumberField } from "@refinedev/antd";
-import { useApiUrl, useGo, useList, useNavigation, useShow } from "@refinedev/core";
+import { useApiUrl, useGetIdentity, useGo, useList, useNavigation, useShow } from "@refinedev/core";
 import { useLocation } from "react-router-dom";
 import dayjs from "dayjs";
-import { ICourses} from "../../interfaces";
+import { ICourses, IIdentity} from "../../interfaces";
 
 type DateFilter = "lastWeek" | "lastMonth";
 
@@ -45,13 +45,14 @@ export const DashboardPage: React.FC = () => {
   const { token } = theme.useToken();
   const { t } = useTranslation();
   const API_URL = useApiUrl();
+  const { data: user } = useGetIdentity<IIdentity>();
   const go = useGo();
   const { listUrl } = useNavigation();
   const pathname = useLocation()
 
     const { queryResult: lecturerCourses } = useShow({
       resource: "generateCode",
-      id: 1
+      id: user?.id
   });
 
   const courses = lecturerCourses.data?.data.courses ?? [];
