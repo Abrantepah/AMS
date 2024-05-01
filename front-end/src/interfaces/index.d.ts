@@ -72,6 +72,7 @@ export interface IIdentity {
   id: number;
   name: string;
   avatar: string;
+  index?: string;
 }
 
 export interface IAddress {

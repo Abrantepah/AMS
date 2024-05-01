@@ -34,12 +34,12 @@ export const StoreList = () => {
               {
                 label: "",
                 value: "table",
-                icon: <UnorderedListOutlined />,
+                icon: <UnorderedListOutlined onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined} />,
               },
               {
                 label: "",
                 value: "map",
-                icon: <EnvironmentOutlined />,
+                icon: <EnvironmentOutlined onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined} />,
               },
             ]}
             onChange={handleViewChange}

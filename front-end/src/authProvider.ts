@@ -2,7 +2,7 @@ import { AuthProvider } from "@refinedev/core";
 import { notification } from "antd";
 import { disableAutoLogin, enableAutoLogin } from "./hooks";
 
-export const TOKEN_KEY = "refine-auth";
+export const TOKEN_KEY = "attendance-auth";
 
 export const authProvider: AuthProvider = {
   // login: async ({ reference, password }) => {
@@ -51,23 +51,25 @@ export const authProvider: AuthProvider = {
           // credentials: "include"
       })
       const data = await response.json()
-          if (response.status === 200) {
-            localStorage.setItem(TOKEN_KEY,
-              JSON.stringify({
-                id: data.id,
-                reference: data.reference,
-                index: data.index,
-                name: data.name,
-                year: data.year,
-                total_strike: data.total_strike,
-                user: data.user,
-                programme: data.programme
-              }));
-            return {
-              success: true,
-              redirectTo: "/",
+      if (response.status === 200) {
+        localStorage.setItem(TOKEN_KEY,
+          JSON.stringify({
+            id: data.id,
+            reference: data.reference,
+            index: data.index,
+            name: data.name,
+            year: data.year,
+            total_strike: data.total_strike,
+            user: data.user,
+            programme: data.programme
+        }));
+        localStorage.setItem('role', JSON.stringify({
+          role: 'student'
+        }))
+        return {
+          success: true,
+          redirectTo: "/",
         };
-        
       }
     }
 
@@ -94,21 +96,23 @@ export const authProvider: AuthProvider = {
           // credentials: "include"
       })
       const data = await response.json()
-          if (response.status === 200) {
-            localStorage.setItem(TOKEN_KEY,
-              JSON.stringify({
-                id: data.id,
-                reference: data.reference,
-                name: data.name,
-                user: data.user,
-                department: data.department
-              }));
-            return {
-              success: true,
-              redirectTo: "/",
-        };
-        
-      }
+        if (response.status === 200) {
+          localStorage.setItem(TOKEN_KEY,
+            JSON.stringify({
+              id: data.id,
+              reference: data.reference,
+              name: data.name,
+              user: data.user,
+              department: data.department
+            }));
+          localStorage.setItem('role', JSON.stringify({
+            role: 'lecturer'
+          }))
+          return {
+            success: true,
+            redirectTo: "/",
+          };
+        }
     }
 
     return {
@@ -182,6 +186,7 @@ export const authProvider: AuthProvider = {
         name: parsedToken.name,
         email: parsedToken.email,
         avatar: parsedToken.avatar,
+        index: parsedToken.index
       }
 
     }

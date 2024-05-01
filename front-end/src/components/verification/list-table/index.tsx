@@ -8,9 +8,9 @@ import {
 } from "@refinedev/antd";
 import { Input, InputNumber, Select, Table, Typography, theme } from "antd";
 import { IStore } from "../../../interfaces";
-import { PaginationTotal } from "../../../components";
+import { PaginationTotal } from "../..";
 import { EyeOutlined, SearchOutlined } from "@ant-design/icons";
-import { StoreStatus } from "../../../components/store";
+import { StoreStatus } from "..";
 
 export const StoreListTable = () => {
   const { token } = theme.useToken();

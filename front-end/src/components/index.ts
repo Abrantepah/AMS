@@ -12,6 +12,6 @@ export * from "./customer";
 export * from "./course";
 export * from "./drawer";
 export * from "./categories";
-export * from "./store";
+export * from "./verification";
 export * from "./form";
 export * from "./courier";

@@ -1,13 +1,15 @@
 import { useEffect, useState } from "react";
 import { UseFormProps, useForm } from "@refinedev/antd";
 import { useDebounceValue } from "usehooks-ts";
+import { useGetIdentity } from "@refinedev/core";
 import {
   convertLatLng,
   LatLng,
   getAddressWithLatLng,
   getLatLngWithAddress,
 } from "../../../utils";
-import { IStore } from "../../../interfaces";
+import { IIdentity, IStore } from "../../../interfaces";
+
 
 type Props = {
   action: UseFormProps["action"];
@@ -17,8 +19,10 @@ export const useStoreForm = (props: Props) => {
   const [isFormDisabled, setIsFormDisabled] = useState(() =>
     props.action === "edit" ? true : false,
   );
+  const { data: user } = useGetIdentity<IIdentity>();
 
   const form = useForm<IStore>({
+    resource: `verification_api/${user?.id}/`,
     action: props.action,
     redirect: false,
     onMutationSuccess: () => {
@@ -32,46 +36,7 @@ export const useStoreForm = (props: Props) => {
     lng: props.action === "create" ? -75.67602 : undefined,
   });
 
-  useEffect(() => {
-    if (store?.address?.coordinate) {
-      setLatLng({
-        lat: store.address.coordinate?.[0],
-        lng: store.address.coordinate?.[1],
-      });
-    }
-  }, [store?.address.coordinate?.[0], store?.address.coordinate?.[1]]);
 
-  // we are using these debounced values to get lang and lat from the address text
-  // to minimize the number of requests, we are using debounced values
-  const [debouncedAdressValue, setDebouncedAdressValue] = useDebounceValue(
-    form.formProps.form?.getFieldValue(["address", "text"]),
-    500,
-  );
-
-  // get lat and lng with address
-  useEffect(() => {
-    if (debouncedAdressValue) {
-      getLatLngWithAddress(debouncedAdressValue).then((data) => {
-        // set form field with lat and lng values
-        if (data) {
-          const { lat, lng } = convertLatLng({
-            lat: data.lat,
-            lng: data.lng,
-          });
-
-          form.formProps.form?.setFieldValue(
-            ["address", "coordinate"],
-            [lat, lng],
-          );
-
-          setLatLng({
-            lat,
-            lng,
-          });
-        }
-      });
-    }
-  }, [debouncedAdressValue, form.formProps.form?.setFieldValue]);
 
   const handleMapOnDragEnd = async ({
     lat,
@@ -102,7 +67,6 @@ export const useStoreForm = (props: Props) => {
     latLng,
     isFormDisabled,
     setIsFormDisabled: handleSetIsFormDisabled,
-    handleAddressChange: (address: string) => setDebouncedAdressValue(address),
     handleMapOnDragEnd,
   };
 };

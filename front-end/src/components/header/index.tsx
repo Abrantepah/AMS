@@ -169,10 +169,10 @@ export const Header: React.FC = () => {
   });
 
   useEffect(() => {
-    setOptions([]);
-    refetchOrders();
-    refetchCouriers();
-    refetchStores();
+    // setOptions([]);
+    // refetchOrders();
+    // refetchCouriers();
+    // refetchStores();
   }, [value]);
 
   const menuItems: MenuProps["items"] = [...(i18n.languages || [])]

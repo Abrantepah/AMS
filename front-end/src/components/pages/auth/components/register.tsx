@@ -212,7 +212,7 @@ export const RegisterPage: React.FC<RegisterProps> = ({
           <Form.Item
             // name="email"
             name={"reference"}
-            label={translate("Reference")}
+            label={translate("Staff ID")}
             rules={[
               { required: true },
               {
@@ -225,7 +225,7 @@ export const RegisterPage: React.FC<RegisterProps> = ({
           >
             <Input
               size="large"
-              placeholder={translate( "Reference number")}
+              placeholder={translate( "Staff ID")}
             />
           </Form.Item>
           <Form.Item

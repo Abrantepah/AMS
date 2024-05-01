@@ -1,6 +1,6 @@
 import { useTranslate } from "@refinedev/core";
 import { ListButton } from "@refinedev/antd";
-import { Flex, Divider } from "antd";
+import { Flex, Divider, Typography } from "antd";
 import { LeftOutlined } from "@ant-design/icons";
 import { StoreForm } from "../../components";
 
@@ -9,9 +9,7 @@ export const StoreCreate = () => {
 
   return (
     <>
-      <Flex>
-        <ListButton icon={<LeftOutlined />}>{t("stores.stores")}</ListButton>
-      </Flex>
+      <Typography.Title style={{ fontSize: 25}}>Mark Attendance</Typography.Title>
       <Divider />
       <StoreForm action="create" />
     </>

@@ -41,7 +41,7 @@ import {
   CourseEdit,
   CourseShow,
 } from "./pages/courses";
-import { StoreCreate, StoreEdit, StoreList } from "./pages/stores";
+import { StoreCreate, StoreEdit, StoreList } from "./pages/verification";
 import { CategoryList } from "./pages/categories";
 import { useTranslation } from "react-i18next";
 import { Header, Title } from "./components";
@@ -55,6 +55,7 @@ const App: React.FC = () => {
   // This hook is used to automatically login the user.
   // We use this hook to skip the login page and demonstrate the application more quickly.
   const { loading } = useAutoLoginForDemo();
+  const role = localStorage.getItem('role');
 
   // const API_URL = "https://api.finefoods.refine.dev";
   const API_URL = "https://knust-ams.up.railway.app/api";
@@ -67,10 +68,53 @@ const App: React.FC = () => {
   //   changeLocale: (lang: string) => i18n.changeLanguage(lang),
   //   getLocale: () => i18n.language,
   // };
+  // @ts-ignore
+  const parsedRole = JSON.parse(role)
+  console.log(parsedRole?.role);
+  
 
   if (loading) {
     return null;
   }
+
+  const commonResources = [
+    {
+      name: "dashboard",
+      list: "/",
+      meta: {
+        label: "Dashboard",
+        icon: <DashboardOutlined onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined} />,
+      },
+    },
+  ];
+// @ts-ignore
+  const condtionalResources = parsedRole?.role === 'lecturer' ?
+    [
+      {
+        name: "courses",
+        list: "/courses",
+        create: "/courses/new",
+        edit: "/courses/:id/edit",
+        show: "/courses/:id",
+        meta: {
+          icon: <TagsOutlined onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined} />,
+        },
+      },
+    ]
+    :
+    [
+      {
+        name: "verification",
+        list: "/verification",
+        create: "/verification/new",
+        edit: "/verification/:id/edit",
+        meta: {
+          icon: <ShopOutlined onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined} />,
+        },
+      },
+    ];
+  
+  const resources = [...commonResources, ...condtionalResources];
 
   return (
     <BrowserRouter>
@@ -90,68 +134,7 @@ const App: React.FC = () => {
               warnWhenUnsavedChanges: true,
             }}
             notificationProvider={useNotificationProvider}
-            resources={[
-              {
-                name: "dashboard",
-                list: "/",
-                meta: {
-                  label: "Dashboard",
-                  icon: <DashboardOutlined onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined} />,
-                },
-              },
-              {
-                name: "courses",
-                list: "/courses",
-                create: "/courses/new",
-                edit: "/courses/:id/edit",
-                show: "/courses/:id",
-                meta: {
-                  icon: <UnorderedListOutlined onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined} />,
-                },
-              },
-              // {
-              //   name: "orders",
-              //   list: "/orders",
-              //   show: "/orders/:id",
-              //   meta: {
-              //     icon: <ShoppingOutlined onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined} />,
-              //   },
-              // },
-              // {
-              //   name: "users",
-              //   list: "/customers",
-              //   show: "/customers/:id",
-              //   meta: {
-              //     icon: <UserOutlined onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined} />,
-              //   },
-              // },
-              // {
-              //   name: "categories",
-              //   list: "/categories",
-              //   meta: {
-              //     icon: <TagsOutlined onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined} />,
-              //   },
-              // },
-              // {
-              //   name: "stores",
-              //   list: "/stores",
-              //   create: "/stores/new",
-              //   edit: "/stores/:id/edit",
-              //   meta: {
-              //     icon: <ShopOutlined onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined} />,
-              //   },
-              // },
-              // {
-              //   name: "couriers",
-              //   list: "/couriers",
-              //   create: "/couriers/new",
-              //   edit: "/couriers/:id/edit",
-              //   show: "/couriers/:id",
-              //   meta: {
-              //     icon: <BikeWhiteIcon onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined} />,
-              //   },
-              // },
-            ]}
+            resources={resources}
           >
             <Routes>
               <Route
@@ -205,13 +188,13 @@ const App: React.FC = () => {
                   <Route path=":id/edit" element={<CourseEdit />} />
                 </Route>
 
-                {/* <Route path="/stores">
-                  <Route index element={<StoreList />} />
+                <Route path="/verification">
+                  <Route index element={<StoreCreate />} />
                   <Route path="new" element={<StoreCreate />} />
                   <Route path=":id/edit" element={<StoreEdit />} />
                 </Route>
 
-                <Route path="/categories" element={<CategoryList />} />
+                {/* <Route path="/categories" element={<CategoryList />} />
 
                 <Route path="/couriers">
                   <Route
@@ -226,7 +209,7 @@ const App: React.FC = () => {
                   </Route>
 
                   <Route path=":id/edit" element={<CourierEdit />} />
-                </Route> */}
+                </Route>  */}
               </Route>
 
               <Route
