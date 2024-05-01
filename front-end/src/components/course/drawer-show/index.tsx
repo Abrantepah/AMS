@@ -107,9 +107,8 @@ export const CourseDrawerShow = (props: Props) => {
     id: "No Id",
   };
   
-  const mainCode = codeData?.data ?? {
-    code: "No Generated Code"
-  }
+  const mainCode = codeData?.data?.code ??  "No Generated Code"
+  
   console.log(mainCode);
   
 
@@ -226,7 +225,7 @@ export const CourseDrawerShow = (props: Props) => {
             padding: 10,
           }}
         />
-        <Typography.Text type="secondary" style={{ textAlign: 'center', padding: '70px 0px', fontSize: 50, fontStyle: 'italic' }}></Typography.Text>
+        <Typography.Text type="secondary" style={{ textAlign: 'center', padding: '70px 0px', fontSize: 50, fontStyle: 'italic' }}>{ mainCode }</Typography.Text>
       </Flex>
     </Drawer>
   );
