@@ -53,30 +53,39 @@ export const CourseDrawerShow = (props: Props) => {
   const t = useTranslate();
   const { token } = theme.useToken();
   const breakpoint = Grid.useBreakpoint();
-  const { mutate } = useCreate();
+  const { mutate, data:codeData } = useCreate();
 
 
 
-    const handleGenerateCode = async () => {
-    try {
-      mutate({
-        resource: `generateCode/${user?.id}/${params.id}`,
-        values: {
-          latitude: '',
-          longitude: ''
-        },
-      }, {
-        onSuccess: () => {
-          // refetch()
-        },
-      })
+  const handleGenerateCode = async () => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(async (position) => {
+        const latitude = position.coords.latitude;
+        const longitude = position.coords.longitude;
 
-
-    } catch (error) {
-      console.log("Error creating data:", error);
-      
+        try {
+          await mutate({
+            resource: `generateCode/${user?.id}/${params.id}/`,
+            values: {
+              latitude: latitude,
+              longitude: longitude
+            },
+          }, {
+            onSuccess: () => {
+              // refetch()
+            },
+          });
+        } catch (error) {
+          console.log("Error creating data:", error);
+        }
+      }, (error) => {
+        console.log("Error getting location:", error);
+      });
+    } else {
+      console.log("Geolocation is not supported by this browser.");
     }
   };
+
 
   const { queryResult } = useShow<ICourse, HttpError>({
     resource: `generateCode/${user?.id}`,
@@ -96,8 +105,12 @@ export const CourseDrawerShow = (props: Props) => {
   // @ts-ignore
   const availableSession = courses.session ?? {
     id: "No Id",
-};
-  // console.log(courses);
+  };
+  
+  const mainCode = codeData?.data ?? {
+    code: "No Generated Code"
+  }
+  console.log(mainCode);
   
 
   const handleDrawerClose = () => {
@@ -213,7 +226,7 @@ export const CourseDrawerShow = (props: Props) => {
             padding: 10,
           }}
         />
-        <Typography.Text type="secondary" style={{textAlign: 'center', padding: '70px 0px', fontSize: 50, fontStyle: 'italic'}}>No Code Generated</Typography.Text>
+        <Typography.Text type="secondary" style={{ textAlign: 'center', padding: '70px 0px', fontSize: 50, fontStyle: 'italic' }}></Typography.Text>
       </Flex>
     </Drawer>
   );
