@@ -10,7 +10,7 @@ export const DashboardPage: React.FC = () => {
 
   // console.log(user);  
   
-  if (user?.index) {
+  if (user?.year) {
     return <StudentDashboardPage />
   }
   else if (user?.id)  {

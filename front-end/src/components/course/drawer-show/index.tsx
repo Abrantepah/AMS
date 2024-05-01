@@ -5,7 +5,7 @@ import {
   useGetToPath,
   useGo,
   useNavigation,
-  useOne,
+  useCreate,
   useShow,
   useTranslate,
 } from "@refinedev/core";
@@ -32,6 +32,15 @@ type Props = {
   onEdit?: () => void;
 };
 
+interface ICourse {
+    id: number;
+    name: string;
+    code: string;
+    year: number;
+    lecturer: number;
+    department: number[];
+}
+
 export const CourseDrawerShow = (props: Props) => {
   const { listUrl } = useNavigation()
   const pathname = useLocation()
@@ -44,14 +53,51 @@ export const CourseDrawerShow = (props: Props) => {
   const t = useTranslate();
   const { token } = theme.useToken();
   const breakpoint = Grid.useBreakpoint();
+  const { mutate } = useCreate();
 
-  const { queryResult } = useShow<IProduct, HttpError>({
+
+
+    const handleGenerateCode = async () => {
+    try {
+      mutate({
+        resource: `generateCode/${user?.id}/${params.id}`,
+        values: {
+          latitude: '',
+          longitude: ''
+        },
+      }, {
+        onSuccess: () => {
+          // refetch()
+        },
+      })
+
+
+    } catch (error) {
+      console.log("Error creating data:", error);
+      
+    }
+  };
+
+  const { queryResult } = useShow<ICourse, HttpError>({
     resource: `generateCode/${user?.id}`,
     id: params.id,
   });
-  const courses = queryResult.data?.data;
-
-  console.log(user);
+  const courses = queryResult.data?.data ?? {};
+  // @ts-ignore
+  const courseArray = courses.courses ?? [];
+  // @ts-ignore
+  const selectedCourse = courseArray[(params?.id) - 1] ?? {
+    id: "No Id",
+    name: "No Course",
+    code: "No Code",
+    year: "No year",
+    lecturer: "No Lecturer",
+  }
+  // @ts-ignore
+  const availableSession = courses.session ?? {
+    id: "No Id",
+};
+  // console.log(courses);
   
 
   const handleDrawerClose = () => {
@@ -81,124 +127,93 @@ export const CourseDrawerShow = (props: Props) => {
   return (
     <Drawer
       open={true}
-      width={breakpoint.sm ? "80%" : "100%"}
+      width={breakpoint.sm ? "90%" : "100%"}
       zIndex={1001}
       onClose={handleDrawerClose}
     >
       <Flex vertical align="left" justify="center" style={{margin: "20px"}}>
         <Typography.Title>
-          CSM 183: Introduction to Computers
+          
+          {
+            // @ts-ignore
+            `${selectedCourse.code} : ${selectedCourse.name}`
+          }
         </Typography.Title>
       </Flex>
       <Flex
         vertical
         style={{
           backgroundColor: token.colorBgContainer,
+          padding: "40px",
+          margin: 40,
+          borderRadius: 10
         }}
       >
-        <Flex
-          vertical
+        <Flex gap={100}
           style={{
-            padding: "16px",
+            width: "100%",
           }}
         >
-          <Typography.Title level={5}>{courses?.name}</Typography.Title>
-          <Typography.Text type="secondary">
-            {courses?.description}
+          <Typography.Title level={5}>Session</Typography.Title>
+          <Typography.Text type="secondary" style={{fontSize: 18}}>
+            {availableSession.id}
           </Typography.Text>
         </Flex>
         <Divider
           style={{
             margin: 0,
-            padding: 0,
+            padding: 10,
           }}
         />
-        <List
-          dataSource={[
-            {
-              label: (
-                <Typography.Text type="secondary">
-                  {t("Course price")}
-                </Typography.Text>
-              ),
-              value: (
-                <NumberField
-                  value={courses?.price || 0}
-                  options={{
-                    style: "currency",
-                    currency: "USD",
-                  }}
-                />
-              ),
-            },
-            {
-              label: (
-                <Typography.Text type="secondary">
-                  {t("Course category")}
-                </Typography.Text>
-              ),
-              // value: <Typography.Text>{category?.title}</Typography.Text>,
-            },
-            {
-              label: (
-                <Typography.Text type="secondary">
-                  {t("products.fields.isActive.label")}
-                </Typography.Text>
-              ),
-              value: <ProductStatus value={!!courses?.isActive} />,
-            },
-          ]}
-          renderItem={(item) => {
-            return (
-              <List.Item>
-                <List.Item.Meta
-                  style={{
-                    padding: "0 16px",
-                  }}
-                  avatar={item.label}
-                  title={item.value}
-                />
-              </List.Item>
-            );
-          }}
-        />
+        <Typography.Text style={{color: 'red', fontSize: 16, fontStyle: 'italic'}}>Every session has time limit of 15 minutes</Typography.Text>
       </Flex>
       <Flex
         align="center"
-        justify="space-between"
+        justify="center"
         style={{
           padding: "16px 16px 16px 0",
+          height: "100px"
+        }}
+        
+      >
+        <Button
+          style={{
+            backgroundColor: 'green' ,
+            color: 'white',
+            fontSize: '20px',
+            height: "50px"
+          }}
+          icon={<EditOutlined onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined} />}
+          onClick={handleGenerateCode}
+        >
+          {t("Generate Code")}
+        </Button>
+      </Flex>
+      <Flex
+        vertical
+        style={{
+          backgroundColor: token.colorBgContainer,
+          padding: "40px",
+          margin: 40,
+          borderRadius: 10
         }}
       >
-        <DeleteButton
-          type="text"
-          recordItemId={courses?.id}
-          resource="products"
-          onSuccess={() => {
-            handleDrawerClose();
-          }}
-        />
-        <Button
-          icon={<EditOutlined onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined} />}
-          onClick={() => {
-            if (props?.onEdit) {
-              return props.onEdit();
-            }
-
-            return go({
-              to: `${editUrl("products", courses?.id || "")}`,
-              query: {
-                to: "/products",
-              },
-              options: {
-                keepQuery: true,
-              },
-              type: "replace",
-            });
+        <Flex gap={100}
+          style={{
+            width: "100%",
           }}
         >
-          {t("actions.edit")}
-        </Button>
+          <Typography.Text type="secondary" style={{fontSize: 16, fontStyle: 'italic'}}>
+            Generated code appears below
+          </Typography.Text>
+        </Flex>
+        <Divider
+          style={{
+            margin: 10,
+            padding: 10,
+          }}
+        />
+        <Typography.Text type="secondary" style={{textAlign: 'center', padding: '70px 0px', fontSize: 50, fontStyle: 'italic'}}>No Code Generated</Typography.Text>
       </Flex>
     </Drawer>
   );
