@@ -25,6 +25,7 @@ import { Drawer } from "../../drawer";
 import { ICategory, IIdentity, IProduct } from "../../../interfaces";
 import { EditOutlined } from "@ant-design/icons";
 import { useEffect } from "react";
+import { SaveButton } from "@refinedev/antd";
 
 type Props = {
   id?: BaseKey;
@@ -44,12 +45,9 @@ interface ICourse {
 export const CourseDrawerShow = (props: Props) => {
   const { listUrl } = useNavigation()
   const pathname = useLocation()
-  const getToPath = useGetToPath();
-  const [searchParams] = useSearchParams();
   const params = useParams();
   const { data: user } = useGetIdentity<IIdentity>();
   const go = useGo();
-  const { editUrl } = useNavigation();
   const t = useTranslate();
   const { token } = theme.useToken();
   const breakpoint = Grid.useBreakpoint();
@@ -63,10 +61,13 @@ export const CourseDrawerShow = (props: Props) => {
     }
     
   }, [codeData])
-// @ts-ignore
-  const retrievedCode = localStorage.getItem('storedCode') != 'undefined'|| !(localStorage.getItem('storedCode'))? JSON.parse(localStorage.getItem('storedCode')) : {
+  const retrievedCode = !(localStorage.getItem('storedCode')) || localStorage.getItem('storedCode') == 'undefined' ? {
     code: "No Generated Code"
   }
+  :
+  // @ts-ignore
+  JSON.parse(localStorage.getItem('storedCode'))
+  
   const handleGenerateCode = async () => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(async (position) => {
@@ -119,7 +120,7 @@ export const CourseDrawerShow = (props: Props) => {
   
   const mainCode = codeData?.data?.code ??  "No Generated Code"
   
-  console.log(retrievedCode);
+  console.log(retrievedCode.code);
   
 
   const handleDrawerClose = () => {
@@ -129,13 +130,7 @@ export const CourseDrawerShow = (props: Props) => {
     }
 
     go({
-      to:
-        // searchParams.get("to") ??
-        // getToPath({
-        //   action: "list",
-        // }) ??
-
-        `${listUrl("courses")}`,
+      to:`${listUrl("courses")}`,
       query: {
         to: pathname,
       },
@@ -144,12 +139,13 @@ export const CourseDrawerShow = (props: Props) => {
       },
       type: "replace",
     });
+    localStorage.setItem('storedCode', 'undefined')
   };
 
   return (
     <Drawer
       open={true}
-      width={breakpoint.sm ? "90%" : "100%"}
+      width={breakpoint.sm ? "60%" : "100%"}
       zIndex={1001}
       onClose={handleDrawerClose}
     >
@@ -199,7 +195,7 @@ export const CourseDrawerShow = (props: Props) => {
           }}
           
         >
-          <Button
+          <SaveButton
             style={{
               backgroundColor: 'green' ,
               color: 'white',
@@ -210,35 +206,35 @@ export const CourseDrawerShow = (props: Props) => {
             onClick={handleGenerateCode}
           >
             {t("Generate Code")}
-          </Button>
+          </SaveButton>
         </Flex>
-      </Spin>
-      <Flex
-        vertical
-        style={{
-          backgroundColor: token.colorBgContainer,
-          padding: "40px",
-          margin: 40,
-          borderRadius: 10
-        }}
-      >
-        <Flex gap={100}
+        <Flex
+          vertical
           style={{
-            width: "100%",
+            backgroundColor: token.colorBgContainer,
+            padding: "40px",
+            margin: 40,
+            borderRadius: 10
           }}
         >
-          <Typography.Text type="secondary" style={{fontSize: 16, fontStyle: 'italic'}}>
-            Generated code appears below
-          </Typography.Text>
+          <Flex gap={100}
+            style={{
+              width: "100%",
+            }}
+          >
+            <Typography.Text type="secondary" style={{fontSize: 16, fontStyle: 'italic'}}>
+              Generated code appears below
+            </Typography.Text>
+          </Flex>
+          <Divider
+            style={{
+              margin: 10,
+              padding: 10,
+            }}
+          />
+          <Typography.Text type="secondary" style={{ textAlign: 'center', padding: '70px 0px', fontSize: 50, fontStyle: 'italic' }}>{ codeData == undefined? retrievedCode.code : mainCode }</Typography.Text>
         </Flex>
-        <Divider
-          style={{
-            margin: 10,
-            padding: 10,
-          }}
-        />
-        <Typography.Text type="secondary" style={{ textAlign: 'center', padding: '70px 0px', fontSize: 50, fontStyle: 'italic' }}>{ retrievedCode == 'undefined' ? mainCode : retrievedCode?.data.code }</Typography.Text>
-      </Flex>
+      </Spin>
     </Drawer>
   );
 };

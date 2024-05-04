@@ -1,7 +1,7 @@
-import { Flex, Divider, Typography, Button, Drawer, Spin, theme, Col, Row, Card, Form, Input } from "antd";
-import { CardWithPlot, StoreForm } from "../../components";
-import { CheckCircleOutlined, EditOutlined } from "@ant-design/icons";
-import { useGetIdentity, useTranslate, useCreate, useShow, HttpError } from "@refinedev/core";
+import { Flex, Divider, Typography, Spin, theme, Col, Row, Card, Form, Input } from "antd";
+import { CardWithPlot } from "../../components";
+import { CheckCircleOutlined } from "@ant-design/icons";
+import { useGetIdentity, useTranslate, useCreate } from "@refinedev/core";
 import { IIdentity } from "../../interfaces";
 import { SaveButton} from "@refinedev/antd";
 import { useEffect, useState } from "react";
@@ -11,12 +11,22 @@ export const StoreCreate = () => {
   const { data: user } = useGetIdentity<IIdentity>();
   const t = useTranslate();
   const { token } = theme.useToken();
-  const { mutate, data:courseData, isLoading } = useCreate();
+  const { mutate:courseMutate, data:courseData, isLoading } = useCreate();
+  const { mutate:attendanceMutate, data:attendanceData, isLoading:attendanceLoading, isError: attendanceError } = useCreate();
   const [code, setCode] = useState('')
+  const [attendanceToggle, setAttendanceToggle] = useState(true)
 
+
+  if (attendanceError) {
+    setAttendanceToggle(prevState => !prevState)
+    localStorage.setItem('attendanceToggle', 'true')
+    localStorage.removeItem('verificationCode')
+  }
+  
 // @ts-ignore
   const retrievedCode = localStorage.getItem('storedData') != 'undefined'|| !(localStorage.getItem('storedData'))? JSON.parse(localStorage.getItem('storedData')) : {
-    courses: {
+    data: {
+      courses: {
       id: "N/A",
       code: "N/A",
       name: "N/A",
@@ -25,6 +35,7 @@ export const StoreCreate = () => {
     session: {
       id: "N/A",
       expiration_time: "N/A"
+      }
     }
   }
   // console.log(retrievedCode);
@@ -33,18 +44,21 @@ export const StoreCreate = () => {
     const data = localStorage.getItem('storedData');
     if (data == 'undefined' || !data) {
       localStorage.setItem('storedData', JSON.stringify(courseData))
+
     }
     
   }, [courseData])
+
+  
   
 const handleFinish = async () => {
   if (navigator.geolocation) {
     navigator.geolocation.getCurrentPosition(async (position) => {
-      const latitude = 6.6860058;  {/*position.coords.latitude*/}
-      const longitude = -1.6008305; {/*position.coords.longitude*/} 
+      const latitude = 5.5592846;  {/*position.coords.latitude*/}
+      const longitude = -0.1974306; {/*position.coords.longitude*/} 
 
       try {
-          mutate({
+          courseMutate({
           resource: `verification_api/${user?.id}/`,
           values: {
             verificationcode: code,
@@ -54,17 +68,76 @@ const handleFinish = async () => {
         }, {
           onSuccess: () => {
             // refetch()
+            setAttendanceToggle(prevState => !prevState)
+            localStorage.setItem('attendanceToggle', 'false')
+            localStorage.setItem('verificationCode', JSON.stringify({
+              code: code
+            }))
           },
         });
 
-      } catch (error) {
-        console.log("Error creating data:", error);
+      } catch (error: any) {
+        console.log(error.message);
       }
     }, (error) => {
       console.log("Error getting location:", error);
     });
   } else {
     console.log("Geolocation is not supported by this browser.");
+  }
+};
+  
+
+const handleMarkAttendance = async () => {
+  if (courseData != undefined) {
+      try {
+          attendanceMutate({
+          resource: `MarkAttendance/${user?.id}/${code}/`,
+          values: {},
+        }, {
+          onSuccess: () => {
+            // refetch()
+            setAttendanceToggle(prevState => !prevState)
+            localStorage.removeItem('attendanceToggle')
+            // @ts-ignore
+            if (JSON.parse(localStorage.getItem('attendanceMarked'))) {
+              
+              localStorage.setItem('attendanceMarked', 'false')
+            } else { 
+              localStorage.setItem('attendanceMarked', 'true')
+            }
+            localStorage.removeItem('verificationCode')
+          },
+        });
+
+      } catch (error) {
+        console.log("Error marking attendance:", error);
+      }
+
+  } else {
+    const code = localStorage.getItem('verificationCode')
+      try {
+          attendanceMutate({
+          resource: `MarkAttendance/${user?.id}/${code}`,
+          values: {},
+        }, {
+          onSuccess: () => {
+            // refetch()
+            localStorage.removeItem('attendanceToggle')
+            localStorage.setItem('attendanceMarked', 'true')
+            localStorage.removeItem('verificationCode')
+            setAttendanceToggle(prevState => !prevState)
+          },
+          onError: () => {
+            setAttendanceToggle(prevState => !prevState)
+            localStorage.setItem('attendanceToggle', 'false')
+            localStorage.removeItem('verificationCode')
+          },
+        });
+
+      } catch (error) {
+        console.log("Error marking attendance:", error);
+      }
   }
 };
 
@@ -90,8 +163,8 @@ const handleFinish = async () => {
   // @ts-ignore
   const retrievedSessionTime = new Date(retrievedCode?.data.session.expiration_time).toLocaleTimeString()
 
-  
-  console.log();
+  // @ts-ignore
+  console.log(JSON.parse(localStorage.getItem('attendanceToggle')));
   
 
 
@@ -100,89 +173,108 @@ const handleFinish = async () => {
   <Typography.Title style={{ fontSize: 25}}>Mark Attendance</Typography.Title>
     <Divider />    
     <Spin spinning={isLoading}>
-      <Row gutter={32} wrap>
-        <Col xs={24} md={12} lg={9} style={{marginTop: 64}}>
+        <Row gutter={32} wrap>
+          {
+          // @ts-ignore
+          !(localStorage.getItem('attendanceToggle')) && attendanceToggle || JSON.parse(localStorage.getItem('attendanceToggle')) != false && attendanceToggle ? 
+            <Col xs={24} md={12} lg={9} style={{marginTop: 64}}>
 
-            <Card
-              styles={{
-                body: {
-                  padding: 50,
-                },
-              }}
-            >
-            <Form.Item
-                // name="email"
-                name={"verificationcode"}
-                label={"Verification Code"}
-                rules={[
-                  { required: true },
-                  {
-                    // type: "number",
-                    message: "Invalid Vefication code",
-                  },
-                ]}
-              >
-                <Input
-                  onChange={(e) => setCode(e.currentTarget.value)}
-                  size="large"
-                  placeholder={"Verification Code"}
-                />
-            </Form.Item>
-              <SaveButton
-                style={{
-                  marginLeft: "auto",
-                  width: '100%'
-                }}
-                htmlType="submit"
-                onClick={handleFinish}
-                type="primary"
-                icon={<CheckCircleOutlined onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined}/>}
-              >
-                Verify
-              </SaveButton>
-            </Card>
-        </Col>
-        <Col xs={24} md={12} lg={9} style={{marginTop: 64}}>
+                <Card
+                  styles={{
+                    body: {
+                      padding: 50,
+                    },
+                  }}
+                >
+                <Form.Item
+                    // name="email"
+                    name={"verificationcode"}
+                    label={"Verification Code"}
+                    rules={[
+                      { required: true },
+                      {
+                        // type: "number",
+                        message: "Invalid Vefication code",
+                      },
+                    ]}
+                  >
+                    <Input
+                      onChange={(e) => setCode(e.currentTarget.value)}
+                      size="large"
+                      placeholder={"Verification Code"}
+                    />
+                </Form.Item>
+                  <SaveButton
+                    style={{
+                      marginLeft: "auto",
+                      width: '100%'
+                    }}
+                    htmlType="submit"
+                    onClick={handleFinish}
+                    type="primary"
+                    icon={<CheckCircleOutlined onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined}/>}
+                  >
+                    Verify
+                  </SaveButton>
+                </Card>
+            </Col>
+            :
+            <Col xs={24} md={12} lg={9} style={{marginTop: 64}}>
 
-            <Card
-              styles={{
-                body: {
-                  padding: 50,
-                },
-              }}
-            >
-            <Form.Item
-                // name="email"
-                name={"verificationcode"}
-                label={"Verification Code"}
-                rules={[
-                  { required: true },
-                  {
-                    // type: "number",
-                    message: "Invalid Vefication code",
-                  },
-                ]}
-              >
-                <Input
-                  onChange={(e) => setCode(e.currentTarget.value)}
-                  size="large"
-                  placeholder={"Verification Code"}
-                />
-            </Form.Item>
-              <SaveButton
-                style={{
-                  marginLeft: "auto",
-                  width: '100%'
-                }}
-                htmlType="submit"
-                onClick={handleFinish}
-                type="primary"
-                icon={<CheckCircleOutlined onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined}/>}
-              >
-                Verify
-              </SaveButton>
-            </Card>
-        </Col>
+                <Card
+                  
+                  styles={{
+                    body: {
+                      padding: 30,
+                    },
+                  }}
+                >
+                  <Typography.Text style={{
+                    fontStyle: 'italic',
+                    color: 'grey',
+                  }}>
+                    Note: Use the start button if this is the first session verification of the class otherwise use the end button
+                  </Typography.Text>
+                  <Flex gap={30} style={{marginTop: 35}}>
+                  <SaveButton
+                    style={{
+                      marginLeft: "auto",
+                      width: '100%',
+                      backgroundColor: 'green'
+                      }}
+                      htmlType="submit"
+                      onClick={handleMarkAttendance}
+                      disabled={
+                      // @ts-ignore
+                        JSON.parse(localStorage.getItem('attendanceMarked'))
+                      }
+                      type="primary"
+                      icon={<CheckCircleOutlined onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined}/>}
+                      >
+                    Start
+                  </SaveButton>
+                  <SaveButton
+                    style={{
+                      marginLeft: "auto",
+                      width: '100%',
+                      backgroundColor: 'red',
+                    }}
+                      disabled={
+                        // @ts-ignore
+                        JSON.parse(localStorage.getItem('attendanceMarked')) != true
+                       }
+                    htmlType="submit"
+                    onClick={handleMarkAttendance}
+                    type="primary"
+                    icon={<CheckCircleOutlined onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined}/>}
+                  >
+                    End
+                  </SaveButton>
+                  </Flex>
+                </Card>
+            </Col>
+          
+          }
         <Col
           xs={24}
           md={12}
@@ -220,7 +312,7 @@ const handleFinish = async () => {
             
             {
             // @ts-ignore
-              retrievedCode == 'undefined' ?  verifiedCourse.code : retrievedCode?.data.courses.code
+              verifiedCourse.code != 'N/A' ?  verifiedCourse.code : retrievedCode?.data.courses.code
             }
             </Typography.Text>
           </Flex>
@@ -240,7 +332,7 @@ const handleFinish = async () => {
             
             {
               // @ts-ignore
-              retrievedCode == 'undefined' ? verifiedCourse.name : retrievedCode?.data.courses.name
+              verifiedCourse.name != 'N/A' ? verifiedCourse.name : retrievedCode?.data.courses.name
             }
             </Typography.Text>
           </Flex>
@@ -260,7 +352,7 @@ const handleFinish = async () => {
             
             {
               // @ts-ignore
-              retrievedCode == 'undefined' ? courseSession.id : retrievedCode?.data.session.id
+              courseSession.id != 'N/A' ? courseSession.id : retrievedCode?.data.session.id
             }
             </Typography.Text>
           </Flex>
@@ -280,7 +372,7 @@ const handleFinish = async () => {
             
             {
               // @ts-ignore
-              retrievedCode == 'undefined'? sessionCode.expiration_time === "N/A" ? sessionCode.expiration_time:
+              courseSession.expiration_time != 'N/A'?
               sessionTime : retrievedSessionTime
             }
             </Typography.Text>

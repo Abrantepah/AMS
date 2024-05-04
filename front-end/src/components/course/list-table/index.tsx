@@ -71,7 +71,7 @@ export const CourseListTable = () => {
   // @ts-ignore
   const allCourses = tableProps.dataSource?.courses ?? []
   
-  console.log(allCourses);
+  // console.log(allCourses);
   
 
   // const { selectProps: categorySelectProps, queryResult } =
