@@ -9,7 +9,6 @@ import { useEffect, useState } from "react";
 export const StoreCreate = () => {
 
   const { data: user } = useGetIdentity<IIdentity>();
-  const t = useTranslate();
   const { token } = theme.useToken();
   const { mutate:courseMutate, data:courseData, isLoading } = useCreate();
   const { mutate:attendanceMutate, data:attendanceData, isLoading:attendanceLoading, isError: attendanceError } = useCreate();
@@ -106,6 +105,7 @@ const handleMarkAttendance = async () => {
             } else { 
               localStorage.setItem('attendanceMarked', 'true')
             }
+            localStorage.removeItem('storedData')
             localStorage.removeItem('verificationCode')
           },
         });
@@ -124,8 +124,15 @@ const handleMarkAttendance = async () => {
           onSuccess: () => {
             // refetch()
             localStorage.removeItem('attendanceToggle')
-            localStorage.setItem('attendanceMarked', 'true')
+            // @ts-ignore
+            if (JSON.parse(localStorage.getItem('attendanceMarked'))) {
+              
+              localStorage.setItem('attendanceMarked', 'false')
+            } else { 
+              localStorage.setItem('attendanceMarked', 'true')
+            }
             localStorage.removeItem('verificationCode')
+            localStorage.removeItem('storedData')
             setAttendanceToggle(prevState => !prevState)
           },
           onError: () => {

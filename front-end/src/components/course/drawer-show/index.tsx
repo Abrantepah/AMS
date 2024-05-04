@@ -10,21 +10,18 @@ import {
   useTranslate,
 } from "@refinedev/core";
 import {
-  Avatar,
-  Button,
   Divider,
   Flex,
   Grid,
-  List,
   Spin,
   Typography,
   theme,
 } from "antd";
-import { useLocation, useParams, useSearchParams } from "react-router-dom";
+import { useLocation, useParams } from "react-router-dom";
 import { Drawer } from "../../drawer";
-import { ICategory, IIdentity, IProduct } from "../../../interfaces";
-import { EditOutlined } from "@ant-design/icons";
-import { useEffect } from "react";
+import { IIdentity } from "../../../interfaces";
+import { QrcodeOutlined } from "@ant-design/icons";
+import { useEffect, useState } from "react";
 import { SaveButton } from "@refinedev/antd";
 
 type Props = {
@@ -53,6 +50,8 @@ export const CourseDrawerShow = (props: Props) => {
   const breakpoint = Grid.useBreakpoint();
   const { mutate, data:codeData, isLoading } = useCreate();
 
+  const [isButtonDisabled, setButtonDisabled] = useState(false);
+
 
     useEffect(() => {
     const data = localStorage.getItem('storedCode');
@@ -69,13 +68,14 @@ export const CourseDrawerShow = (props: Props) => {
   JSON.parse(localStorage.getItem('storedCode'))
   
   const handleGenerateCode = async () => {
+    setButtonDisabled(true);
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(async (position) => {
         const latitude = position.coords.latitude;
         const longitude = position.coords.longitude;
 
         try {
-          await mutate({
+          mutate({
             resource: `generateCode/${user?.id}/${params.id}/`,
             values: {
               latitude: latitude,
@@ -84,10 +84,12 @@ export const CourseDrawerShow = (props: Props) => {
           }, {
             onSuccess: () => {
               // refetch()
+              setButtonDisabled(false);
             },
           });
         } catch (error) {
           console.log("Error creating data:", error);
+          setButtonDisabled(false);
         }
       }, (error) => {
         console.log("Error getting location:", error);
@@ -202,10 +204,12 @@ export const CourseDrawerShow = (props: Props) => {
               fontSize: '20px',
               height: "50px"
             }}
-            icon={<EditOutlined onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined} />}
+            htmlType="submit"
+            disabled={isButtonDisabled}
+            icon={isButtonDisabled?<Spin tip style={{color: 'white'}} /> :<QrcodeOutlined onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined} />}
             onClick={handleGenerateCode}
           >
-            {t("Generate Code")}
+            {isButtonDisabled? "Generating...": "Generate Code"}
           </SaveButton>
         </Flex>
         <Flex
