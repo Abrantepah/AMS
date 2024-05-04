@@ -1,19 +1,20 @@
-import { useGetIdentity } from "@refinedev/core";
-import { IIdentity} from "../../interfaces";
 import { StudentDashboardPage } from "./studentDashboard";
 import { LecturerDashboardPage } from "./lecturerDashboard";
 import { redirect } from "react-router-dom";
 
 
 export const DashboardPage: React.FC = () => {
-  const { data: user } = useGetIdentity<IIdentity>();
+  const role = localStorage.getItem('role');
 
-  // console.log(user);  
+   const parsedRole = role!== null? JSON.parse(role): {role: null}
+
+
+  console.log(parsedRole);  
   
-  if (user?.year) {
+  if (parsedRole.role === 'student') {
     return <StudentDashboardPage />
   }
-  else if (user?.id)  {
+  else if (parsedRole.role === 'lecturer')  {
     return <LecturerDashboardPage />
   }
   else {

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Authenticated, Refine } from "@refinedev/core";
 import { RefineKbarProvider } from "@refinedev/kbar";
 import {
@@ -55,7 +55,6 @@ const App: React.FC = () => {
   // This hook is used to automatically login the user.
   // We use this hook to skip the login page and demonstrate the application more quickly.
   const { loading } = useAutoLoginForDemo();
-  const role = localStorage.getItem('role');
 
   // const API_URL = "https://api.finefoods.refine.dev";
   const API_URL = "https://knust-ams.up.railway.app/api";
@@ -69,26 +68,42 @@ const App: React.FC = () => {
   //   getLocale: () => i18n.language,
   // };
   // @ts-ignore
-  const parsedRole = JSON.parse(role)
-  console.log(parsedRole?.role);
+  const [role, setRole] = useState(JSON.parse(localStorage.getItem('role')));
+  
+    useEffect(() => {
+      const handleStorageChange = () => {
+      // @ts-ignore
+      setRole(JSON.parse(localStorage.getItem('role')));
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+    };
+    }, []);
+  
+
+  // @ts-ignore
+  console.log(role?.role);
   
 
   if (loading) {
     return null;
   }
 
-  const commonResources = [
-    {
-      name: "dashboard",
-      list: "/",
-      meta: {
-        label: "Dashboard",
-        icon: <DashboardOutlined onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined} />,
-      },
-    },
-  ];
+  // const commonResources = [
+  //   {
+  //     name: "dashboard",
+  //     list: "/",
+  //     meta: {
+  //       label: "Dashboard",
+  //       icon: <DashboardOutlined onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined} />,
+  //     },
+  //   },
+  // ];
 // @ts-ignore
-  const condtionalResources = parsedRole?.role === 'lecturer' ?
+  const condtionalResources = role === 'lecturer' ?
     [
       {
         name: "courses",
@@ -114,7 +129,7 @@ const App: React.FC = () => {
       },
     ];
   
-  const resources = [...commonResources, ...condtionalResources];
+  // const resources = [...commonResources, ...condtionalResources];
 
   return (
     <BrowserRouter>
@@ -134,7 +149,37 @@ const App: React.FC = () => {
               warnWhenUnsavedChanges: true,
             }}
             notificationProvider={useNotificationProvider}
-            resources={resources}
+            resources={[
+              {
+                name: "dashboard",
+                list: "/",
+                meta: {
+                  label: "Dashboard",
+                  icon: <DashboardOutlined onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined} />,
+                },
+              },
+              // @ts-ignore
+              role?.role === 'lecturer' ? {
+                name: "courses",
+                list: "/courses",
+                create: "/courses/new",
+                edit: "/courses/:id/edit",
+                show: "/courses/:id",
+                meta: {
+                  icon: <TagsOutlined onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined} />,
+                },
+              }
+              : 
+              {
+                name: "verification",
+                list: "/verification",
+                create: "/verification/new",
+                edit: "/verification/:id/edit",
+                meta: {
+                  icon: <ShopOutlined onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined} />,
+                },
+              },
+            ]}
           >
             <Routes>
               <Route

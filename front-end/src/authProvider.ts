@@ -76,7 +76,7 @@ export const authProvider: AuthProvider = {
     return {
       success: false,
       error: {
-        name: "LoginError",
+        name: "Student Login Fail",
         message: "Invalid reference or password",
       },
     };
@@ -118,7 +118,7 @@ export const authProvider: AuthProvider = {
     return {
       success: false,
       error: {
-        message: "Register failed",
+        message: "Lecturer Login failed",
         name: "Invalid ID or password",
       },
     };
@@ -143,7 +143,14 @@ export const authProvider: AuthProvider = {
   },
   logout: async () => {
     disableAutoLogin();
-    localStorage.removeItem(TOKEN_KEY);
+    localStorage.clear();
+
+    document.cookie.split(";").forEach((c) => {
+      document.cookie = c
+        .replace(/^ +/, "")
+        .replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
+    });
+
     return {
       success: true,
       redirectTo: "/student-login",

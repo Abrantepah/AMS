@@ -16,15 +16,15 @@ import {
   Flex,
   Grid,
   List,
+  Spin,
   Typography,
   theme,
 } from "antd";
 import { useLocation, useParams, useSearchParams } from "react-router-dom";
 import { Drawer } from "../../drawer";
 import { ICategory, IIdentity, IProduct } from "../../../interfaces";
-import { DeleteButton, NumberField } from "@refinedev/antd";
-import { ProductStatus } from "../status";
 import { EditOutlined } from "@ant-design/icons";
+import { useEffect } from "react";
 
 type Props = {
   id?: BaseKey;
@@ -53,10 +53,20 @@ export const CourseDrawerShow = (props: Props) => {
   const t = useTranslate();
   const { token } = theme.useToken();
   const breakpoint = Grid.useBreakpoint();
-  const { mutate, data:codeData } = useCreate();
+  const { mutate, data:codeData, isLoading } = useCreate();
 
 
-
+    useEffect(() => {
+    const data = localStorage.getItem('storedCode');
+    if (data == 'undefined' || !data) {
+      localStorage.setItem('storedCode', JSON.stringify(codeData))
+    }
+    
+  }, [codeData])
+// @ts-ignore
+  const retrievedCode = localStorage.getItem('storedCode') != 'undefined'|| !(localStorage.getItem('storedCode'))? JSON.parse(localStorage.getItem('storedCode')) : {
+    code: "No Generated Code"
+  }
   const handleGenerateCode = async () => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(async (position) => {
@@ -109,7 +119,7 @@ export const CourseDrawerShow = (props: Props) => {
   
   const mainCode = codeData?.data?.code ??  "No Generated Code"
   
-  console.log(mainCode);
+  console.log(retrievedCode);
   
 
   const handleDrawerClose = () => {
@@ -179,28 +189,30 @@ export const CourseDrawerShow = (props: Props) => {
         />
         <Typography.Text style={{color: 'red', fontSize: 16, fontStyle: 'italic'}}>Every session has time limit of 15 minutes</Typography.Text>
       </Flex>
-      <Flex
-        align="center"
-        justify="center"
-        style={{
-          padding: "16px 16px 16px 0",
-          height: "100px"
-        }}
-        
-      >
-        <Button
+      <Spin spinning={isLoading}>
+        <Flex
+          align="center"
+          justify="center"
           style={{
-            backgroundColor: 'green' ,
-            color: 'white',
-            fontSize: '20px',
-            height: "50px"
+            padding: "16px 16px 16px 0",
+            height: "100px"
           }}
-          icon={<EditOutlined onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined} />}
-          onClick={handleGenerateCode}
+          
         >
-          {t("Generate Code")}
-        </Button>
-      </Flex>
+          <Button
+            style={{
+              backgroundColor: 'green' ,
+              color: 'white',
+              fontSize: '20px',
+              height: "50px"
+            }}
+            icon={<EditOutlined onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined} />}
+            onClick={handleGenerateCode}
+          >
+            {t("Generate Code")}
+          </Button>
+        </Flex>
+      </Spin>
       <Flex
         vertical
         style={{
@@ -225,7 +237,7 @@ export const CourseDrawerShow = (props: Props) => {
             padding: 10,
           }}
         />
-        <Typography.Text type="secondary" style={{ textAlign: 'center', padding: '70px 0px', fontSize: 50, fontStyle: 'italic' }}>{ mainCode }</Typography.Text>
+        <Typography.Text type="secondary" style={{ textAlign: 'center', padding: '70px 0px', fontSize: 50, fontStyle: 'italic' }}>{ retrievedCode == 'undefined' ? mainCode : retrievedCode?.data.code }</Typography.Text>
       </Flex>
     </Drawer>
   );

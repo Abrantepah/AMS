@@ -1,33 +1,33 @@
 import { Col, Row, theme, Spin, Typography, Flex } from "antd";
-import { useStoreForm } from "./useStoreForm";
+import { useCreate } from "@refinedev/core";
 import { StoreFormFields } from "./fields";
 import { UseFormProps } from "@refinedev/antd";
 import { CheckCircleOutlined } from "@ant-design/icons";
 import { CardWithPlot } from "../../card";
+import { useState } from "react";
 
 type Props = {
   action: UseFormProps["action"];
 };
 
-export const StoreForm = (props: Props) => {
+export const
+  StoreForm = (props: Props) => {
+    const [isFormDisabled, setIsFormDisabled] = useState(() =>
+    props.action === "edit" ? true : false,
+  );
   const { token } = theme.useToken();
-  const {
-    formProps,
-    saveButtonProps,
-    formLoading,
-    isFormDisabled,
-    setIsFormDisabled,
-  } = useStoreForm({
-    action: props.action,
-  });
+  const { data, isLoading, mutate } = useCreate();
+  
+    // console.log(createData);
+    
 
   return (
-    <Spin spinning={formLoading}>
+    <Spin spinning={isLoading}>
       <Row gutter={32} wrap>
         <Col xs={24} md={12} lg={9} style={{marginTop: 64}}>
           <StoreFormFields
-            formProps={formProps}
-            saveButtonProps={saveButtonProps}
+            mutate={mutate}
+            // saveButtonProps={saveButtonProps}
             action={props.action}
             isFormDisabled={isFormDisabled}
             setIsFormDisabled={setIsFormDisabled}

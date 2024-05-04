@@ -23,12 +23,12 @@ export const StudentDashboardPage = () => {
   const { listUrl } = useNavigation();
   const pathname = useLocation()
 
-    const { queryResult: lecturerCourses } = useShow({
-      resource: "generateCode",
-      id: user?.id
-  });
+  //   const { queryResult: lecturerCourses } = useShow({
+  //     resource: "generateCode",
+  //     id: user?.id
+  // });
 
-  const courses = lecturerCourses.data?.data.courses ?? [];
+  // const courses = lecturerCourses.data?.data.courses ?? [];
 
   
 
