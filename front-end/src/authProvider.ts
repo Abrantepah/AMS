@@ -51,6 +51,9 @@ export const authProvider: AuthProvider = {
           // credentials: "include"
       })
       const data = await response.json()
+      localStorage.setItem('role', JSON.stringify({
+        role: 'student'
+      }))
       if (response.status === 200) {
         localStorage.setItem(TOKEN_KEY,
           JSON.stringify({
@@ -63,9 +66,6 @@ export const authProvider: AuthProvider = {
             user: data.user,
             programme: data.programme
         }));
-        localStorage.setItem('role', JSON.stringify({
-          role: 'student'
-        }))
         return {
           success: true,
           redirectTo: "/",
@@ -96,6 +96,9 @@ export const authProvider: AuthProvider = {
           // credentials: "include"
       })
       const data = await response.json()
+      localStorage.setItem('role', JSON.stringify({
+        role: 'lecturer'
+      }))
         if (response.status === 200) {
           localStorage.setItem(TOKEN_KEY,
             JSON.stringify({
@@ -105,9 +108,6 @@ export const authProvider: AuthProvider = {
               user: data.user,
               department: data.department
             }));
-          localStorage.setItem('role', JSON.stringify({
-            role: 'lecturer'
-          }))
           return {
             success: true,
             redirectTo: "/",
@@ -148,7 +148,7 @@ export const authProvider: AuthProvider = {
     document.cookie.split(";").forEach((c) => {
       document.cookie = c
         .replace(/^ +/, "")
-        .replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
+        .replace(/=.*/, "=;expires=" + 'Thu, 01 Jan 1970 00:00:00 GMT' + ";path=/");
     });
 
     return {

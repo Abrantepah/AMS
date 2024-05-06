@@ -119,7 +119,9 @@ const handleMarkAttendance = async () => {
       try {
           attendanceMutate({
           resource: `MarkAttendance/${user?.id}/${code}`,
-          values: {},
+            values: {
+            attendance_type: "start"
+          },
         }, {
           onSuccess: () => {
             // refetch()

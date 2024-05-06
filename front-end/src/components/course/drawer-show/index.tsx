@@ -119,6 +119,15 @@ export const CourseDrawerShow = (props: Props) => {
   const availableSession = courses.session ?? {
     id: "No Id",
   };
+
+  useEffect(() => {
+    
+  
+    return () => {
+      availableSession
+    }
+  }, [availableSession])
+  
   
   const mainCode = codeData?.data?.code ??  "No Generated Code"
   
