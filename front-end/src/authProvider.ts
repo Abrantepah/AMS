@@ -2,7 +2,7 @@ import { AuthProvider } from "@refinedev/core";
 import { notification } from "antd";
 import { disableAutoLogin, enableAutoLogin } from "./hooks";
 
-export const TOKEN_KEY = "refine-auth";
+export const TOKEN_KEY = "attendance-auth";
 
 export const authProvider: AuthProvider = {
   // login: async ({ reference, password }) => {
@@ -51,52 +51,77 @@ export const authProvider: AuthProvider = {
           // credentials: "include"
       })
       const data = await response.json()
-          if (response.status === 200) {
-            localStorage.setItem(TOKEN_KEY,
-              JSON.stringify({
-                id: data._id,
-                username: data.name,
-                email: data.email,
-                avatar: data.companyLogo,
-                companyNumber: data.companyNumber,
-                companyName: data.companyName,
-                companyEmail: data.companyEmail,
-                exporterCode: data.exporterCode,
-                roles: data.roles
-              }));
-            return {
-              success: true,
-              redirectTo: "/",
+      if (response.status === 200) {
+        localStorage.setItem(TOKEN_KEY,
+          JSON.stringify({
+            id: data.id,
+            reference: data.reference,
+            index: data.index,
+            name: data.name,
+            year: data.year,
+            total_strike: data.total_strike,
+            user: data.user,
+            programme: data.programme
+        }));
+        localStorage.setItem('role', JSON.stringify({
+          role: 'student'
+        }))
+        return {
+          success: true,
+          redirectTo: "/",
         };
-        
       }
     }
 
     return {
       success: false,
       error: {
-        name: "LoginError",
-        message: "Invalid username or password",
+        name: "Student Login Fail",
+        message: "Invalid reference or password",
       },
     };
   },
 
 
-  register: async ({ email, password }) => {
-    try {
-      await authProvider.login({ email, password });
-      return {
-        success: true,
-      };
-    } catch (error) {
-      return {
-        success: false,
-        error: {
-          message: "Register failed",
-          name: "Invalid email or password",
-        },
-      };
+  register: async ({ reference, password }) => {
+    if (reference && password) {
+      // localStorage.setItem(TOKEN_KEY, `${reference}-${password}`)
+      const response = await fetch("https://knust-ams.up.railway.app/api/lecturer-login/", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+              username: reference,
+              password: password
+          }),
+          // credentials: "include"
+      })
+      const data = await response.json()
+        if (response.status === 200) {
+          localStorage.setItem(TOKEN_KEY,
+            JSON.stringify({
+              id: data.id,
+              reference: data.reference,
+              name: data.name,
+              user: data.user,
+              department: data.department
+            }));
+          localStorage.setItem('role', JSON.stringify({
+            role: 'lecturer'
+          }))
+          return {
+            success: true,
+            redirectTo: "/",
+          };
+        }
     }
+
+    return {
+      success: false,
+      error: {
+        message: "Lecturer Login failed",
+        name: "Invalid ID or password",
+      },
+    };
   },
   updatePassword: async () => {
     notification.success({
@@ -118,7 +143,14 @@ export const authProvider: AuthProvider = {
   },
   logout: async () => {
     disableAutoLogin();
-    localStorage.removeItem(TOKEN_KEY);
+    localStorage.clear();
+
+    document.cookie.split(";").forEach((c) => {
+      document.cookie = c
+        .replace(/^ +/, "")
+        .replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
+    });
+
     return {
       success: true,
       redirectTo: "/student-login",
@@ -154,14 +186,18 @@ export const authProvider: AuthProvider = {
   getPermissions: async () => null,
   getIdentity: async () => {
     const token = localStorage.getItem(TOKEN_KEY);
-    if (!token) {
-      return null;
+    if (token) {
+      const parsedToken = JSON.parse(token)
+      return {
+        id: parsedToken.id,
+        name: parsedToken.name,
+        email: parsedToken.email,
+        avatar: parsedToken.avatar,
+        index: parsedToken.index
+      }
+
     }
 
-    return {
-      id: 1,
-      name: "James Sullivan",
-      avatar: "https://i.pravatar.cc/150",
-    };
+    return null
   },
 };

@@ -169,10 +169,10 @@ export const Header: React.FC = () => {
   });
 
   useEffect(() => {
-    setOptions([]);
-    refetchOrders();
-    refetchCouriers();
-    refetchStores();
+    // setOptions([]);
+    // refetchOrders();
+    // refetchCouriers();
+    // refetchStores();
   }, [value]);
 
   const menuItems: MenuProps["items"] = [...(i18n.languages || [])]
@@ -221,31 +221,6 @@ export const Header: React.FC = () => {
         </Col>
         <Col>
           <Space size={screens.md ? 32 : 16} align="center">
-            <Dropdown
-              menu={{
-                items: menuItems,
-                selectedKeys: currentLocale ? [currentLocale] : [],
-              }}
-            >
-              <Button onClick={(e) => e.preventDefault()}>
-                <Space>
-                  <Text className={styles.languageSwitchText}>
-                    {currentLocale === "en" ? "English" : "German"}
-                  </Text>
-                  <DownOutlined className={styles.languageSwitchIcon} onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined} />
-                </Space>
-              </Button>
-            </Dropdown>
-
-            <Button
-              className={styles.themeSwitch}
-              type="text"
-              icon={mode === "light" ? <IconMoon /> : <IconSun />}
-              onClick={() => {
-                setMode(mode === "light" ? "dark" : "light");
-              }}
-            />
-
             <Space size={screens.md ? 16 : 8} align="center">
               <Text ellipsis className={styles.userName}>
                 {user?.name}

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Authenticated, Refine } from "@refinedev/core";
 import { RefineKbarProvider } from "@refinedev/kbar";
 import {
@@ -36,12 +36,12 @@ import { AuthPage } from "./components/pages/auth";
 import { CustomerShow, CustomerList } from "./pages/customers";
 import { CourierList, CourierCreate, CourierEdit } from "./pages/couriers";
 import {
-  ProductList,
-  ProductCreate,
-  ProductEdit,
-  ProductShow,
-} from "./pages/products";
-import { StoreCreate, StoreEdit, StoreList } from "./pages/stores";
+  CourseList,
+  CourseCreate,
+  CourseEdit,
+  CourseShow,
+} from "./pages/courses";
+import { StoreCreate, StoreEdit, StoreList } from "./pages/verification";
 import { CategoryList } from "./pages/categories";
 import { useTranslation } from "react-i18next";
 import { Header, Title } from "./components";
@@ -67,10 +67,69 @@ const App: React.FC = () => {
   //   changeLocale: (lang: string) => i18n.changeLanguage(lang),
   //   getLocale: () => i18n.language,
   // };
+  // @ts-ignore
+  const [role, setRole] = useState(JSON.parse(localStorage.getItem('role')));
+  
+    useEffect(() => {
+      const handleStorageChange = () => {
+      // @ts-ignore
+      setRole(JSON.parse(localStorage.getItem('role')));
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+    };
+    }, []);
+  
+
+  // @ts-ignore
+  console.log(role?.role);
+  
 
   if (loading) {
     return null;
   }
+
+  // const commonResources = [
+  //   {
+  //     name: "dashboard",
+  //     list: "/",
+  //     meta: {
+  //       label: "Dashboard",
+  //       icon: <DashboardOutlined onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined} />,
+  //     },
+  //   },
+  // ];
+// @ts-ignore
+  const condtionalResources = role === 'lecturer' ?
+    [
+      {
+        name: "courses",
+        list: "/courses",
+        create: "/courses/new",
+        edit: "/courses/:id/edit",
+        show: "/courses/:id",
+        meta: {
+          icon: <TagsOutlined onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined} />,
+        },
+      },
+    ]
+    :
+    [
+      {
+        name: "verification",
+        list: "/verification",
+        create: "/verification/new",
+        edit: "/verification/:id/edit",
+        meta: {
+          icon: <ShopOutlined onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined} />,
+        },
+      },
+    ];
+  
+  // const resources = [...commonResources, ...condtionalResources];
 
   return (
     <BrowserRouter>
@@ -99,56 +158,25 @@ const App: React.FC = () => {
                   icon: <DashboardOutlined onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined} />,
                 },
               },
-              {
-                name: "orders",
-                list: "/orders",
-                show: "/orders/:id",
-                meta: {
-                  icon: <ShoppingOutlined onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined} />,
-                },
-              },
-              {
-                name: "users",
-                list: "/customers",
-                show: "/customers/:id",
-                meta: {
-                  icon: <UserOutlined onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined} />,
-                },
-              },
-              {
-                name: "products",
-                list: "/products",
-                create: "/products/new",
-                edit: "/products/:id/edit",
-                show: "/products/:id",
-                meta: {
-                  icon: <UnorderedListOutlined onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined} />,
-                },
-              },
-              {
-                name: "categories",
-                list: "/categories",
+              // @ts-ignore
+              role?.role === 'lecturer' ? {
+                name: "courses",
+                list: "/courses",
+                create: "/courses/new",
+                edit: "/courses/:id/edit",
+                show: "/courses/:id",
                 meta: {
                   icon: <TagsOutlined onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined} />,
                 },
-              },
+              }
+              : 
               {
-                name: "stores",
-                list: "/stores",
-                create: "/stores/new",
-                edit: "/stores/:id/edit",
+                name: "verification",
+                list: "/verification",
+                create: "/verification/new",
+                edit: "/verification/:id/edit",
                 meta: {
                   icon: <ShopOutlined onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined} />,
-                },
-              },
-              {
-                name: "couriers",
-                list: "/couriers",
-                create: "/couriers/new",
-                edit: "/couriers/:id/edit",
-                show: "/couriers/:id",
-                meta: {
-                  icon: <BikeWhiteIcon onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined} />,
                 },
               },
             ]}
@@ -176,7 +204,7 @@ const App: React.FC = () => {
               >
                 <Route index element={<DashboardPage />} />
 
-                <Route path="/orders">
+                {/* <Route path="/orders">
                   <Route index element={<OrderList />} />
                   <Route path=":id" element={<OrderShow />} />
                 </Route>
@@ -190,28 +218,28 @@ const App: React.FC = () => {
                   }
                 >
                   <Route path=":id" element={<CustomerShow />} />
-                </Route>
+                </Route> */}
 
                 <Route
-                  path="/products"
+                  path="/courses"
                   element={
-                    <ProductList>
+                    <CourseList>
                       <Outlet />
-                    </ProductList>
+                    </CourseList>
                   }
                 >
-                  <Route path="new" element={<ProductCreate />} />
-                  <Route path=":id" element={<ProductShow />} />
-                  <Route path=":id/edit" element={<ProductEdit />} />
+                  <Route path="new" element={<CourseCreate />} />
+                  <Route path=":id" element={<CourseShow />} />
+                  <Route path=":id/edit" element={<CourseEdit />} />
                 </Route>
 
-                <Route path="/stores">
-                  <Route index element={<StoreList />} />
+                <Route path="/verification">
+                  <Route index element={<StoreCreate />} />
                   <Route path="new" element={<StoreCreate />} />
                   <Route path=":id/edit" element={<StoreEdit />} />
                 </Route>
 
-                <Route path="/categories" element={<CategoryList />} />
+                {/* <Route path="/categories" element={<CategoryList />} />
 
                 <Route path="/couriers">
                   <Route
@@ -226,7 +254,7 @@ const App: React.FC = () => {
                   </Route>
 
                   <Route path=":id/edit" element={<CourierEdit />} />
-                </Route>
+                </Route>  */}
               </Route>
 
               <Route

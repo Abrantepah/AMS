@@ -46,6 +46,7 @@ export const CardWithPlot = (
     title: string;
     rightSlot?: React.ReactNode;
     bodyStyles?: React.CSSProperties;
+    handleClick?: () => void
   }>,
 ) => {
   return (
@@ -55,9 +56,11 @@ export const CardWithPlot = (
           padding: "16px 16px 10px 16px",
           minHeight: "max-content",
           borderBottom: 0,
+          cursor: "pointer"
         },
         body: {
           padding: "24px 16px 24px 24px",
+          cursor: "pointer",
           ...(props?.bodyStyles || {}),
         },
       }}
@@ -76,6 +79,7 @@ export const CardWithPlot = (
           {props?.rightSlot}
         </Flex>
       }
+      onClick={props.handleClick}
     >
       {props.children}
     </Card>

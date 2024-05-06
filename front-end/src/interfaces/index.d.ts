@@ -21,6 +21,35 @@ export interface ISalesChart {
   value: number;
 }
 
+export interface ICourses { 
+    lecturer: {
+        id: number,
+        name: string,
+        reference: string ,
+        email: string,
+        passwordChanged: boolean,
+        user: number,
+        department: number[]
+    },
+    courses: [
+        {
+            id: number,
+            name: string,
+            code: string,
+            year: number,
+            lecturer: number,
+            department: number[]
+        }
+    ],
+    session: {
+        date: Date,
+        time: TimeRanges,
+        expiration_time: TimeRanges,
+        course: string 
+    }
+
+}
+
 export interface IOrderStatus {
   id: number;
   text: "Pending" | "Ready" | "On The Way" | "Delivered" | "Cancelled";
@@ -43,6 +72,8 @@ export interface IIdentity {
   id: number;
   name: string;
   avatar: string;
+  index?: string;
+  year?: string
 }
 
 export interface IAddress {
