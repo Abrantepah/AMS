@@ -41,7 +41,7 @@ export const authProvider: AuthProvider = {
     login: async ({ reference, password }) => {
     if (reference && password) {
       // localStorage.setItem(TOKEN_KEY, {})
-      const response = await fetch("https://knust-ams.up.railway.app/api/student-login", {
+      const response = await fetch("https://knust-ams.up.railway.app/api/student-login/", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({

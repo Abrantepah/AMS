@@ -314,6 +314,7 @@ def create_student_sessions(sender, instance, created, **kwargs):
             )
 
 
+
 class StudentPermission(models.Model):
     studentsession = models.ForeignKey(
         StudentSession, on_delete=models.PROTECT)

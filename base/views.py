@@ -383,7 +383,7 @@ def LecturerHome(request):
             selected_longitude = request.POST.get('longitude')
 
             # minutes it takes for code to expire
-            expiration_minutes = 3
+            expiration_minutes = 20
 
             # Generate a verification code
             code = generate_verification_code(
