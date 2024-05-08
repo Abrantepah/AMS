@@ -585,6 +585,7 @@ def import_students(request):
     return Response({'message': 'Valid request'}, status=status.HTTP_202_ACCEPTED)
 
 
+
 @api_view(['GET', 'POST'])
 def studentsTable(request, user_id):
     # Get the lecturer associated with the current user
@@ -738,7 +739,6 @@ def studentsTable(request, user_id):
 
     response_data = {
         'student_info': student_course_info,
-        'student_course_info': student_course_info,
         'sessions': session_serializer,
         'lecturer_courses': course_serializer,
         'departments': department_serializer,
