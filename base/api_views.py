@@ -585,6 +585,7 @@ def import_students(request):
     return Response({'message': 'Valid request'}, status=status.HTTP_202_ACCEPTED)
 
 
+
 @api_view(['GET', 'POST'])
 def studentsTable(request, user_id):
     # Get the lecturer associated with the current user
@@ -593,11 +594,24 @@ def studentsTable(request, user_id):
     # Get all courses related to the lecturer
     lecturer_courses = Course.objects.filter(lecturer=lecturer)
 
+    department_ids = lecturer_courses.values_list('id', flat=True).distinct()
+
+    # Filter departments based on the unique IDs
+    departments = Department.objects.filter(id__in=department_ids)
+
+    default_department = departments.first().id
+
+    department = Department.objects.get(id=default_department)
+
     if lecturer_courses.exists():
+       
+
         default_course_id = lecturer_courses.first().id
         default_course = Course.objects.get(id=default_course_id)
-        display = 'Course: ' + default_course.name + \
-            ' (Year:' + str(default_course.year) + ')'
+
+      
+        display = 'Department: ' + department.dname 
+        # + \ ' (Year:' + str(default_course.year) + ')'
 
     else:
         # Handle the case where no courses are associated with the lecturer
@@ -610,7 +624,7 @@ def studentsTable(request, user_id):
 
     # Get all students enrolled in the courses related to the lecturer
     students = Student.objects.filter(
-        studentcourse__course=default_course)
+        studentcourse__course=default_department)
 
     departments_with_lecturer = Department.objects.filter(
         lecturer=lecturer)
@@ -640,7 +654,7 @@ def studentsTable(request, user_id):
             students = Student.objects.filter(
                 programme=programmeF, studentcourse__course__lecturer=lecturer)
             programmeName = Department.objects.get(id=programmeF)
-            display = 'Programme: ' + str(programmeName.dname)
+            display = 'Department: ' + str(programmeName.dname)
         if yearF:
             students = Student.objects.filter(
                 year=yearF, studentcourse__course__lecturer=lecturer)
@@ -660,8 +674,7 @@ def studentsTable(request, user_id):
     else:
         students = Student.objects.filter(
             studentcourse__course=default_course)
-        display = 'Course: ' + default_course.name + \
-            ' (Year:' + str(default_course.year) + ')'
+        display = 'Department: ' + department.dname 
 
     Tsessions = Session.objects.filter(
         attendance__attended=True, course=default_course)
@@ -738,7 +751,6 @@ def studentsTable(request, user_id):
 
     response_data = {
         'student_info': student_course_info,
-        'student_course_info': student_course_info,
         'sessions': session_serializer,
         'lecturer_courses': course_serializer,
         'departments': department_serializer,
