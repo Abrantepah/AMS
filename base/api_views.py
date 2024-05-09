@@ -594,7 +594,7 @@ def studentsTable(request, user_id):
     # Get all courses related to the lecturer
     lecturer_courses = Course.objects.filter(lecturer=lecturer)
 
-    department_ids = lecturer_courses.values_list('id', flat=True).distinct()
+    department_ids = lecturer_courses.values_list('department', flat=True).distinct()
 
     # Filter departments based on the unique IDs
     departments = Department.objects.filter(id__in=department_ids)
@@ -602,21 +602,23 @@ def studentsTable(request, user_id):
     default_department = departments.first().id
 
     department = Department.objects.get(id=default_department)
-
-    if lecturer_courses.exists():
+    
+    default_course_id = lecturer_courses.first().id
+    default_course = Course.objects.get(id=default_course_id)
+    
+    # if lecturer_courses.exists():
        
 
-        default_course_id = lecturer_courses.first().id
-        default_course = Course.objects.get(id=default_course_id)
+    
 
       
-        display = 'Department: ' + department.dname 
-        # + \ ' (Year:' + str(default_course.year) + ')'
+    #     display = 'Department: ' + department.dname 
+    #     # + \ ' (Year:' + str(default_course.year) + ')'
 
-    else:
-        # Handle the case where no courses are associated with the lecturer
-        default_course = None
-        display = ''
+    # else:
+    #     # Handle the case where no courses are associated with the lecturer
+    #     default_course = None
+    #     display = ''
 
     sessions = Session.objects.filter(course=default_course).annotate(
         student_session_modulo=((F('id') - 1) % 15) + 1
@@ -624,12 +626,12 @@ def studentsTable(request, user_id):
 
     # Get all students enrolled in the courses related to the lecturer
     students = Student.objects.filter(
-        studentcourse__course=default_department)
+        studentcourse__course__department__in=departments)
 
     departments_with_lecturer = Department.objects.filter(
         lecturer=lecturer)
 
-    if request.method == 'POST':
+    if request.method == 'GET':
         # Use request.POST to retrieve form data from a POST request
         indexF = request.data.get('indexFilter')
         courseF = request.data.get('courseFilter')
@@ -643,18 +645,18 @@ def studentsTable(request, user_id):
             students = Student.objects.filter(
                 index__icontains=indexF,  studentcourse__course__lecturer=lecturer)
             display = 'Index Number: ' + indexF
-        if courseF:
-            students = Student.objects.filter(
-                studentcourse__course__name=courseF, studentcourse__course__lecturer=lecturer)
-            default_course = Course.objects.get(name=courseF)
-            display = 'Course: ' + default_course.name + \
-                ' (Year:' + str(default_course.year) + ')'
+        # if courseF:
+        #     students = Student.objects.filter(
+        #         studentcourse__course__name=courseF, studentcourse__course__lecturer=lecturer)
+        #     default_course = Course.objects.get(name=courseF)
+        #     display = 'Course: ' + default_course.name + \
+        #         ' (Year:' + str(default_course.year) + ')'
 
         if programmeF:
             students = Student.objects.filter(
                 programme=programmeF, studentcourse__course__lecturer=lecturer)
             programmeName = Department.objects.get(id=programmeF)
-            display = 'Department: ' + str(programmeName.dname)
+            display = 'class: ' + str(programmeName.dname)
         if yearF:
             students = Student.objects.filter(
                 year=yearF, studentcourse__course__lecturer=lecturer)
@@ -673,8 +675,8 @@ def studentsTable(request, user_id):
             display = 'Name: ' + nameF
     else:
         students = Student.objects.filter(
-            studentcourse__course=default_course)
-        display = 'Department: ' + department.dname 
+        studentcourse__course__department__in=departments)
+        # display = 'class: ' + department.dname 
 
     Tsessions = Session.objects.filter(
         attendance__attended=True, course=default_course)
@@ -722,14 +724,26 @@ def studentsTable(request, user_id):
             # Handle the case where StudentCourse does not exist for the student
             pass
 
-    # Prefetch student courses related to the default course
-    student_courses = StudentCourse.objects.filter(student__in=students)
+    
    
 
     # Prepare a list to store serialized student course information
     student_course_info = []
 
-    for student_course in student_courses:
+    for department in departments:
+      
+      department_serializer = DepartmentSerializer(department).data
+      student_course_info.append({
+        'class': department_serializer
+      })
+
+      students = Student.objects.filter(
+        studentcourse__course__department=department) 
+
+      # Prefetch student courses related to the default course
+      student_courses = StudentCourse.objects.filter(student__in=students)
+
+      for student_course in student_courses:
        # Retrieve sessions for the current student course
        student_sessions = StudentSession.objects.filter(studentcourse=student_course)
        
@@ -738,6 +752,7 @@ def studentsTable(request, user_id):
        serialized_student_sessions = StudentSessionSerializer(student_sessions, many=True).data
 
        student_course_info.append({
+        
         'student': student_serializer,
         'student_course': serialized_student_course,
         'student_sessions': serialized_student_sessions
@@ -747,14 +762,12 @@ def studentsTable(request, user_id):
 
     session_serializer = SessionSerializer(sessions, many=True).data
     course_serializer = CourseSerializer(lecturer_courses, many=True).data
-    department_serializer = DepartmentSerializer(departments_with_lecturer, many=True).data
+    department_serializer = DepartmentSerializer(departments, many=True).data
 
     response_data = {
         'student_info': student_course_info,
-        'sessions': session_serializer,
         'lecturer_courses': course_serializer,
-        'departments': department_serializer,
-        'displayFilter': display
+        'classes': department_serializer,
     }
 
     return Response(response_data, status=status.HTTP_200_OK)
