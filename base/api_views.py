@@ -587,24 +587,16 @@ def import_students(request):
 
 
 @api_view(['GET'])
-def studentsTable(request, user_id):
+def studentsTable(request, user_id, class_id, course_id):
     # Get the lecturer associated with the current user
     lecturer = Lecturer.objects.get(id=user_id)
 
     # Get all courses related to the lecturer
-    courses = Course.objects.filter(lecturer=lecturer)
+    course = Course.objects.filter(lecturer=lecturer, id=course_id)
 
-    department_ids = courses.values_list('department', flat=True).distinct()
-
-    # Filter departments based on the unique IDs
-    departments = Department.objects.filter(id__in=department_ids)
-
-    default_department = departments.first().id
-
-    department = Department.objects.get(id=default_department)
+    department = Department.objects.get(id=class_id)
     
-    default_course_id = courses.first().id
-    default_course = Course.objects.get(id=default_course_id)
+    default_course = Course.objects.get(id=course)
     
 
 
@@ -614,7 +606,7 @@ def studentsTable(request, user_id):
 
     # Get all students enrolled in the courses related to the lecturer
     students = Student.objects.filter(
-        studentcourse__course__department__in=departments, studentcourse__course__lecturer=lecturer)
+        studentcourse__course__department=department, studentcourse__course__lecturer=lecturer)
 
     departments_with_lecturer = Department.objects.filter(
         lecturer=lecturer)
@@ -656,7 +648,7 @@ def studentsTable(request, user_id):
     #     #     display = 'Name: ' + nameF
     # else:
     #     students = Student.objects.filter(
-    #     studentcourse__course__department__in=departments)
+    #     studentcourse__course__department=department)
     #     # display = 'class: ' + department.dname 
 
     Tsessions = Session.objects.filter(
@@ -706,57 +698,76 @@ def studentsTable(request, user_id):
             pass
 
     
-   
 
     # Prepare a list to store serialized student course information
     student_table_info = []
+    
+    # a lecturer might be teaching more than one course in a department
+    lecturer_course = Course.objects.filter(department=department, lecturer=lecturer)
 
-    for department in departments:
-      
-        department_serializer = DepartmentSerializer(department).data
-        student_table_info.append({
-        'class': department_serializer
-         })
 
-        lecturer_courses = Course.objects.filter(department=department, lecturer=lecturer)
+    students = Student.objects.filter(
+    studentcourse__course__id=course_id, studentcourse__course__lecturer=lecturer) 
 
-        for lecturer_course in lecturer_courses:
+    # Prefetch student courses related to the default course
+    student_courses = StudentCourse.objects.filter(student__in=students)
 
-            course_serializer = CourseSerializer(lecturer_course).data 
-            student_table_info.append({
-                'course': course_serializer
-            })
-
-            students = Student.objects.filter(
-            studentcourse__course=lecturer_course, studentcourse__course__lecturer=lecturer) 
-
-            # Prefetch student courses related to the default course
-            student_courses = StudentCourse.objects.filter(student__in=students)
-
-            for student_course in student_courses:
-                # Retrieve sessions for the current student course
-                student_sessions = StudentSession.objects.filter(studentcourse=student_course)
+    for student_course in student_courses:
+        # Retrieve sessions for the current student course
+        student_sessions = StudentSession.objects.filter(studentcourse=student_course)
        
-                student_serializer = StudentSerializer(student_course.student).data
-                serialized_student_course = StudentCourseSerializer(student_course).data
-                serialized_student_sessions = StudentSessionSerializer(student_sessions, many=True).data
+        student_serializer = StudentSerializer(student_course.student).data
+        serialized_student_course = StudentCourseSerializer(student_course).data
+        serialized_student_sessions = StudentSessionSerializer(student_sessions, many=True).data
 
-                student_table_info.append({
-                'student': student_serializer,
-                'student_course': serialized_student_course,
-                'student_sessions': serialized_student_sessions
-                })         
+        student_table_info.append({
+            'student': student_serializer,
+            'student_course': serialized_student_course,
+            'student_sessions': serialized_student_sessions
+            })         
             
 
-
     session_serializer = SessionSerializer(sessions, many=True).data
-    course_serializer = CourseSerializer(courses, many=True).data
-    department_serializer = DepartmentSerializer(departments, many=True).data
-
     response_data = {
         'student_info': student_table_info,
-        'classes': department_serializer,
-        'lecturer_courses': course_serializer,
     }
 
+    return Response(response_data, status=status.HTTP_200_OK)
+
+
+
+
+@api_view(['GET'])
+def lecturerClasses(request, user_id):
+    
+    # Get the lecturer associated with the current user
+    lecturer = Lecturer.objects.get(id=user_id)
+
+    # Get all courses related to the lecturer
+    courses = Course.objects.filter(lecturer=lecturer)
+
+    department_ids = courses.values_list('department', flat=True).distinct()
+
+    # Filter departments based on the unique IDs
+    departments = Department.objects.filter(id__in=department_ids)
+    
+    classes_info = []
+    for department in departments:
+         # a lecturer might be teaching more than one course in a department
+        lecturer_courses = Course.objects.filter(department=department, lecturer=lecturer)
+        departments_serializer = DepartmentSerializer(department).data
+        
+        classes_info.append({
+            'class': departments_serializer
+        })
+
+        for lecturer_course in lecturer_courses:
+            
+            course_serializer = CourseSerializer(lecturer_course).data 
+            classes_info.append({
+                'course': course_serializer
+            })
+    response_data = {
+        'classes_info': classes_info,
+    }
     return Response(response_data, status=status.HTTP_200_OK)
