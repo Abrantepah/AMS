@@ -586,15 +586,15 @@ def import_students(request):
 
 
 
-@api_view(['GET', 'POST'])
+@api_view(['GET'])
 def studentsTable(request, user_id):
     # Get the lecturer associated with the current user
     lecturer = Lecturer.objects.get(id=user_id)
 
     # Get all courses related to the lecturer
-    lecturer_courses = Course.objects.filter(lecturer=lecturer)
+    courses = Course.objects.filter(lecturer=lecturer)
 
-    department_ids = lecturer_courses.values_list('department', flat=True).distinct()
+    department_ids = courses.values_list('department', flat=True).distinct()
 
     # Filter departments based on the unique IDs
     departments = Department.objects.filter(id__in=department_ids)
@@ -603,22 +603,10 @@ def studentsTable(request, user_id):
 
     department = Department.objects.get(id=default_department)
     
-    default_course_id = lecturer_courses.first().id
+    default_course_id = courses.first().id
     default_course = Course.objects.get(id=default_course_id)
     
-    # if lecturer_courses.exists():
-       
 
-    
-
-      
-    #     display = 'Department: ' + department.dname 
-    #     # + \ ' (Year:' + str(default_course.year) + ')'
-
-    # else:
-    #     # Handle the case where no courses are associated with the lecturer
-    #     default_course = None
-    #     display = ''
 
     sessions = Session.objects.filter(course=default_course).annotate(
         student_session_modulo=((F('id') - 1) % 15) + 1
@@ -626,57 +614,50 @@ def studentsTable(request, user_id):
 
     # Get all students enrolled in the courses related to the lecturer
     students = Student.objects.filter(
-        studentcourse__course__department__in=departments)
+        studentcourse__course__department__in=departments, studentcourse__course__lecturer=lecturer)
 
     departments_with_lecturer = Department.objects.filter(
         lecturer=lecturer)
 
-    if request.method == 'GET':
-        # Use request.POST to retrieve form data from a POST request
-        indexF = request.data.get('indexFilter')
-        courseF = request.data.get('courseFilter')
-        programmeF = request.data.get('programmeFilter')
-        yearF = request.data.get('yearFilter')
-        strikeF = request.data.get('strikesFilter')
-        nameF = request.data.get('nameFilter')
+    # if request.method == 'GET':
+    #     # Use request.POST to retrieve form data from a POST request
+    #     indexF = request.data.get('indexFilter')
+    #     courseF = request.data.get('courseFilter')
+    #     yearF = request.data.get('yearFilter')
+    #     # strikeF = request.data.get('strikesFilter')
+    #     # nameF = request.data.get('nameFilter')
 
-        # Apply filters based on user input
-        if indexF:
-            students = Student.objects.filter(
-                index__icontains=indexF,  studentcourse__course__lecturer=lecturer)
-            display = 'Index Number: ' + indexF
-        # if courseF:
-        #     students = Student.objects.filter(
-        #         studentcourse__course__name=courseF, studentcourse__course__lecturer=lecturer)
-        #     default_course = Course.objects.get(name=courseF)
-        #     display = 'Course: ' + default_course.name + \
-        #         ' (Year:' + str(default_course.year) + ')'
-
-        if programmeF:
-            students = Student.objects.filter(
-                programme=programmeF, studentcourse__course__lecturer=lecturer)
-            programmeName = Department.objects.get(id=programmeF)
-            display = 'class: ' + str(programmeName.dname)
-        if yearF:
-            students = Student.objects.filter(
-                year=yearF, studentcourse__course__lecturer=lecturer)
-            display = 'Year: ' + yearF
-        if strikeF:
-            if strikeF == '4':
-                students = Student.objects.filter(studentcourse__strike__range=[
-                    4, 15], studentcourse__course__lecturer=lecturer)
-            else:
-                students = Student.objects.filter(studentcourse__strike=int(
-                    strikeF), studentcourse__course__lecturer=lecturer)
-            display = 'Number of Absences: ' + strikeF
-        if nameF:
-            students = Student.objects.filter(
-                name__icontains=nameF, studentcourse__course__lecturer=lecturer)
-            display = 'Name: ' + nameF
-    else:
-        students = Student.objects.filter(
-        studentcourse__course__department__in=departments)
-        # display = 'class: ' + department.dname 
+    #     # Apply filters based on user input
+    #     if indexF:
+    #         students = Student.objects.filter(
+    #             index__icontains=indexF,  studentcourse__course__lecturer=lecturer)
+    #         display = 'Index Number: ' + indexF
+    #     if courseF:
+    #         students = Student.objects.filter(
+    #             studentcourse__course__name=courseF, studentcourse__course__lecturer=lecturer)
+    #         default_course = Course.objects.get(name=courseF)
+    #         display = 'Course: ' + default_course.name + \
+    #             ' (Year:' + str(default_course.year) + ')'
+    #     if yearF:
+    #         students = Student.objects.filter(
+    #             year=yearF, studentcourse__course__lecturer=lecturer)
+    #         display = 'Year: ' + yearF
+    #     # if strikeF:
+    #     #     if strikeF == '4':
+    #     #         students = Student.objects.filter(studentcourse__strike__range=[
+    #     #             4, 15], studentcourse__course__lecturer=lecturer)
+    #     #     else:
+    #     #         students = Student.objects.filter(studentcourse__strike=int(
+    #     #             strikeF), studentcourse__course__lecturer=lecturer)
+    #     #     display = 'Number of Absences: ' + strikeF
+    #     # if nameF:
+    #     #     students = Student.objects.filter(
+    #     #         name__icontains=nameF, studentcourse__course__lecturer=lecturer)
+    #     #     display = 'Name: ' + nameF
+    # else:
+    #     students = Student.objects.filter(
+    #     studentcourse__course__department__in=departments)
+    #     # display = 'class: ' + department.dname 
 
     Tsessions = Session.objects.filter(
         attendance__attended=True, course=default_course)
@@ -728,46 +709,54 @@ def studentsTable(request, user_id):
    
 
     # Prepare a list to store serialized student course information
-    student_course_info = []
+    student_table_info = []
 
     for department in departments:
       
-      department_serializer = DepartmentSerializer(department).data
-      student_course_info.append({
+        department_serializer = DepartmentSerializer(department).data
+        student_table_info.append({
         'class': department_serializer
-      })
+         })
 
-      students = Student.objects.filter(
-        studentcourse__course__department=department) 
+        lecturer_courses = Course.objects.filter(department=department, lecturer=lecturer)
 
-      # Prefetch student courses related to the default course
-      student_courses = StudentCourse.objects.filter(student__in=students)
+        for lecturer_course in lecturer_courses:
 
-      for student_course in student_courses:
-       # Retrieve sessions for the current student course
-       student_sessions = StudentSession.objects.filter(studentcourse=student_course)
+            course_serializer = CourseSerializer(lecturer_course).data 
+            student_table_info.append({
+                'course': course_serializer
+            })
+
+            students = Student.objects.filter(
+            studentcourse__course=lecturer_course, studentcourse__course__lecturer=lecturer) 
+
+            # Prefetch student courses related to the default course
+            student_courses = StudentCourse.objects.filter(student__in=students)
+
+            for student_course in student_courses:
+                # Retrieve sessions for the current student course
+                student_sessions = StudentSession.objects.filter(studentcourse=student_course)
        
-       student_serializer = StudentSerializer(student_course.student).data
-       serialized_student_course = StudentCourseSerializer(student_course).data
-       serialized_student_sessions = StudentSessionSerializer(student_sessions, many=True).data
+                student_serializer = StudentSerializer(student_course.student).data
+                serialized_student_course = StudentCourseSerializer(student_course).data
+                serialized_student_sessions = StudentSessionSerializer(student_sessions, many=True).data
 
-       student_course_info.append({
-        
-        'student': student_serializer,
-        'student_course': serialized_student_course,
-        'student_sessions': serialized_student_sessions
-       })         
+                student_table_info.append({
+                'student': student_serializer,
+                'student_course': serialized_student_course,
+                'student_sessions': serialized_student_sessions
+                })         
             
 
 
     session_serializer = SessionSerializer(sessions, many=True).data
-    course_serializer = CourseSerializer(lecturer_courses, many=True).data
+    course_serializer = CourseSerializer(courses, many=True).data
     department_serializer = DepartmentSerializer(departments, many=True).data
 
     response_data = {
-        'student_info': student_course_info,
-        'lecturer_courses': course_serializer,
+        'student_info': student_table_info,
         'classes': department_serializer,
+        'lecturer_courses': course_serializer,
     }
 
     return Response(response_data, status=status.HTTP_200_OK)
