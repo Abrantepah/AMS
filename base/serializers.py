@@ -32,6 +32,12 @@ class StudentSessionSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class DepartmentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Department
+        fields = '__all__'
+
+
 class CourseSerializer(serializers.ModelSerializer):
     class Meta:
         model = Course
@@ -52,7 +58,3 @@ class VerificationCodeSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class DepartmentSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Department
-        fields = '__all__'
