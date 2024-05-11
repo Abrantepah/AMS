@@ -19,6 +19,6 @@ urlpatterns = [
     path('api/PermissionTable_api/<int:user_id>/', PermissionTable_api),
     path('api/update_permission_api/<int:permission_id>/<str:messagestatus>/',
          update_permission_api),
-    path('api/studentsTable/<int:user_id>/<int:class_id>/<int:course_id>', studentsTable),
+    path('api/studentsTable/<int:user_id>/<int:class_id>/<int:course_id>/', studentsTable),
     path('api/lecturerClasses/<int:user_id>/', lecturerClasses),
 ]

@@ -592,17 +592,10 @@ def studentsTable(request, user_id, class_id, course_id):
     lecturer = Lecturer.objects.get(id=user_id)
 
     # Get all courses related to the lecturer
-    course = Course.objects.filter(lecturer=lecturer, id=course_id)
+    course = Course.objects.get(lecturer=lecturer, id=course_id)
 
     department = Department.objects.get(id=class_id)
     
-    default_course = Course.objects.get(id=course)
-    
-
-
-    sessions = Session.objects.filter(course=default_course).annotate(
-        student_session_modulo=((F('id') - 1) % 15) + 1
-    )
 
     # Get all students enrolled in the courses related to the lecturer
     students = Student.objects.filter(
@@ -652,7 +645,7 @@ def studentsTable(request, user_id, class_id, course_id):
     #     # display = 'class: ' + department.dname 
 
     Tsessions = Session.objects.filter(
-        attendance__attended=True, course=default_course)
+        attendance__attended=True, course=course)
 
     func_values = [(session.id - 1) % 15 + 1 for session in Tsessions]
 
@@ -727,7 +720,6 @@ def studentsTable(request, user_id, class_id, course_id):
             })         
             
 
-    session_serializer = SessionSerializer(sessions, many=True).data
     response_data = {
         'student_info': student_table_info,
     }
