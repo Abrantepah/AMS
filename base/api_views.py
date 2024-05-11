@@ -654,7 +654,7 @@ def studentsTable(request, user_id, class_id, course_id):
     for student in students:
         try:
             studentcourse = StudentCourse.objects.get(
-                student=student, course__lecturer=lecturer, course__year=student.year)
+                student=student, course=course)
         except:
             message = 'nothing'
 
@@ -695,15 +695,12 @@ def studentsTable(request, user_id, class_id, course_id):
     # Prepare a list to store serialized student course information
     student_table_info = []
     
-    # a lecturer might be teaching more than one course in a department
-    lecturer_course = Course.objects.filter(department=department, lecturer=lecturer)
-
 
     # students = Student.objects.filter(
     #     programme=department, studentcourse__course=course, studentcourse__course__lecturer=lecturer)
 
     # Prefetch student courses related to the default course
-    student_courses = StudentCourse.objects.filter(student__in=students)
+    student_courses = StudentCourse.objects.filter(student__in=students, course=course)
 
     for student_course in student_courses:
         # Retrieve sessions for the current student course
