@@ -58,7 +58,7 @@ export const Drawer = (props: PropsWithChildren<Props>) => {
             padding: 0,
             color: token.colorTextTertiary,
           }}
-          icon={<CloseOutlined />}
+          icon={<CloseOutlined onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined} />}
           onClick={props?.onClose}
         />
       </div>

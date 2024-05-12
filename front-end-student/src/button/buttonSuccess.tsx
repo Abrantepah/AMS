@@ -17,7 +17,7 @@ export const ButtonSuccess = ({
     <Button
       type="default"
       disabled={disabled}
-      icon={<CheckCircleOutlined />}
+      icon={<CheckCircleOutlined onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined} />}
       style={{
         color: disabled
           ? undefined

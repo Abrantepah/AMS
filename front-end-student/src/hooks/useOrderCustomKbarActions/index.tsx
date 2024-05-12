@@ -45,7 +45,7 @@ export const useOrderCustomKbarActions = (order?: IOrder): void => {
       preActions.push(
         createAction({
           name: t("buttons.accept"),
-          icon: <CheckCircleOutlined />,
+          icon: <CheckCircleOutlined onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined} />,
           section: "actions",
           perform: () => {
             handleMutate({
@@ -61,7 +61,7 @@ export const useOrderCustomKbarActions = (order?: IOrder): void => {
       preActions.push(
         createAction({
           name: t("buttons.reject"),
-          icon: <CloseCircleOutlined />,
+          icon: <CloseCircleOutlined onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined} />,
           section: "actions",
           perform: () => {
             handleMutate({
