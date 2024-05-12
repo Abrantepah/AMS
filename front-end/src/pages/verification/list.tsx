@@ -1,6 +1,6 @@
 import { CreateButton, List } from "@refinedev/antd";
 
-import { AllStoresMap, StoreListTable } from "../../components";
+import { StoreListTable } from "../../components";
 import { Flex, Segmented } from "antd";
 import { useState } from "react";
 import { useTranslate } from "@refinedev/core";
@@ -50,16 +50,6 @@ export const StoreList = () => {
         ]}
       >
         {view === "table" && <StoreListTable />}
-        {view === "map" && (
-          <Flex
-            style={{
-              height: "calc(100dvh - 232px)",
-              marginTop: "32px",
-            }}
-          >
-            <AllStoresMap />
-          </Flex>
-        )}
       </List>
     </>
   );

@@ -10,25 +10,19 @@ import {
 import {
   List,
   useTable,
-  DateField,
   FilterDropdown,
-  getDefaultSortOrder,
   ExportButton,
 } from "@refinedev/antd";
 import {
   Table,
-  Avatar,
   Typography,
   theme,
   InputNumber,
-  Input,
-  Select,
-  Button,
 } from "antd";
 
 import { IIdentity, IUser, IUserFilterVariables } from "../../interfaces";
-import { EyeOutlined, SearchOutlined } from "@ant-design/icons";
-import { PaginationTotal, UserStatus } from "../../components";
+import { SearchOutlined } from "@ant-design/icons";
+import { PaginationTotal } from "../../components";
 import { PropsWithChildren } from "react";
 import { useLocation, useParams } from "react-router-dom";
 
