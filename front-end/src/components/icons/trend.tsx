@@ -8,8 +8,7 @@ export const TrendUpIcon = () => {
     <CaretUpOutlined
       style={{
         color: token.colorSuccess,
-      }}
-    />
+      }} onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined}    />
   );
 };
 
@@ -20,7 +19,6 @@ export const TrendDownIcon = () => {
     <CaretUpOutlined
       style={{
         color: token.colorWarning,
-      }}
-    />
+      }} onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined}    />
   );
 };

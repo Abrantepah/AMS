@@ -1,13 +1,10 @@
-import { useGetIdentity, useGo, useList, useNavigation, useShow } from "@refinedev/core";
-import { NumberField, useTable } from "@refinedev/antd";
-import { Typography, Table, theme, Space, Flex, Card, Tag, List, Divider, Row, Col } from "antd";
+import { useGetIdentity, useGo, useNavigation, useShow } from "@refinedev/core";
+import { Typography, theme, Flex, Card, Tag, Row, Col } from "antd";
 import { useStyles } from "../../course/list-card/styled";
-import { CardWithPlot, OrderActions, PaginationTotal, ProductStatus } from "../..";
 
-import { IIdentity, IOrder } from "../../../interfaces";
+import { IIdentity } from "../../../interfaces";
 // import { useStyles } from "./styled";
-import { getUniqueListWithCount } from "../../../utils";
-import { CheckCircleOutlined, EyeOutlined } from "@ant-design/icons";
+import { EyeOutlined } from "@ant-design/icons";
 import { useLocation } from "react-router-dom";
 
 export const RecentCourses: React.FC = () => {

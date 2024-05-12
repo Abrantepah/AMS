@@ -35,7 +35,6 @@ import {
   CourseEdit,
   CourseShow,
 } from "./pages/courses";
-import { StoreCreate, StoreEdit } from "./pages/verification";
 import { Header, Title } from "./components";
 import { ConfigProvider } from "./context";
 
