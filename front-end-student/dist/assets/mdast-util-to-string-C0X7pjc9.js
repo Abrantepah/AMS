@@ -1,1 +1,0 @@
-var a=n;function n(t){return t&&(t.value||t.alt||t.title||"children"in t&&l(t.children)||"length"in t&&l(t))||""}function l(t){for(var r=[],i=-1;++i<t.length;)r[i]=n(t[i]);return r.join("")}export{a as m};
