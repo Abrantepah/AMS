@@ -1,0 +1,1 @@
+var d=e;function e(t,i,n){var r;return n==null&&(typeof i!="object"||Array.isArray(i))&&(n=i,i={}),r=Object.assign({type:String(t)},i),Array.isArray(n)?r.children=n:n!=null&&(r.value=String(n)),r}export{d as u};
