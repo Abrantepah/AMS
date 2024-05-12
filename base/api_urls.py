@@ -1,5 +1,5 @@
 from django.urls import path
-from .api_views import get_students, get_lecturers, StudentLoginAPIView, LecturerLoginAPIView, student_home, permission_api, verification_api, MarkAttendance, generateCode_api, PermissionTable_api, update_permission_api, logoutUser
+from .api_views import get_students, get_lecturers, StudentLoginAPIView, LecturerLoginAPIView, student_home, permission_api, verification_api, MarkAttendance, generateCode_api, PermissionTable_api, update_permission_api, logoutUser, studentsTable, lecturerClasses
 
 urlpatterns = [
     path('api/students/', get_students),  # returns all students
@@ -19,4 +19,6 @@ urlpatterns = [
     path('api/PermissionTable_api/<int:user_id>/', PermissionTable_api),
     path('api/update_permission_api/<int:permission_id>/<str:messagestatus>/',
          update_permission_api),
+    path('api/studentsTable/<int:user_id>/<int:class_id>/<int:course_id>/', studentsTable),
+    path('api/lecturerClasses/<int:user_id>/', lecturerClasses),
 ]

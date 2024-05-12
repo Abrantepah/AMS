@@ -191,5 +191,5 @@ PASSWORD_HASHERS = [
     'django.contrib.auth.hashers.BCryptSHA256PasswordHasher',
 ]
 
-
+# for react cross talk
 CORS_ALLOW_ALL_ORIGINS = True

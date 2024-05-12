@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Lecturer, Student, StudentPermission, StudentCourse, StudentSession, Course, Session
+from .models import Lecturer, Student, StudentPermission, StudentCourse, StudentSession, Course, Session, VerificationCode, Department
 
 
 class StudentSerializer(serializers.ModelSerializer):
@@ -32,6 +32,12 @@ class StudentSessionSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class DepartmentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Department
+        fields = '__all__'
+
+
 class CourseSerializer(serializers.ModelSerializer):
     class Meta:
         model = Course
@@ -39,6 +45,16 @@ class CourseSerializer(serializers.ModelSerializer):
 
 
 class StudentCourseSerializer(serializers.ModelSerializer):
+    course = CourseSerializer()
     class Meta:
         model = StudentCourse
         fields = '__all__'
+
+
+
+class VerificationCodeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = VerificationCode
+        fields = '__all__'
+
+

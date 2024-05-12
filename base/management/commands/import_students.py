@@ -25,9 +25,9 @@ class Command(BaseCommand):
                 # Extract data from the row
                 # reference, surname, othername = row
 
-                # name = othername + ' ' + surname
+                # formatted_name = othername + ' ' + surname
                 reference, department_name, name = row
-
+ 
                 name_parts = name.split(', ')
                 formatted_name = ' '.join(name_parts[::-1])
 
@@ -38,10 +38,10 @@ class Command(BaseCommand):
                     if not Student.objects.filter(index=index).exists():
                         break
 
-                department_name = formatted_department
+                # department_name = 'Computer Science (A)'
                 # Get or create the Department object
                 department, created = Department.objects.get_or_create(
-                    dname=department_name,
+                    dname=formatted_department,
                 )
 
                 # Create a Lecturer object

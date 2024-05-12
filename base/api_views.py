@@ -5,7 +5,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from .models import Lecturer, Course, Student, StudentCourse, StudentSession, StudentPermission, VerificationCode, StudentCode, Session, Attendance, Department
-from .serializers import StudentSerializer, LecturerSerializer, StudentPermissionSerializer, StudentSessionSerializer, CourseSerializer, SessionSerializer, StudentCourseSerializer
+from .serializers import StudentSerializer, LecturerSerializer, StudentPermissionSerializer, StudentSessionSerializer, CourseSerializer, SessionSerializer, StudentCourseSerializer, DepartmentSerializer
 from django.contrib.auth import authenticate, login, logout
 from django.db.models import F, Q
 from datetime import timedelta
@@ -14,6 +14,9 @@ import math
 import string
 import secrets
 from django.shortcuts import get_object_or_404
+import csv
+from django.core.management.base import BaseCommand
+import random
 
 
 @api_view(['GET'])
@@ -416,6 +419,10 @@ def generateCode_api(request, user_id, course_id=None):
                 session for session in sessions if not session.is_attended()]
             first_session = available_sessions[0]
 
+            # marked_sessions = [
+            #     session for session in sessions if session.is_attended()]
+            #     last_marked_session = marked_sessions[]
+
             if request.method == 'POST':
                 selected_course = get_object_or_404(
                     Course, id=course_id)
@@ -528,3 +535,225 @@ def update_permission_api(request, permission_id, messagestatus):
 
         return Response({'permission Updated'}, status=status.HTTP_200_OK)
     return Response({'message': 'Invalid method'}, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+@api_view(['POST'])
+def import_students(request):
+    if request.method == 'POST':
+        import_file = request.data.get('file')
+        department_id = request.data.get('department_id')
+
+        if not import_file:
+            return Response({'error': 'No file provided'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            with open(import_file, 'r') as csv_file:
+                csv_reader = csv.reader(csv_file)
+                header = next(csv_reader, None)
+
+                for row in csv_reader:
+                    reference, name = row
+                    name_parts = name.split(', ')
+                    formatted_name = ' '.join(name_parts[::-1])
+
+                    while True:
+                        index = str(random.randint(100000, 999999))
+                        if not Student.objects.filter(index=index).exists():
+                            break
+
+                    department, created = Department.objects.get_or_create(dno=department_id)
+
+                    # Create a Student object
+                    student = Student.objects.create(
+                        reference=reference,
+                        name=formatted_name,
+                        year=1,
+                        programme=department,
+                        index=index
+                    )
+
+                return Response({'message': 'Students imported successfully'}, status=status.HTTP_200_OK)
+
+        except FileNotFoundError:
+            return Response({'error': 'File not found'}, status=status.HTTP_404_NOT_FOUND)
+        except PermissionError:
+            return Response({'error': 'Permission denied'}, status=status.HTTP_403_FORBIDDEN)
+        except csv.Error as e:
+            return Response({'error': f'CSV parsing error: {str(e)}'}, status=status.HTTP_400_BAD_REQUEST)
+
+    return Response({'message': 'Valid request'}, status=status.HTTP_202_ACCEPTED)
+
+
+
+@api_view(['GET'])
+def studentsTable(request, user_id, class_id, course_id):
+    # Get the lecturer associated with the current user
+    lecturer = Lecturer.objects.get(id=user_id)
+
+    # Get all courses related to the lecturer
+    course = Course.objects.get(lecturer=lecturer, id=course_id)
+
+    department = Department.objects.get(id=class_id)
+    
+
+    # Get all students enrolled in the courses related to the lecturer
+    students = Student.objects.filter(
+        programme=department, studentcourse__course=course, studentcourse__course__lecturer=lecturer)
+
+    departments_with_lecturer = Department.objects.filter(
+        lecturer=lecturer)
+
+    # if request.method == 'GET':
+    #     # Use request.POST to retrieve form data from a POST request
+    #     indexF = request.data.get('indexFilter')
+    #     courseF = request.data.get('courseFilter')
+    #     yearF = request.data.get('yearFilter')
+    #     # strikeF = request.data.get('strikesFilter')
+    #     # nameF = request.data.get('nameFilter')
+
+    #     # Apply filters based on user input
+    #     if indexF:
+    #         students = Student.objects.filter(
+    #             index__icontains=indexF,  studentcourse__course__lecturer=lecturer)
+    #         display = 'Index Number: ' + indexF
+    #     if courseF:
+    #         students = Student.objects.filter(
+    #             studentcourse__course__name=courseF, studentcourse__course__lecturer=lecturer)
+    #         default_course = Course.objects.get(name=courseF)
+    #         display = 'Course: ' + default_course.name + \
+    #             ' (Year:' + str(default_course.year) + ')'
+    #     if yearF:
+    #         students = Student.objects.filter(
+    #             year=yearF, studentcourse__course__lecturer=lecturer)
+    #         display = 'Year: ' + yearF
+    #     # if strikeF:
+    #     #     if strikeF == '4':
+    #     #         students = Student.objects.filter(studentcourse__strike__range=[
+    #     #             4, 15], studentcourse__course__lecturer=lecturer)
+    #     #     else:
+    #     #         students = Student.objects.filter(studentcourse__strike=int(
+    #     #             strikeF), studentcourse__course__lecturer=lecturer)
+    #     #     display = 'Number of Absences: ' + strikeF
+    #     # if nameF:
+    #     #     students = Student.objects.filter(
+    #     #         name__icontains=nameF, studentcourse__course__lecturer=lecturer)
+    #     #     display = 'Name: ' + nameF
+    # else:
+    #     students = Student.objects.filter(
+    #     studentcourse__course__department=department)
+    #     # display = 'class: ' + department.dname 
+
+    Tsessions = Session.objects.filter(
+        attendance__attended=True, course=course)
+
+    func_values = [(session.id - 1) % 15 + 1 for session in Tsessions]
+
+
+
+    for student in students:
+        try:
+            studentcourse = StudentCourse.objects.get(
+                student=student, course=course)
+        except:
+            message = 'nothing'
+
+        studses = StudentSession.objects.filter(studentcourse=studentcourse)
+
+        # for marking none attended sessions
+        for func in func_values:
+            for studse in studses:
+                var = ((studse.id - 1) % 15) + 1
+                if var == func:
+                    mark = studse.attended
+                    if mark is None:
+                        mark = False
+                    if mark is False:
+                        mark = False
+                    else:
+                        mark = True
+                    studse.attended = mark  # Set the value explicitly
+                    studse.save()
+
+        # Initialize the check variable inside the loop for each student
+        check = 0
+
+        for studse in studses:
+            attended = studse.attended
+            if attended is False:
+                check += 1
+
+        try:
+            studentcourse.strike = check
+            studentcourse.save()
+        except StudentCourse.DoesNotExist:
+            # Handle the case where StudentCourse does not exist for the student
+            pass
+
+    
+
+    # Prepare a list to store serialized student course information
+    student_table_info = []
+    
+
+    # students = Student.objects.filter(
+    #     programme=department, studentcourse__course=course, studentcourse__course__lecturer=lecturer)
+
+    # Prefetch student courses related to the default course
+    student_courses = StudentCourse.objects.filter(student__in=students, course=course)
+
+    for student_course in student_courses:
+        # Retrieve sessions for the current student course
+        student_sessions = StudentSession.objects.filter(studentcourse=student_course)
+       
+        student_serializer = StudentSerializer(student_course.student).data
+        serialized_student_course = StudentCourseSerializer(student_course).data
+        serialized_student_sessions = StudentSessionSerializer(student_sessions, many=True).data
+
+        student_table_info.append({
+            'student': student_serializer,
+            'student_course': serialized_student_course,
+            'student_sessions': serialized_student_sessions
+            })         
+            
+
+    response_data = {
+        'student_info': student_table_info,
+    }
+
+    return Response(response_data, status=status.HTTP_200_OK)
+
+
+
+@api_view(['GET'])
+def lecturerClasses(request, user_id):
+    
+    # Get the lecturer associated with the current user
+    lecturer = Lecturer.objects.get(id=user_id)
+
+    # Get all courses related to the lecturer
+    courses = Course.objects.filter(lecturer=lecturer)
+
+    department_ids = courses.values_list('department', flat=True).distinct()
+
+    # Filter departments based on the unique IDs
+    departments = Department.objects.filter(id__in=department_ids)
+    
+    all_classes_info = []
+
+    for department in departments:
+        # a lecturer might be teaching more than one course in a department
+        lecturer_courses = Course.objects.filter(department=department, lecturer=lecturer)
+        department_serializer = DepartmentSerializer(department).data
+    
+        classes_info = {'department': department_serializer, 'courses': []}
+
+        for lecturer_course in lecturer_courses:
+            course_serializer = CourseSerializer(lecturer_course).data
+            classes_info['courses'].append({'course': course_serializer})
+
+        all_classes_info.append(classes_info)
+
+    response_data = {'all_classes_info': all_classes_info}
+
+    return Response(response_data, status=status.HTTP_200_OK)

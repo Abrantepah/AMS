@@ -383,7 +383,7 @@ def LecturerHome(request):
             selected_longitude = request.POST.get('longitude')
 
             # minutes it takes for code to expire
-            expiration_minutes = 3
+            expiration_minutes = 20
 
             # Generate a verification code
             code = generate_verification_code(
@@ -853,3 +853,185 @@ def LForm(request):
 
     context = {'form': form}
     return render(request, 'base/Lform.html', context)
+
+
+
+
+
+
+
+# working api for student table
+
+# @api_view(['GET', 'POST'])
+# def studentsTable(request, user_id):
+#     # Get the lecturer associated with the current user
+#     lecturer = Lecturer.objects.get(id=user_id)
+
+#     # Get all courses related to the lecturer
+#     lecturer_courses = Course.objects.filter(lecturer=lecturer)
+
+#     department_ids = lecturer_courses.values_list('id', flat=True).distinct()
+
+#     # Filter departments based on the unique IDs
+#     departments = Department.objects.filter(id__in=department_ids)
+
+#     default_department = departments.first().id
+
+#     department = Department.objects.get(id=default_department)
+
+#     if lecturer_courses.exists():
+       
+
+#         default_course_id = lecturer_courses.first().id
+#         default_course = Course.objects.get(id=default_course_id)
+
+      
+#         display = 'Department: ' + department.dname 
+#         # + \ ' (Year:' + str(default_course.year) + ')'
+
+#     else:
+#         # Handle the case where no courses are associated with the lecturer
+#         default_course = None
+#         display = ''
+
+#     sessions = Session.objects.filter(course=default_course).annotate(
+#         student_session_modulo=((F('id') - 1) % 15) + 1
+#     )
+
+#     # Get all students enrolled in the courses related to the lecturer
+#     students = Student.objects.filter(
+#         studentcourse__course=default_department)
+
+#     departments_with_lecturer = Department.objects.filter(
+#         lecturer=lecturer)
+
+#     if request.method == 'POST':
+#         # Use request.POST to retrieve form data from a POST request
+#         indexF = request.data.get('indexFilter')
+#         courseF = request.data.get('courseFilter')
+#         programmeF = request.data.get('programmeFilter')
+#         yearF = request.data.get('yearFilter')
+#         strikeF = request.data.get('strikesFilter')
+#         nameF = request.data.get('nameFilter')
+
+#         # Apply filters based on user input
+#         if indexF:
+#             students = Student.objects.filter(
+#                 index__icontains=indexF,  studentcourse__course__lecturer=lecturer)
+#             display = 'Index Number: ' + indexF
+#         if courseF:
+#             students = Student.objects.filter(
+#                 studentcourse__course__name=courseF, studentcourse__course__lecturer=lecturer)
+#             default_course = Course.objects.get(name=courseF)
+#             display = 'Course: ' + default_course.name + \
+#                 ' (Year:' + str(default_course.year) + ')'
+
+#         if programmeF:
+#             students = Student.objects.filter(
+#                 programme=programmeF, studentcourse__course__lecturer=lecturer)
+#             programmeName = Department.objects.get(id=programmeF)
+#             display = 'Department: ' + str(programmeName.dname)
+#         if yearF:
+#             students = Student.objects.filter(
+#                 year=yearF, studentcourse__course__lecturer=lecturer)
+#             display = 'Year: ' + yearF
+#         if strikeF:
+#             if strikeF == '4':
+#                 students = Student.objects.filter(studentcourse__strike__range=[
+#                     4, 15], studentcourse__course__lecturer=lecturer)
+#             else:
+#                 students = Student.objects.filter(studentcourse__strike=int(
+#                     strikeF), studentcourse__course__lecturer=lecturer)
+#             display = 'Number of Absences: ' + strikeF
+#         if nameF:
+#             students = Student.objects.filter(
+#                 name__icontains=nameF, studentcourse__course__lecturer=lecturer)
+#             display = 'Name: ' + nameF
+#     else:
+#         students = Student.objects.filter(
+#             studentcourse__course=default_course)
+#         display = 'Department: ' + department.dname 
+
+#     Tsessions = Session.objects.filter(
+#         attendance__attended=True, course=default_course)
+
+#     func_values = [(session.id - 1) % 15 + 1 for session in Tsessions]
+
+
+
+#     for student in students:
+#         try:
+#             studentcourse = StudentCourse.objects.get(
+#                 student=student, course__lecturer=lecturer, course__year=student.year)
+#         except:
+#             message = 'nothing'
+
+#         studses = StudentSession.objects.filter(studentcourse=studentcourse)
+
+#         # for marking none attended sessions
+#         for func in func_values:
+#             for studse in studses:
+#                 var = ((studse.id - 1) % 15) + 1
+#                 if var == func:
+#                     mark = studse.attended
+#                     if mark is None:
+#                         mark = False
+#                     if mark is False:
+#                         mark = False
+#                     else:
+#                         mark = True
+#                     studse.attended = mark  # Set the value explicitly
+#                     studse.save()
+
+#         # Initialize the check variable inside the loop for each student
+#         check = 0
+
+#         for studse in studses:
+#             attended = studse.attended
+#             if attended is False:
+#                 check += 1
+
+#         try:
+#             studentcourse.strike = check
+#             studentcourse.save()
+#         except StudentCourse.DoesNotExist:
+#             # Handle the case where StudentCourse does not exist for the student
+#             pass
+
+#     # Prefetch student courses related to the default course
+#     student_courses = StudentCourse.objects.filter(student__in=students)
+   
+
+#     # Prepare a list to store serialized student course information
+#     student_course_info = []
+
+#     for student_course in student_courses:
+#        # Retrieve sessions for the current student course
+#        student_sessions = StudentSession.objects.filter(studentcourse=student_course)
+       
+#        student_serializer = StudentSerializer(student_course.student).data
+#        serialized_student_course = StudentCourseSerializer(student_course).data
+#        serialized_student_sessions = StudentSessionSerializer(student_sessions, many=True).data
+
+#        student_course_info.append({
+#         'student': student_serializer,
+#         'student_course': serialized_student_course,
+#         'student_sessions': serialized_student_sessions
+#        })         
+            
+
+
+#     session_serializer = SessionSerializer(sessions, many=True).data
+#     course_serializer = CourseSerializer(lecturer_courses, many=True).data
+#     department_serializer = DepartmentSerializer(departments_with_lecturer, many=True).data
+
+#     response_data = {
+#         'student_info': student_course_info,
+#         'sessions': session_serializer,
+#         'lecturer_courses': course_serializer,
+#         'departments': department_serializer,
+#         'displayFilter': display
+#     }
+
+#     return Response(response_data, status=status.HTTP_200_OK)
+
