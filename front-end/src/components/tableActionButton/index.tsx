@@ -15,7 +15,6 @@ export const TableActionButton = ({ onClick }: Props) => {
       onClick={(e) => {
         e.stopPropagation();
         onClick?.(e);
-      }}
-    />
+      } } onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined}    />
   );
 };

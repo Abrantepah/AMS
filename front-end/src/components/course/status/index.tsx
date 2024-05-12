@@ -21,7 +21,7 @@ export const ProductStatus = ({ value }: Props) => {
         color: value ? token.colorSuccess : token.colorTextTertiary,
         marginInlineEnd: 0,
       }}
-      icon={value ? <CheckCircleOutlined /> : <StopOutlined />}
+      icon={value ? <CheckCircleOutlined onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined} /> : <StopOutlined onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined} />}
     >
       <Typography.Text
         style={{

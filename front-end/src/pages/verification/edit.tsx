@@ -11,7 +11,7 @@ export const StoreEdit = () => {
   return (
     <>
       <Flex>
-        <ListButton icon={<LeftOutlined />}>{t("stores.stores")}</ListButton>
+        <ListButton icon={<LeftOutlined onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined} />}>{t("stores.stores")}</ListButton>
       </Flex>
       <Divider />
       <StoreForm action="edit" />

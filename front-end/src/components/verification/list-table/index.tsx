@@ -72,8 +72,7 @@ export const StoreListTable = () => {
           <SearchOutlined
             style={{
               color: filtered ? token.colorPrimary : undefined,
-            }}
-          />
+            }} onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined}          />
         )}
         defaultFilteredValue={getDefaultFilter("id", filters, "eq")}
         filterDropdown={(props) => (
@@ -93,8 +92,7 @@ export const StoreListTable = () => {
           <SearchOutlined
             style={{
               color: filtered ? token.colorPrimary : undefined,
-            }}
-          />
+            }} onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined}          />
         )}
         defaultFilteredValue={getDefaultFilter("title", filters, "contains")}
         filterDropdown={(props) => (
@@ -110,8 +108,7 @@ export const StoreListTable = () => {
           <SearchOutlined
             style={{
               color: filtered ? token.colorPrimary : undefined,
-            }}
-          />
+            }} onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined}          />
         )}
         defaultFilteredValue={getDefaultFilter("email", filters, "contains")}
         filterDropdown={(props) => (
@@ -170,7 +167,7 @@ export const StoreListTable = () => {
         align="center"
         render={(_, record) => (
           <EditButton
-            icon={<EyeOutlined />}
+            icon={<EyeOutlined onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined} />}
             recordItemId={record.id}
             hideText
           />
