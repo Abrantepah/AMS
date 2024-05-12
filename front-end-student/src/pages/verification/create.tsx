@@ -53,8 +53,8 @@ export const StoreCreate = () => {
 const handleFinish = async () => {
   if (navigator.geolocation) {
     navigator.geolocation.getCurrentPosition(async (position) => {
-      const latitude = 5.5592846;  {/*position.coords.latitude*/}
-      const longitude = -0.1974306; {/*position.coords.longitude*/} 
+      const latitude = position.coords.latitude
+      const longitude = position.coords.longitude 
 
       try {
           courseMutate({
