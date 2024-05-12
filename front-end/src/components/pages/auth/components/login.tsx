@@ -92,7 +92,7 @@ export const LoginPage: React.FC<LoginProps> = ({
         ...titleStyles,
       }}
     >
-      {translate("login as a student")}
+      {translate("Lecturer Login")}
     </Typography.Title>
   );
 
@@ -145,48 +145,6 @@ export const LoginPage: React.FC<LoginProps> = ({
     <Card
       title={
         <>
-          <Radio.Group
-            defaultValue="student"
-            buttonStyle="solid"
-            style={{
-              display: "flex",
-              justifyContent: "center",
-              marginBottom: "20px",
-            }}
-          >
-            <Radio.Button
-              value="student"
-              disabled
-              style={{
-                backgroundColor: token.colorPrimaryTextHover,
-                color: "white",
-                cursor: "not-allowed",
-              }}
-            >
-              Student
-            </Radio.Button>
-            <Radio.Button
-              value="lecturer"
-              style={{
-                backgroundColor: "white",
-                color: token.colorPrimaryTextHover,
-                fontWeight: "bold",
-                padding: 0
-              }}
-            >
-              <ActiveLink
-                to="/lecturer-login"
-                style={{
-                  color: token.colorPrimaryTextHover,
-                  
-                }}
-                >
-                  <div style={{padding: "0 10px"}}>
-                    Lecturer
-                  </div>
-              </ActiveLink>
-            </Radio.Button>
-          </Radio.Group>
           {CardTitle}
         </>
       }
@@ -213,7 +171,7 @@ export const LoginPage: React.FC<LoginProps> = ({
           <Form.Item
             // name="email"
             name={"reference"}
-            label={translate("Reference")}
+            label={translate("Staff ID")}
             rules={[
               { required: true },
               {
@@ -226,7 +184,7 @@ export const LoginPage: React.FC<LoginProps> = ({
           >
             <Input
               size="large"
-              placeholder={translate( "Reference number")}
+              placeholder={translate( "Staff ID")}
             />
           </Form.Item>
           <Form.Item

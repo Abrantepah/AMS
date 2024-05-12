@@ -24,8 +24,6 @@ import {
   Typography,
   theme,
 } from "antd";
-import { ProductStatus } from "../status";
-import { PaginationTotal } from "../../paginationTotal";
 import { EyeOutlined, SearchOutlined } from "@ant-design/icons";
 import { useLocation } from "react-router-dom";
 

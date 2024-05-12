@@ -25,8 +25,6 @@ export const RecentCourses: React.FC = () => {
 
   const courses = courseData.data?.data.courses ?? [];
 
-  const { show } = useNavigation();
-  console.log(courses)
 
   return (
     <>
@@ -34,6 +32,7 @@ export const RecentCourses: React.FC = () => {
         {courses.map((item: any) => (
           <Col xl={{ span: 24 }} lg={10} md={10} sm={24} xs={24}>
             <Card
+              key={item.id}
               hoverable
               bordered={false}
               className={styles.card}

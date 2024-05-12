@@ -12,6 +12,7 @@ import {
   Divider,
   Flex,
   List,
+  Skeleton,
   Tag,
   Typography,
   theme,
@@ -31,7 +32,7 @@ interface ICourse {
     department: number[];
 }
 
-export const CourseListCard = () => {
+export const ClassListCard = () => {
   const { styles, cx } = useStyles();
   const { token } = theme.useToken();
   const { data: user } = useGetIdentity<IIdentity>();
@@ -41,30 +42,27 @@ export const CourseListCard = () => {
   const { showUrl } = useNavigation();
 
   const {
-    listProps: courseListProps,
-    filters,
-    setFilters,
+    listProps: classListProps,
   } = useSimpleList<ICourse, HttpError>({
-    resource: `generateCode/${user?.id}`,
+    resource: `lecturerClasses/${user?.id}`,
   });
 // @ts-ignore
-  const allCourses = courseListProps.dataSource?.courses ?? []
+  const allClasses = classListProps.dataSource?.all_classes_info ?? []
 
-  console.log(allCourses);
+  console.log(allClasses);
   
-
   return (
     <>
       <Divider style={{ margin: "16px 0px" }} />
       <List
-        {...courseListProps}
+        {...classListProps}
         pagination={{
-          ...allCourses.pagination,
+          ...classListProps.pagination,
           showTotal: (total) => (
-            <PaginationTotal total={total} entityName={"courses"} />
+            <PaginationTotal total={total} entityName={"classes"} />
           ),
         }}
-        dataSource={allCourses}
+        dataSource={allClasses}
         grid={{
           gutter: [16, 16],
           column: 4,
@@ -80,7 +78,7 @@ export const CourseListCard = () => {
             <Card
               key={
               // @ts-ignore
-                `data-${item.id}`
+                `data-${item.department.id}`
               }
               hoverable
               bordered={false}
@@ -99,7 +97,7 @@ export const CourseListCard = () => {
               onClick={() => {
                       return go({
                         // @ts-ignore
-                        to: `${showUrl("courses", item.id)}`,
+                        to: `${showUrl("report", `${item.department.id}/${item.courses[0].course.id}`)}`,
                         query: {
                           to: pathname,
                         },
@@ -115,7 +113,7 @@ export const CourseListCard = () => {
                     onClick={() => {
                       return go({
                         // @ts-ignore
-                        to: `${showUrl("courses", item.id)}`,
+                        to: `${showUrl("report", item.department.id)}`,
                         query: {
                           to: pathname,
                         },
@@ -141,31 +139,30 @@ export const CourseListCard = () => {
                       ellipsis={{
                         rows: 1,
                         // @ts-ignore
-                        tooltip: item.name,
+                        tooltip: item.department.dname,
                       }}
                     >
                       {
                         // @ts-ignore
-                        item.name
+                        item.department.dname
                       }
                     </Typography.Title>
 
-                    <NumberField
+                    {/* <NumberField
                       value={
                         // @ts-ignore
-                        item.year
+                        item.courses[0].course.year
                       }
                       style={{
                         paddingLeft: "8px",
                         marginLeft: "auto",
                       }}
-
-                    />
+                    /> */}
                   </Flex>
                 }
                 description={
-                        // @ts-ignore
-                  item.code
+                  // @ts-ignore
+                  `${item.courses[0].course.code} : ${item.courses[0].course.name}`
                 }
               />
             </Card>

@@ -5,87 +5,9 @@ import { disableAutoLogin, enableAutoLogin } from "./hooks";
 export const TOKEN_KEY = "attendance-auth";
 
 export const authProvider: AuthProvider = {
-  // login: async ({ reference, password }) => {
-  //   // enableAutoLogin();
-  //   // localStorage.setItem(TOKEN_KEY, `${reference}-${password}`);
-  //   const response = await fetch("http://localhost:8080/api/v1/web/login", {
-  //     method: "POST",
-  //     headers: { "Content-Type": "application/json" },
-  //     body: JSON.stringify({
-  //       username: reference,
-  //       password: password
-  //     }),
-  //     credentials: "include",
-  //     mode: "cors"
-  //   })
-    
-  //   const data = await response.json();
-  //   if (response.status === 200) {
-  //     localStorage.setItem(TOKEN_KEY, JSON.stringify({
-  //       id: data.id,
-  //       reference: data.reference,
-  //       index: data.index,
-  //       name: data.name,
-  //       year: data.year,
-  //       total_strike: data.total_strike,
-  //       user: data.user,
-  //       programme: data.programme
-  //     }));
-  //   }
-  //   return {
-  //     success: true,
-  //     redirectTo: "/",
-  //   };
-  // },
-  
-    login: async ({ reference, password }) => {
+
+  login: async ({ reference, password }) => {
     if (reference && password) {
-      // localStorage.setItem(TOKEN_KEY, {})
-      const response = await fetch("https://knust-ams.up.railway.app/api/student-login/", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-              username: reference,
-              password: password
-          }),
-          // credentials: "include"
-      })
-      const data = await response.json()
-      localStorage.setItem('role', JSON.stringify({
-        role: 'student'
-      }))
-      if (response.status === 200) {
-        localStorage.setItem(TOKEN_KEY,
-          JSON.stringify({
-            id: data.id,
-            reference: data.reference,
-            index: data.index,
-            name: data.name,
-            year: data.year,
-            total_strike: data.total_strike,
-            user: data.user,
-            programme: data.programme
-        }));
-        return {
-          success: true,
-          redirectTo: "/",
-        };
-      }
-    }
-
-    return {
-      success: false,
-      error: {
-        name: "Student Login Fail",
-        message: "Invalid reference or password",
-      },
-    };
-  },
-
-
-  register: async ({ reference, password }) => {
-    if (reference && password) {
-      // localStorage.setItem(TOKEN_KEY, `${reference}-${password}`)
       const response = await fetch("https://knust-ams.up.railway.app/api/lecturer-login/", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -93,12 +15,8 @@ export const authProvider: AuthProvider = {
               username: reference,
               password: password
           }),
-          // credentials: "include"
       })
       const data = await response.json()
-      localStorage.setItem('role', JSON.stringify({
-        role: 'lecturer'
-      }))
         if (response.status === 200) {
           localStorage.setItem(TOKEN_KEY,
             JSON.stringify({
@@ -153,7 +71,7 @@ export const authProvider: AuthProvider = {
 
     return {
       success: true,
-      redirectTo: "/student-login",
+      redirectTo: "/lecturer-login",
     };
   },
   onError: async (error) => {

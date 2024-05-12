@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { Authenticated, Refine } from "@refinedev/core";
 import { RefineKbarProvider } from "@refinedev/kbar";
 import {
@@ -40,32 +40,12 @@ import { Header, Title } from "./components";
 import { ConfigProvider } from "./context";
 
 import "@refinedev/antd/dist/reset.css";
+import { ReportList, ReportShow } from "./pages/reports";
 
 const App: React.FC = () => {
   const API_URL = "https://knust-ams.up.railway.app/api";
   const dataProvider = jsonServerDataProvider(API_URL);
 
- 
-  // @ts-ignore
-  const [role, setRole] = useState(JSON.parse(localStorage.getItem('role')));
-  
-    useEffect(() => {
-      // const handleStorageChange = () => {
-      // @ts-ignore
-      setRole(JSON.parse(localStorage.getItem('role')));
-    // };
-
-    // window.addEventListener('storage', handleStorageChange);
-
-    // return () => {
-    //   window.removeEventListener('storage', handleStorageChange);
-      // };
-      // @ts-ignore
-    }, []);
-  
-
-  // @ts-ignore
-  console.log(localStorage.getItem('role'));
   
   return (
     <BrowserRouter>
@@ -95,7 +75,7 @@ const App: React.FC = () => {
                 },
               },
               // @ts-ignore
-              role?.role === 'lecturer' ? {
+              {
                 name: "courses",
                 list: "/courses",
                 create: "/courses/new",
@@ -104,13 +84,11 @@ const App: React.FC = () => {
                 meta: {
                   icon: <TagsOutlined onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined} />,
                 },
-              }
-              : 
+              },
               {
-                name: "verification",
-                list: "/verification",
-                create: "/verification/new",
-                edit: "/verification/:id/edit",
+                name: "report",
+                list: "/report",
+                show: "/report/:id",
                 meta: {
                   icon: <ShopOutlined onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined} />,
                 },
@@ -122,7 +100,7 @@ const App: React.FC = () => {
                 element={
                   <Authenticated
                     key="authenticated-routes"
-                    fallback={<CatchAllNavigate to="/student-login" />}
+                    fallback={<CatchAllNavigate to="/lecturer-login" />}
                   >
                     <ThemedLayoutV2 Header={Header} Title={Title}>
                       <div
@@ -153,10 +131,9 @@ const App: React.FC = () => {
                   <Route path=":id/edit" element={<CourseEdit />} />
                 </Route>
 
-                <Route path="/verification">
-                  <Route index element={<StoreCreate />} />
-                  <Route path="new" element={<StoreCreate />} />
-                  <Route path=":id/edit" element={<StoreEdit />} />
+                <Route path="/report">
+                  <Route index element={<ReportList />} />
+                  <Route path=":id" element={<ReportShow />} />
                 </Route>
 
               </Route>
@@ -169,20 +146,11 @@ const App: React.FC = () => {
                 }
               >
                 <Route
-                  path="/student-login"
+                  path="/lecturer-login"
                   element={
                     <AuthPage
                       title={<img src={logo} alt="logo" />}
                       type="login"
-                    />
-                  }
-                />
-                <Route
-                  path="/lecturer-login"
-                  element={
-                    <AuthPage
-                      title={<img src={ logo } alt="logo" /> }
-                      type="register"
                     />
                   }
                 />
