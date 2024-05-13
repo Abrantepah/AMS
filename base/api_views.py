@@ -19,10 +19,16 @@ from django.core.management.base import BaseCommand
 import random
 
 
-@api_view(['GET'])
+@api_view(['GET', 'POST'])
 def get_students(request):
     students = Student.objects.all()
     serializer = StudentSerializer(students, many=True)
+
+    if request.method == 'POST':
+        student_id = request.data.get('studentId')
+        student = Student.objects.get(id=student_id)
+        serializer = StudentSerializer(student)
+        
     return Response(serializer.data, status=status.HTTP_200_OK)
 
 
@@ -311,14 +317,19 @@ def MarkAttendance(request, user_id, code):
     for matching_session in matching_sessions:
         match = matching_session
 
-    time = session.expiration_time
-    time_remaining = (time - timezone.now()).total_seconds()
-    if time_remaining <= 0:
-        return Response({'error': 'Session has expired'}, status=status.HTTP_408_REQUEST_TIMEOUT)
+    expiration_time = session.expiration_time  
+    time_now = timezone.now()
+    time_remaining = 0
+    
+    message = ''
+    if expiration_time <= timezone.now():
+        message = 'session has expired'
+    else:
+        time_remaining = (expiration_time - timezone.now()).total_seconds()
 
     if request.method == 'POST':
-        # Check if the student is eligible to mark attendanc
-        if time_remaining > 0:
+        # # Check if the student is eligible to mark attendanc
+        # if time_remaining > 0:
 
             attendance_type = request.data.get('attendance_type')
             if attendance_type == 'start':
@@ -332,6 +343,7 @@ def MarkAttendance(request, user_id, code):
                     studentcode.used = True
                     studentcode.save()
 
+
                 # Mark attendance for the start of the session
                 attendance, created = Attendance.objects.get_or_create(
                     StudentCourse=student_course,
@@ -341,7 +353,20 @@ def MarkAttendance(request, user_id, code):
                 if not created:
                     attendance.attended_start = True
                     attendance.save()
+                    return Response({'Start atttendance Marked Successfully'}, status=status.HTTP_201_CREATED)
+                else:
+                    return Response({'Start atttendance has been marked already'}, status=status.HTTP_201_CREATED)
+           
             elif attendance_type == 'end':
+
+                studentcode, created = StudentCode.objects.get_or_create(
+                    student=student,
+                    code=code,
+                    defaults={'used': False}
+                )
+                if created:
+                    studentcode.used = True
+                    studentcode.save()
 
                 # Mark attendance for the end of the session
                 attendance, created = Attendance.objects.get_or_create(
@@ -358,15 +383,17 @@ def MarkAttendance(request, user_id, code):
                 if end.attended_start is True:
                     match.attended = True
                     match.save()
+                    return Response({'atttendance Marked Successfully'}, status=status.HTTP_201_CREATED)
 
-        return Response({'atttendance Marked Successfully'}, status=status.HTTP_201_CREATED)
-
+        
     attendance_marked_start = Attendance.objects.filter(
         session=session, attended_start=True).exists()
 
     response_data = {
-        'time_remaining': time_remaining,
+        'match': StudentSessionSerializer(match).data ,
+        # 'time_remaining': expiration_time,
         'attendance_marked_start': attendance_marked_start,
+        # 'message': message,
     }
 
     return Response(response_data, status=status.HTTP_200_OK)
@@ -433,7 +460,7 @@ def generateCode_api(request, user_id, course_id=None):
                 selected_longitude = request.data.get('longitude')
 
             # minutes it takes for code to expire
-                expiration_minutes = 15
+                expiration_minutes = 1
             # Generate a verification code
                 code = generate_verification_code(
                     lecturer, selected_course, selected_session, expiration_minutes, selected_latitude, selected_longitude)
