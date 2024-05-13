@@ -317,19 +317,21 @@ def MarkAttendance(request, user_id, code):
     for matching_session in matching_sessions:
         match = matching_session
 
-    expiration_time = session.expiration_time  
+    expiration_time = verification_code.expiration_time  
+    
     time_now = timezone.now()
     time_remaining = 0
     
     message = ''
+    time_remaining = 0
     if expiration_time <= timezone.now():
         message = 'session has expired'
     else:
         time_remaining = (expiration_time - timezone.now()).total_seconds()
 
     if request.method == 'POST':
-        # # Check if the student is eligible to mark attendanc
-        # if time_remaining > 0:
+        # Check if the student is eligible to mark attendanc
+        if time_remaining > 0:
 
             attendance_type = request.data.get('attendance_type')
             if attendance_type == 'start':
@@ -388,9 +390,9 @@ def MarkAttendance(request, user_id, code):
 
     response_data = {
         'match': StudentSessionSerializer(match).data ,
-        # 'time_remaining': expiration_time,
-        'attendance_marked_start': attendance_marked_start,
-        # 'message': message,
+        'time_remaining': time_remaining,
+        'started': attendance_marked_start,
+        'message': message,
     }
 
     return Response(response_data, status=status.HTTP_200_OK)
@@ -457,7 +459,7 @@ def generateCode_api(request, user_id, course_id=None):
                 selected_longitude = request.data.get('longitude')
 
             # minutes it takes for code to expire
-                expiration_minutes = 1
+                expiration_minutes = 100
             # Generate a verification code
                 code = generate_verification_code(
                     lecturer, selected_course, selected_session, expiration_minutes, selected_latitude, selected_longitude)
@@ -705,7 +707,6 @@ def studentsTable(request, user_id, class_id, course_id):
     }
 
     return Response(response_data, status=status.HTTP_200_OK)
-
 
 
 
