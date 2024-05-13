@@ -1,7 +1,7 @@
 import { Flex, Divider, Typography, Spin, theme, Col, Row, Card, Form, Input } from "antd";
 import { CardWithPlot } from "../../components";
 import { CheckCircleOutlined } from "@ant-design/icons";
-import { useGetIdentity, useTranslate, useCreate } from "@refinedev/core";
+import { useGetIdentity, useShow, useCreate } from "@refinedev/core";
 import { IIdentity } from "../../interfaces";
 import { SaveButton} from "@refinedev/antd";
 import { useEffect, useState } from "react";
@@ -14,13 +14,18 @@ export const StoreCreate = () => {
   const { mutate:attendanceMutate, data:attendanceData, isLoading:attendanceLoading, isError: attendanceError } = useCreate();
   const [code, setCode] = useState('')
   const [attendanceToggle, setAttendanceToggle] = useState(true)
-
+  const { queryResult: checkStartData } = useShow({
+      resource: `MarkAttendance/${user?.id}/${code}/`,
+    })
 
   if (attendanceError) {
     setAttendanceToggle(prevState => !prevState)
     localStorage.setItem('attendanceToggle', 'true')
     localStorage.removeItem('verificationCode')
   }
+// @ts-ignore
+  // console.log(JSON.parse(localStorage.getItem('attendanceData')).started);
+  
   
 // @ts-ignore
   const retrievedCode = localStorage.getItem('storedData') != 'undefined'|| !(localStorage.getItem('storedData'))? JSON.parse(localStorage.getItem('storedData')) : {
@@ -37,7 +42,11 @@ export const StoreCreate = () => {
       }
     }
   }
-  // console.log(retrievedCode);
+
+  const parseSession = retrievedCode?.data.session.id != "N/A" ?((( Number.parseInt(retrievedCode?.data.session.id) -1) % 15) + 1) : "N/A"
+
+  console.log(retrievedCode);
+  console.log(courseData);
 
   useEffect(() => {
     const data = localStorage.getItem('storedData');
@@ -87,24 +96,22 @@ const handleFinish = async () => {
 };
   
 
-const handleMarkAttendance = async () => {
+const handleMarkStartAttendance = async () => {
   if (courseData != undefined) {
       try {
           attendanceMutate({
           resource: `MarkAttendance/${user?.id}/${code}/`,
-          values: {},
+            values: {
+            attendance_type: 'start'
+          },
         }, {
           onSuccess: () => {
             // refetch()
             setAttendanceToggle(prevState => !prevState)
             localStorage.removeItem('attendanceToggle')
             // @ts-ignore
-            if (JSON.parse(localStorage.getItem('attendanceMarked'))) {
-              
-              localStorage.setItem('attendanceMarked', 'false')
-            } else { 
-              localStorage.setItem('attendanceMarked', 'true')
-            }
+              localStorage.setItem("attendanceData", JSON.stringify(attendanceData))
+
             localStorage.removeItem('storedData')
             localStorage.removeItem('verificationCode')
           },
@@ -120,19 +127,72 @@ const handleMarkAttendance = async () => {
           attendanceMutate({
           resource: `MarkAttendance/${user?.id}/${code}`,
             values: {
-            attendance_type: "start"
+              attendance_type: 'start'
           },
         }, {
           onSuccess: () => {
             // refetch()
             localStorage.removeItem('attendanceToggle')
             // @ts-ignore
-            if (JSON.parse(localStorage.getItem('attendanceMarked'))) {
-              
-              localStorage.setItem('attendanceMarked', 'false')
-            } else { 
-              localStorage.setItem('attendanceMarked', 'true')
-            }
+              localStorage.setItem("attendanceData", JSON.stringify(attendanceData))
+            localStorage.removeItem('verificationCode')
+            localStorage.removeItem('storedData')
+            setAttendanceToggle(prevState => !prevState)
+          },
+          onError: () => {
+            setAttendanceToggle(prevState => !prevState)
+            localStorage.setItem('attendanceToggle', 'false')
+            localStorage.removeItem('verificationCode')
+          },
+        });
+
+      } catch (error) {
+        console.log("Error marking attendance:", error);
+      }
+  }
+};
+
+  
+const handleMarkEndAttendance = async () => {
+  if (courseData != undefined) {
+      try {
+          attendanceMutate({
+          resource: `MarkAttendance/${user?.id}/${code}/`,
+            values: {
+            attendance_type: "end"
+          },
+        }, {
+          onSuccess: () => {
+            // refetch()
+            setAttendanceToggle(prevState => !prevState)
+            localStorage.removeItem('attendanceToggle')
+            // @ts-ignore
+  
+              localStorage.removeItem("attendanceData")
+            localStorage.removeItem('storedData')
+            localStorage.removeItem('verificationCode')
+          },
+        });
+
+      } catch (error) {
+        console.log("Error marking attendance:", error);
+      }
+
+  } else {
+    const code = localStorage.getItem('verificationCode')
+      try {
+          attendanceMutate({
+          resource: `MarkAttendance/${user?.id}/${code}`,
+            values: {
+            attendance_type: "end"
+          },
+        }, {
+          onSuccess: () => {
+            // refetch()
+            localStorage.removeItem('attendanceToggle')
+            // @ts-ignore
+              localStorage.removeItem("courseData")
+
             localStorage.removeItem('verificationCode')
             localStorage.removeItem('storedData')
             setAttendanceToggle(prevState => !prevState)
@@ -166,6 +226,8 @@ const handleMarkAttendance = async () => {
     expiration_time: "N/A"
   }
 
+  const parseCourseSession = courseData?.data?.session.id != "N/A" ?((( Number.parseInt(courseData?.data?.session.id) -1) % 15) + 1) : "N/A"
+
   const sessionTime = new Date(courseSession.expiration_time).toLocaleTimeString();
 
   
@@ -173,8 +235,16 @@ const handleMarkAttendance = async () => {
   const retrievedSessionTime = new Date(retrievedCode?.data.session.expiration_time).toLocaleTimeString()
 
   // @ts-ignore
-  console.log(JSON.parse(localStorage.getItem('attendanceToggle')));
-  
+  const parsedAttendance = JSON.parse(localStorage.getItem('attendanceData'))?.data ?? {
+    time_remaining: "",
+    started: ""
+  }
+  const preRemainingTime = parsedAttendance?.time_remaining ?? ""
+  const remainingTime = new Date(parsedAttendance?.time_remaining).getTime()
+  // console.log(JSON.parse(localStorage.getItem('attendanceToggle')));
+  const currentTime = Date.now()
+  // @ts-ignore
+console.log(parsedAttendance.started == true && remainingTime > currentTime);
 
 
   return (
@@ -252,10 +322,10 @@ const handleMarkAttendance = async () => {
                       backgroundColor: 'green'
                       }}
                       htmlType="submit"
-                      onClick={handleMarkAttendance}
+                      onClick={handleMarkStartAttendance}
                       disabled={
                       // @ts-ignore
-                        JSON.parse(localStorage.getItem('attendanceMarked'))
+                        parsedAttendance.started == true && remainingTime > currentTime
                       }
                       type="primary"
                       icon={<CheckCircleOutlined onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined}/>}
@@ -270,10 +340,10 @@ const handleMarkAttendance = async () => {
                     }}
                       disabled={
                         // @ts-ignore
-                        JSON.parse(localStorage.getItem('attendanceMarked')) != true
+                        !(parsedAttendance.started == true && remainingTime > currentTime)
                        }
                     htmlType="submit"
-                    onClick={handleMarkAttendance}
+                    onClick={handleMarkEndAttendance}
                     type="primary"
                     icon={<CheckCircleOutlined onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined}/>}
                   >
@@ -361,7 +431,7 @@ const handleMarkAttendance = async () => {
             
             {
               // @ts-ignore
-              courseSession.id != 'N/A' ? courseSession.id : retrievedCode?.data.session.id
+              courseSession.id != 'N/A' ? parseCourseSession : parseSession
             }
             </Typography.Text>
           </Flex>
