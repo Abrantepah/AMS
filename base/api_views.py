@@ -323,11 +323,12 @@ def MarkAttendance(request, user_id, code):
     time_remaining = 0
     
     message = ''
-    time_remaining = 0
+    expiration_datetime = 0
     if expiration_time <= timezone.now():
         message = 'session has expired'
     else:
         time_remaining = (expiration_time - timezone.now()).total_seconds()
+        expiration_datetime = timezone.now() + timedelta(seconds=time_remaining)
 
     if request.method == 'POST':
         # Check if the student is eligible to mark attendanc
@@ -390,7 +391,7 @@ def MarkAttendance(request, user_id, code):
 
     response_data = {
         'match': StudentSessionSerializer(match).data ,
-        'time_remaining': time_remaining,
+        'time_remaining': expiration_datetime,
         'started': attendance_marked_start,
         'message': message,
     }
@@ -459,7 +460,7 @@ def generateCode_api(request, user_id, course_id=None):
                 selected_longitude = request.data.get('longitude')
 
             # minutes it takes for code to expire
-                expiration_minutes = 100
+                expiration_minutes = 10
             # Generate a verification code
                 code = generate_verification_code(
                     lecturer, selected_course, selected_session, expiration_minutes, selected_latitude, selected_longitude)
