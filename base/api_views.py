@@ -703,8 +703,8 @@ def studentsTable(request, user_id, class_id, course_id):
     student_s = StudentSerializer(students, many=True).data
 
     response_data = {
-        # 'student_info': student_table_info,
-        'students': student_s
+        'student_info': student_table_info,
+        # 'students': student_s
     }
 
     return Response(response_data, status=status.HTTP_200_OK)
