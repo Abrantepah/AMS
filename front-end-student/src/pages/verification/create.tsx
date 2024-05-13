@@ -235,8 +235,12 @@ const handleMarkEndAttendance = async () => {
   const retrievedSessionTime = new Date(retrievedCode?.data.session.expiration_time).toLocaleTimeString()
 
   // @ts-ignore
-  const parsedAttendance = JSON.parse(localStorage.getItem('attendanceData'))?.data
-  const remainingTime = new Date(parsedAttendance.time_remaining).getTime()
+  const parsedAttendance = JSON.parse(localStorage.getItem('attendanceData'))?.data ?? {
+    time_remaining: "",
+    started: ""
+  }
+  const preRemainingTime = parsedAttendance?.time_remaining ?? ""
+  const remainingTime = new Date(parsedAttendance?.time_remaining).getTime()
   // console.log(JSON.parse(localStorage.getItem('attendanceToggle')));
   const currentTime = Date.now()
   // @ts-ignore
