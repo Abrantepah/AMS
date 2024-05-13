@@ -325,7 +325,7 @@ def MarkAttendance(request, user_id, code):
 
                 studentcode, created = StudentCode.objects.get_or_create(
                     student=student,
-                    code=verification_code,
+                    code=code,
                     defaults={'used': False}
                 )
                 if created:
@@ -695,7 +695,6 @@ def studentsTable(request, user_id, class_id, course_id):
     # Prepare a list to store serialized student course information
     student_table_info = []
     
-
     # students = Student.objects.filter(
     #     programme=department, studentcourse__course=course, studentcourse__course__lecturer=lecturer)
 
@@ -750,6 +749,10 @@ def lecturerClasses(request, user_id):
 
         for lecturer_course in lecturer_courses:
             course_serializer = CourseSerializer(lecturer_course).data
+
+            # sessions = Session.objects.filter(attendance__attended=True, course=lecturer_course)
+            # course_sessions = SessionSerializer(sessions, many=True).data
+            
             classes_info['courses'].append({'course': course_serializer})
 
         all_classes_info.append(classes_info)
