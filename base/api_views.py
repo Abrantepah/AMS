@@ -354,10 +354,6 @@ def MarkAttendance(request, user_id, code):
                     attendance.attended_start = True
                     attendance.save()
                     return Response({'Start atttendance Marked Successfully'}, status=status.HTTP_201_CREATED)
-                else:
-                    return Response({'Start atttendance has been marked already'}, status=status.HTTP_201_CREATED)
-           
-            elif attendance_type == 'end':
 
                 studentcode, created = StudentCode.objects.get_or_create(
                     student=student,
@@ -628,51 +624,9 @@ def studentsTable(request, user_id, class_id, course_id):
     students = Student.objects.filter(
         programme=department, studentcourse__course=course, studentcourse__course__lecturer=lecturer)
 
-    departments_with_lecturer = Department.objects.filter(
-        lecturer=lecturer)
-
-    # if request.method == 'GET':
-    #     # Use request.POST to retrieve form data from a POST request
-    #     indexF = request.data.get('indexFilter')
-    #     courseF = request.data.get('courseFilter')
-    #     yearF = request.data.get('yearFilter')
-    #     # strikeF = request.data.get('strikesFilter')
-    #     # nameF = request.data.get('nameFilter')
-
-    #     # Apply filters based on user input
-    #     if indexF:
-    #         students = Student.objects.filter(
-    #             index__icontains=indexF,  studentcourse__course__lecturer=lecturer)
-    #         display = 'Index Number: ' + indexF
-    #     if courseF:
-    #         students = Student.objects.filter(
-    #             studentcourse__course__name=courseF, studentcourse__course__lecturer=lecturer)
-    #         default_course = Course.objects.get(name=courseF)
-    #         display = 'Course: ' + default_course.name + \
-    #             ' (Year:' + str(default_course.year) + ')'
-    #     if yearF:
-    #         students = Student.objects.filter(
-    #             year=yearF, studentcourse__course__lecturer=lecturer)
-    #         display = 'Year: ' + yearF
-    #     # if strikeF:
-    #     #     if strikeF == '4':
-    #     #         students = Student.objects.filter(studentcourse__strike__range=[
-    #     #             4, 15], studentcourse__course__lecturer=lecturer)
-    #     #     else:
-    #     #         students = Student.objects.filter(studentcourse__strike=int(
-    #     #             strikeF), studentcourse__course__lecturer=lecturer)
-    #     #     display = 'Number of Absences: ' + strikeF
-    #     # if nameF:
-    #     #     students = Student.objects.filter(
-    #     #         name__icontains=nameF, studentcourse__course__lecturer=lecturer)
-    #     #     display = 'Name: ' + nameF
-    # else:
-    #     students = Student.objects.filter(
-    #     studentcourse__course__department=department)
-    #     # display = 'class: ' + department.dname 
 
     Tsessions = Session.objects.filter(
-        attendance__attended=True, course=course)
+        attendance__attended=True, course=course, course__department=department, course__lecturer=lecturer)
 
     func_values = [(session.id - 1) % 15 + 1 for session in Tsessions]
 
@@ -681,7 +635,7 @@ def studentsTable(request, user_id, class_id, course_id):
     for student in students:
         try:
             studentcourse = StudentCourse.objects.get(
-                student=student, course=course)
+                student=student, course__department=department, course__lecturer=lecturer)
         except:
             message = 'nothing'
 
@@ -726,7 +680,7 @@ def studentsTable(request, user_id, class_id, course_id):
     #     programme=department, studentcourse__course=course, studentcourse__course__lecturer=lecturer)
 
     # Prefetch student courses related to the default course
-    student_courses = StudentCourse.objects.filter(student__in=students, course=course)
+    student_courses = StudentCourse.objects.filter(student__in=students, course__department=department, course__lecturer=lecturer)
 
     for student_course in student_courses:
         # Retrieve sessions for the current student course
@@ -742,9 +696,11 @@ def studentsTable(request, user_id, class_id, course_id):
             'student_sessions': serialized_student_sessions
             })         
             
+    student_s = StudentSerializer(students, many=True).data
 
     response_data = {
-        'student_info': student_table_info,
+        # 'student_info': student_table_info,
+        'students': student_s
     }
 
     return Response(response_data, status=status.HTTP_200_OK)
