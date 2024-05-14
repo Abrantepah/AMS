@@ -357,19 +357,19 @@ def MarkAttendance(request, user_id, code):
                     attendance.attended_start = True
                     attendance.save()
 
-                    attendance_marked_start = Attendance.objects.filter(
-                    session=session, attended_start=True).exists()
+                    # attendance_marked_start = Attendance.objects.filter(
+                    # session=session, attended_start=True).exists()
                     
-                    # Return response_data instead of success message
-                    response_data = {
-                        'match': StudentSessionSerializer(match).data ,
-                        'time_remaining': expiration_datetime,
-                        'started': attendance_marked_start,
-                        'message': message,
-                    }
-                    return Response(response_data, status=status.HTTP_201_CREATED)
+                    # # Return response_data instead of success message
+                    # response_data = {
+                    #     'match': StudentSessionSerializer(match).data ,
+                    #     'time_remaining': expiration_datetime,
+                    #     'started': attendance_marked_start,
+                    #     'message': message,
+                    # }
+                    # return Response(response_data, status=status.HTTP_201_CREATED)
             
-            elif attendance_type == 'end':
+           
                 studentcode, created = StudentCode.objects.get_or_create(
                     student=student,
                     code=code,
@@ -392,7 +392,7 @@ def MarkAttendance(request, user_id, code):
                 end = Attendance.objects.get(
                     session=session, StudentCourse=student_course)
                 if end.attended_start is True:
-                    match.attended.update(attended=True)
+                    match.attended = True
                     match.save()
                     return Response({'attendance Marked Successfully'}, status=status.HTTP_201_CREATED)
 
