@@ -291,6 +291,8 @@ def verification_api(request, user_id):
     return Response(student, status=status.HTTP_200_OK)
 
 
+
+
 @api_view(['GET', 'POST'])
 def MarkAttendance(request, user_id, code):
     verification_code = VerificationCode.objects.get(code=code)
@@ -304,8 +306,7 @@ def MarkAttendance(request, user_id, code):
         student_session_modulo=(((F('id') - 1) % 15) + 1)
     ).get(id=session_id)
 
-
-# Use F expressions to get the modulo 15 of the StudentSession ID
+    # Use F expressions to get the modulo 15 of the StudentSession ID
     student_sessions = StudentSession.objects.annotate(
         student_session_modulo=(((F('id') - 1) % 15) + 1)
     ).filter(studentcourse=student_course)
@@ -331,7 +332,7 @@ def MarkAttendance(request, user_id, code):
         expiration_datetime = timezone.now() + timedelta(seconds=time_remaining)
 
     if request.method == 'POST':
-        # Check if the student is eligible to mark attendanc
+        # Check if the student is eligible to mark attendance
         if time_remaining > 0:
 
             attendance_type = request.data.get('attendance_type')
@@ -346,7 +347,6 @@ def MarkAttendance(request, user_id, code):
                     studentcode.used = True
                     studentcode.save()
 
-
                 # Mark attendance for the start of the session
                 attendance, created = Attendance.objects.get_or_create(
                     StudentCourse=student_course,
@@ -356,7 +356,18 @@ def MarkAttendance(request, user_id, code):
                 if not created:
                     attendance.attended_start = True
                     attendance.save()
-                    return Response({'Start atttendance Marked Successfully'}, status=status.HTTP_201_CREATED)
+
+                    attendance_marked_start = Attendance.objects.filter(
+                    session=session, attended_start=True).exists()
+                    
+                    # Return response_data instead of success message
+                    response_data = {
+                        'match': StudentSessionSerializer(match).data ,
+                        'time_remaining': expiration_datetime,
+                        'started': attendance_marked_start,
+                        'message': message,
+                    }
+                    return Response(response_data, status=status.HTTP_201_CREATED)
             
             elif attendance_type == 'end':
                 studentcode, created = StudentCode.objects.get_or_create(
@@ -381,9 +392,9 @@ def MarkAttendance(request, user_id, code):
                 end = Attendance.objects.get(
                     session=session, StudentCourse=student_course)
                 if end.attended_start is True:
-                    match.attended = True
+                    match.attended.update(attended=True)
                     match.save()
-                    return Response({'atttendance Marked Successfully'}, status=status.HTTP_201_CREATED)
+                    return Response({'attendance Marked Successfully'}, status=status.HTTP_201_CREATED)
 
         
     attendance_marked_start = Attendance.objects.filter(
@@ -394,9 +405,12 @@ def MarkAttendance(request, user_id, code):
         'time_remaining': expiration_datetime,
         'started': attendance_marked_start,
         'message': message,
+        'session Id': session_id,
     }
 
     return Response(response_data, status=status.HTTP_200_OK)
+
+
 
 
 def generate_verification_code(lecturer, course, session, expiration_minutes, latitude, longitude):
