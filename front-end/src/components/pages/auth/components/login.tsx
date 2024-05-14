@@ -92,7 +92,7 @@ export const LoginPage: React.FC<LoginProps> = ({
         ...titleStyles,
       }}
     >
-      {translate("Lecturer Login")}
+      {translate("Lecturer Portal")}
     </Typography.Title>
   );
 
@@ -192,47 +192,13 @@ export const LoginPage: React.FC<LoginProps> = ({
             label={translate("pages.login.fields.password", "Password")}
             rules={[{ required: true }]}
           >
-            <Input
+            <Input.Password
               type="password"
               autoComplete="current-password"
               placeholder="●●●●●●●●"
               size="large"
             />
           </Form.Item>
-          {/* <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              marginBottom: "24px",
-            }}
-          >
-            {rememberMe ?? (
-              <Form.Item name="remember" valuePropName="checked" noStyle>
-                <Checkbox
-                  style={{
-                    fontSize: "12px",
-                  }}
-                >
-                  {translate("pages.login.buttons.rememberMe", "Remember me")}
-                </Checkbox>
-              </Form.Item>
-            )}
-            {forgotPasswordLink ?? (
-              <ActiveLink
-                style={{
-                  color: token.colorPrimaryTextHover,
-                  fontSize: "12px",
-                  marginLeft: "auto",
-                }}
-                to="/forgot-password"
-              >
-                {translate(
-                  "pages.login.buttons.forgotPassword",
-                  "Forgot password?"
-                )}
-              </ActiveLink>
-            )}
-          </div> */}
           {!hideForm && (
             <Form.Item>
               <Button

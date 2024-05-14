@@ -15,7 +15,7 @@ export const headStyles: CSSProperties = {
   padding: 0,
 };
 
-export const bodyStyles: CSSProperties = { padding: 0, marginTop: "32px" };
+export const bodyStyles: CSSProperties = { padding: 0, marginTop: 0 };
 
 export const titleStyles: CSSProperties = {
   textAlign: "center",

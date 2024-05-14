@@ -81,6 +81,20 @@ export const CourseDrawerShow = (props: Props) => {
               latitude: latitude,
               longitude: longitude
             },
+          successNotification: (data, values, resource) => {
+            return {
+              message: `code generation successful.`,
+              description: "Success",
+              type: "success",
+            };
+          },
+          errorNotification: (data, values, resource) => {
+            return {
+              message: `${data?.response.data}`,
+              description: "Error",
+              type: "error",
+            };
+          }, 
           }, {
             onSuccess: () => {
               // refetch()
@@ -119,6 +133,8 @@ export const CourseDrawerShow = (props: Props) => {
   const availableSession = courses.session ?? {
     id: "No Id",
   };
+
+  const parseSession = availableSession.id != "No Id" ?((( Number.parseInt(availableSession.id) -1) % 15) + 1) : "No Id"
 
   useEffect(() => {
     
@@ -185,7 +201,7 @@ export const CourseDrawerShow = (props: Props) => {
         >
           <Typography.Title level={5}>Session</Typography.Title>
           <Typography.Text type="secondary" style={{fontSize: 18}}>
-            {availableSession.id}
+            {parseSession}
           </Typography.Text>
         </Flex>
         <Divider
@@ -245,7 +261,7 @@ export const CourseDrawerShow = (props: Props) => {
               padding: 10,
             }}
           />
-          <Typography.Text type="secondary" style={{ textAlign: 'center', padding: '70px 0px', fontSize: 50, fontStyle: 'italic' }}>{ codeData == undefined? retrievedCode.code : mainCode }</Typography.Text>
+          <Typography.Title style={{ textAlign: 'center', padding: '70px 0px', fontSize: 50, fontFamily: 'monospace' }}>{ codeData == undefined? retrievedCode.code : mainCode }</Typography.Title>
         </Flex>
       </Spin>
     </Drawer>

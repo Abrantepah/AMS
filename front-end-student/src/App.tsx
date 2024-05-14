@@ -50,7 +50,6 @@ const App: React.FC = () => {
             routerProvider={routerProvider}
             dataProvider={dataProvider}
             authProvider={authProvider}
-            // i18nProvider={i18nProvider}
             options={{
               syncWithLocation: true,
               warnWhenUnsavedChanges: true,
@@ -65,17 +64,6 @@ const App: React.FC = () => {
                   icon: <DashboardOutlined onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined} />,
                 },
               },
-              // : 
-              // {
-              //   name: "verification",
-              //   list: "/verification",
-              //   create: "/verification/new",
-              //   edit: "/verification/:id/edit",
-              //   meta: {
-              //     icon: <ShopOutlined onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined} />,
-              //   },
-              // },
-            
             ]}
           >
             <Routes>
@@ -100,12 +88,6 @@ const App: React.FC = () => {
                 }
               >
                 <Route index element={<DashboardPage />} />
-
-                {/* <Route path="/verification">
-                  <Route index element={<StoreCreate />} />
-                  <Route path="new" element={<StoreCreate />} />
-                  <Route path=":id/edit" element={<StoreEdit />} />
-                </Route> */}
 
               </Route>
 
