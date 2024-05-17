@@ -10,7 +10,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **kwargs):
         # Path to your CSV file
-        csv_file_path = 'base/csvFiles/csA.csv'
+        csv_file_path = 'base/csvFiles/csB.csv'
 
         # Open the CSV file
         with open(csv_file_path, 'r') as csv_file:
@@ -41,14 +41,14 @@ class Command(BaseCommand):
                 # department_name = 'Computer Science (A)'
                 # Get or create the Department object
                 department, created = Department.objects.get_or_create(
-                    dname='Computer Science (A)',
+                    dname='Computer Science (B)',
                 )
 
                 # Create a Lecturer object
                 Student.objects.create(
                     reference=reference,
                     name=formatted_name,
-                    year=1,
+                    year=2,
                     programme=department,
                     index=index
                 )

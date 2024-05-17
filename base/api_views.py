@@ -303,7 +303,7 @@ def MarkAttendance(request, user_id, code):
         student=student, course=course)  # Use get() here
     session_id = session.id
     displaysession = Session.objects.annotate(
-        student_session_modulo=(((F('id') - 1) % 15) + 1)
+        session_modulo=(((F('id') - 1) % 15) + 1)
     ).get(id=session_id)
 
     # Use F expressions to get the modulo 15 of the StudentSession ID
@@ -649,6 +649,8 @@ def studentsTable(request, user_id, class_id, course_id):
     func_values = [(session.id - 1) % 15 + 1 for session in Tsessions]
 
 
+    # Prepare a list to store serialized student course information
+    student_table_info = []
 
     for student in students:
         try:
@@ -689,18 +691,10 @@ def studentsTable(request, user_id, class_id, course_id):
             # Handle the case where StudentCourse does not exist for the student
             pass
 
-    
+         
+        # Prefetch student courses related to the default course
+        student_course = StudentCourse.objects.get(student=student, course__department=department, course__lecturer=lecturer)
 
-    # Prepare a list to store serialized student course information
-    student_table_info = []
-    
-    # students = Student.objects.filter(
-    #     programme=department, studentcourse__course=course, studentcourse__course__lecturer=lecturer)
-
-    # Prefetch student courses related to the default course
-    student_courses = StudentCourse.objects.filter(student__in=students, course__department=department, course__lecturer=lecturer)
-
-    for student_course in student_courses:
         # Retrieve sessions for the current student course
         student_sessions = StudentSession.objects.filter(studentcourse=student_course)
        
@@ -709,9 +703,9 @@ def studentsTable(request, user_id, class_id, course_id):
         serialized_student_sessions = StudentSessionSerializer(student_sessions, many=True).data
 
         student_table_info.append({
-            'student': student_serializer,
-            'student_course': serialized_student_course,
-            'student_sessions': serialized_student_sessions
+              'student': student_serializer,
+              'student_course': serialized_student_course,
+              'student_sessions': serialized_student_sessions
             })         
             
     student_s = StudentSerializer(students, many=True).data
