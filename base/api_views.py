@@ -626,28 +626,28 @@ def import_students(request):
     return Response({'message': 'Valid request'}, status=status.HTTP_202_ACCEPTED)
 
 
-
 @api_view(['GET'])
 def studentsTable(request, user_id, class_id, course_id):
     # Get the lecturer associated with the current user
     lecturer = Lecturer.objects.get(id=user_id)
 
-    # Get all courses related to the lecturer
+    # Get the course related to the lecturer
     course = Course.objects.get(lecturer=lecturer, id=course_id)
 
+    # Get the department
     department = Department.objects.get(id=class_id)
     
-
     # Get all students enrolled in the courses related to the lecturer
     students = Student.objects.filter(
-        programme=department, studentcourse__course=course, studentcourse__course__lecturer=lecturer)
+        programme=department, studentcourse__course=course, studentcourse__course__lecturer=lecturer
+    )
 
-
+    # Get all sessions
     Tsessions = Session.objects.filter(
-        attendance__attended=True, course=course, course__department=department, course__lecturer=lecturer)
+        attendance__attended=True, course=course, course__department=department, course__lecturer=lecturer
+    )
 
     func_values = [(session.id - 1) % 15 + 1 for session in Tsessions]
-
 
     # Prepare a list to store serialized student course information
     student_table_info = []
@@ -655,13 +655,14 @@ def studentsTable(request, user_id, class_id, course_id):
     for student in students:
         try:
             studentcourse = StudentCourse.objects.get(
-                student=student, course__department=department, course__lecturer=lecturer)
-        except:
-            message = 'nothing'
+                student=student, course__department=department, course__lecturer=lecturer
+            )
+        except StudentCourse.DoesNotExist:
+            continue
 
         studses = StudentSession.objects.filter(studentcourse=studentcourse)
 
-        # for marking none attended sessions
+        # For marking none attended sessions
         for func in func_values:
             for studse in studses:
                 var = ((studse.id - 1) % 15) + 1
@@ -669,45 +670,39 @@ def studentsTable(request, user_id, class_id, course_id):
                     mark = studse.attended
                     if mark is None:
                         mark = False
-                    if mark is False:
-                        mark = False
-                    else:
-                        mark = True
-                    studse.attended = mark  # Set the value explicitly
+                    studse.attended = mark
                     studse.save()
 
         # Initialize the check variable inside the loop for each student
         check = 0
 
         for studse in studses:
-            attended = studse.attended
-            if attended is False:
+            if studse.attended is False:
                 check += 1
 
-        try:
-            studentcourse.strike = check
-            studentcourse.save()
-        except StudentCourse.DoesNotExist:
-            # Handle the case where StudentCourse does not exist for the student
-            pass
+        studentcourse.strike = check
+        studentcourse.save()
 
-         
         # Prefetch student courses related to the default course
-        student_course = StudentCourse.objects.get(student=student, course__department=department, course__lecturer=lecturer)
+        student_course = StudentCourse.objects.get(
+            student=student, course__department=department, course__lecturer=lecturer
+        )
 
-        # Retrieve sessions for the current student course
-        student_sessions = StudentSession.objects.filter(studentcourse=student_course)
-       
+        # Retrieve sessions for the current student course and order them by time
+        student_sessions = StudentSession.objects.filter(
+            studentcourse=student_course
+        ).order_by('time')
+        
         student_serializer = StudentSerializer(student_course.student).data
         serialized_student_course = StudentCourseSerializer(student_course).data
         serialized_student_sessions = StudentSessionSerializer(student_sessions, many=True).data
 
         student_table_info.append({
-              'student': student_serializer,
-              'student_course': serialized_student_course,
-              'student_sessions': serialized_student_sessions
-            })         
-            
+            'student': student_serializer,
+            'student_course': serialized_student_course,
+            'student_sessions': serialized_student_sessions
+        })
+
     student_s = StudentSerializer(students, many=True).data
 
     response_data = {
