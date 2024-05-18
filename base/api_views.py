@@ -303,7 +303,7 @@ def MarkAttendance(request, user_id, code):
         student=student, course=course)  # Use get() here
     session_id = session.id
     displaysession = Session.objects.annotate(
-        student_session_modulo=(((F('id') - 1) % 15) + 1)
+        session_modulo=(((F('id') - 1) % 15) + 1)
     ).get(id=session_id)
 
     # Use F expressions to get the modulo 15 of the StudentSession ID
@@ -337,6 +337,14 @@ def MarkAttendance(request, user_id, code):
 
             attendance_type = request.data.get('attendance_type')
             if attendance_type == 'start':
+                
+                match.attended_start = True
+                match.save() 
+                
+                match_status = False
+                if match.attended_start is True:
+                    match_status = True
+
 
                 studentcode, created = StudentCode.objects.get_or_create(
                     student=student,
@@ -357,19 +365,21 @@ def MarkAttendance(request, user_id, code):
                     attendance.attended_start = True
                     attendance.save()
 
-                    # attendance_marked_start = Attendance.objects.filter(
-                    # session=session, attended_start=True).exists()
-                    
-                    # # Return response_data instead of success message
-                    # response_data = {
-                    #     'match': StudentSessionSerializer(match).data ,
-                    #     'time_remaining': expiration_datetime,
-                    #     'started': attendance_marked_start,
-                    #     'message': message,
-                    # }
-                    # return Response(response_data, status=status.HTTP_201_CREATED)
+                    attendance_marked_start = Attendance.objects.filter(
+                    session=session, attended_start=True).exists()
+
+                 
+                    # Return response_data instead of success message
+                    response_data = {
+                        'match': StudentSessionSerializer(match).data,
+                        'time_remaining': expiration_datetime,
+                        'session_activated': attendance_marked_start,
+                        'match_start_attended': match_status,
+                        'message': message,
+                    }
+                    return Response(response_data, status=status.HTTP_201_CREATED)
             
-           
+            if attendance_type == 'end':
                 studentcode, created = StudentCode.objects.get_or_create(
                     student=student,
                     code=code,
@@ -383,17 +393,22 @@ def MarkAttendance(request, user_id, code):
                 attendance, created = Attendance.objects.get_or_create(
                     StudentCourse=student_course,
                     session=session,
-                    defaults={'attended_end': True}
+                    defaults={'attended_end': True},
                 )
+                
                 if not created:
                     attendance.attended_end = True
                     attendance.save()
 
                 end = Attendance.objects.get(
                     session=session, StudentCourse=student_course)
-                if end.attended_start is True:
+                if end.attended_start and match.attended_start:
+                    match.attended_end = True
                     match.attended = True
                     match.save()
+                    # is to indicate that the session has been fully marked
+                    attendance.attended = True
+                    attendance.save()
                     return Response({'attendance Marked Successfully'}, status=status.HTTP_201_CREATED)
 
         
@@ -403,9 +418,9 @@ def MarkAttendance(request, user_id, code):
     response_data = {
         'match': StudentSessionSerializer(match).data ,
         'time_remaining': expiration_datetime,
-        'started': attendance_marked_start,
+        'session_activated': attendance_marked_start,
         'message': message,
-        'session Id': session_id,
+        'session_Id': session_id,
     }
 
     return Response(response_data, status=status.HTTP_200_OK)
@@ -456,8 +471,11 @@ def generateCode_api(request, user_id, course_id=None):
             course = Course.objects.get(id=course_id)
             sessions = Session.objects.filter(
                 course=course)
-            available_sessions = [
-                session for session in sessions if not session.is_attended()]
+
+            available_sessions = sorted(
+                (session for session in sessions if not session.is_attended()), 
+                key=lambda session: session.id
+                )
             first_session = available_sessions[0]
 
             # marked_sessions = [
@@ -474,7 +492,7 @@ def generateCode_api(request, user_id, course_id=None):
                 selected_longitude = request.data.get('longitude')
 
             # minutes it takes for code to expire
-                expiration_minutes = 30
+                expiration_minutes = 15
             # Generate a verification code
                 code = generate_verification_code(
                     lecturer, selected_course, selected_session, expiration_minutes, selected_latitude, selected_longitude)
@@ -493,6 +511,9 @@ def generateCode_api(request, user_id, course_id=None):
                          'session': session_serializer, }
 
     return Response(response_data, status=status.HTTP_200_OK)
+
+
+
 
 
 @api_view(['GET', 'POST'])
@@ -626,84 +647,77 @@ def import_students(request):
     return Response({'message': 'Valid request'}, status=status.HTTP_202_ACCEPTED)
 
 
-
 @api_view(['GET'])
 def studentsTable(request, user_id, class_id, course_id):
     # Get the lecturer associated with the current user
     lecturer = Lecturer.objects.get(id=user_id)
 
-    # Get all courses related to the lecturer
+    # Get the course related to the lecturer
     course = Course.objects.get(lecturer=lecturer, id=course_id)
 
+    # Get the department
     department = Department.objects.get(id=class_id)
     
-
     # Get all students enrolled in the courses related to the lecturer
     students = Student.objects.filter(
-        programme=department, studentcourse__course=course, studentcourse__course__lecturer=lecturer)
+        programme=department, studentcourse__course=course, studentcourse__course__lecturer=lecturer
+    ).order_by('id')
 
-
+    # Get all sessions
     Tsessions = Session.objects.filter(
-        attendance__attended=True, course=course, course__department=department, course__lecturer=lecturer)
+        attendance__attended=True, course=course, course__department=department, course__lecturer=lecturer
+    )
 
     func_values = [(session.id - 1) % 15 + 1 for session in Tsessions]
 
-
+    # Prepare a list to store serialized student course information
+    student_table_info = []
 
     for student in students:
         try:
             studentcourse = StudentCourse.objects.get(
-                student=student, course__department=department, course__lecturer=lecturer)
-        except:
-            message = 'nothing'
+                student=student, course__department=department, course__lecturer=lecturer
+            )
+        except StudentCourse.DoesNotExist:
+            continue
 
         studses = StudentSession.objects.filter(studentcourse=studentcourse)
 
-        # for marking none attended sessions
+        # For marking none attended sessions
         for func in func_values:
             for studse in studses:
                 var = ((studse.id - 1) % 15) + 1
                 if var == func:
-                    mark = studse.attended
-                    if mark is None:
-                        mark = False
-                    if mark is False:
-                        mark = False
-                    else:
+                    start_mark = studse.attended_start
+                    end_mark = studse.attended_end
+                    mark = None
+                    if start_mark and end_mark:
                         mark = True
-                    studse.attended = mark  # Set the value explicitly
+                    else:
+                        mark = False    
+                    studse.attended = mark
                     studse.save()
 
         # Initialize the check variable inside the loop for each student
         check = 0
 
         for studse in studses:
-            attended = studse.attended
-            if attended is False:
+            if studse.attended is False:
                 check += 1
 
-        try:
-            studentcourse.strike = check
-            studentcourse.save()
-        except StudentCourse.DoesNotExist:
-            # Handle the case where StudentCourse does not exist for the student
-            pass
+        studentcourse.strike = check
+        studentcourse.save()
 
-    
+        # Prefetch student courses related to the default course
+        student_course = StudentCourse.objects.get(
+            student=student, course__department=department, course__lecturer=lecturer
+        )
 
-    # Prepare a list to store serialized student course information
-    student_table_info = []
-    
-    # students = Student.objects.filter(
-    #     programme=department, studentcourse__course=course, studentcourse__course__lecturer=lecturer)
-
-    # Prefetch student courses related to the default course
-    student_courses = StudentCourse.objects.filter(student__in=students, course__department=department, course__lecturer=lecturer)
-
-    for student_course in student_courses:
-        # Retrieve sessions for the current student course
-        student_sessions = StudentSession.objects.filter(studentcourse=student_course)
-       
+        # Retrieve sessions for the current student course and order them by time
+        student_sessions = StudentSession.objects.filter(
+            studentcourse=student_course
+        ).order_by('time')
+        
         student_serializer = StudentSerializer(student_course.student).data
         serialized_student_course = StudentCourseSerializer(student_course).data
         serialized_student_sessions = StudentSessionSerializer(student_sessions, many=True).data
@@ -712,8 +726,8 @@ def studentsTable(request, user_id, class_id, course_id):
             'student': student_serializer,
             'student_course': serialized_student_course,
             'student_sessions': serialized_student_sessions
-            })         
-            
+        })
+
     student_s = StudentSerializer(students, many=True).data
 
     response_data = {

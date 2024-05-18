@@ -288,6 +288,8 @@ def assign_program_courses(sender, instance, created, **kwargs):
 
 class StudentSession(models.Model):
     studentcourse = models.ForeignKey(StudentCourse, on_delete=models.CASCADE)
+    attended_start = models.BooleanField(null=True)
+    attended_end = models.BooleanField(null=True)
     attended = models.BooleanField(null=True)
     date = models.DateField()
     time = models.TimeField()
@@ -350,11 +352,6 @@ class Attendance(models.Model):
     attended_start = models.BooleanField(default=False)
     attended_end = models.BooleanField(default=False)
 
-    def save(self, *args, **kwargs):
-        if self.attended_end and self.attended_start:
-            self.attended = True
-
-        super(Attendance, self).save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.StudentCourse.student.name} - {self.StudentCourse.course.name} - Session {self.session.id}"

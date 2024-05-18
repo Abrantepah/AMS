@@ -51,7 +51,6 @@ class StudentCourseSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-
 class VerificationCodeSerializer(serializers.ModelSerializer):
     class Meta:
         model = VerificationCode
