@@ -373,7 +373,7 @@ def MarkAttendance(request, user_id, code):
                     response_data = {
                         'match': StudentSessionSerializer(match).data,
                         'time_remaining': expiration_datetime,
-                        'started': attendance_marked_start,
+                        'session activated': attendance_marked_start,
                         'match start attended': match_status,
                         'message': message,
                     }
@@ -393,10 +393,12 @@ def MarkAttendance(request, user_id, code):
                 attendance, created = Attendance.objects.get_or_create(
                     StudentCourse=student_course,
                     session=session,
-                    defaults={'attended_end': True}
+                    defaults={'attended_end': True},
+                    attended = True
                 )
                 if not created:
                     attendance.attended_end = True
+                    attendance.attended = True
                     attendance.save()
 
                 end = Attendance.objects.get(
@@ -414,7 +416,7 @@ def MarkAttendance(request, user_id, code):
     response_data = {
         'match': StudentSessionSerializer(match).data ,
         'time_remaining': expiration_datetime,
-        'Session Activated': attendance_marked_start,
+        'session activated': attendance_marked_start,
         'message': message,
         'session Id': session_id,
     }
@@ -485,7 +487,7 @@ def generateCode_api(request, user_id, course_id=None):
                 selected_longitude = request.data.get('longitude')
 
             # minutes it takes for code to expire
-                expiration_minutes = 30
+                expiration_minutes = 15
             # Generate a verification code
                 code = generate_verification_code(
                     lecturer, selected_course, selected_session, expiration_minutes, selected_latitude, selected_longitude)
