@@ -394,11 +394,10 @@ def MarkAttendance(request, user_id, code):
                     StudentCourse=student_course,
                     session=session,
                     defaults={'attended_end': True},
-                    attended = True
                 )
+                
                 if not created:
                     attendance.attended_end = True
-                    attendance.attended = True
                     attendance.save()
 
                 end = Attendance.objects.get(
@@ -407,6 +406,9 @@ def MarkAttendance(request, user_id, code):
                     match.attended_end = True
                     match.attended = True
                     match.save()
+                    # is to indicate that the session has been fully marked
+                    attendance.attended = True
+                    attendance.save()
                     return Response({'attendance Marked Successfully'}, status=status.HTTP_201_CREATED)
 
         
