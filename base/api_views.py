@@ -504,7 +504,7 @@ def generateCode_api(request, user_id, course_id=None):
         course_serializer = CourseSerializer(course_instances, many=True)
 
         session_serializer = SessionSerializer(
-            available_sessions, many=True).data
+            first_session).data
         response_data = {'lecturer': lecturer_serializer.data, 'courses': course_serializer.data,
                          'session': session_serializer, }
 
