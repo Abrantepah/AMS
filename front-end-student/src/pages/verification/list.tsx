@@ -94,7 +94,7 @@ const handleFinish = async () => {
         }, {
             onSuccess: (data, variables, context) => {
               // console.log(variables);
-              setAttendanceToggle(prevState => !prevState)
+              setAttendanceToggle(false)
               localStorage.setItem('attendanceToggle', 'false')
               localStorage.setItem('verificationCode', JSON.stringify({
                 code: code
@@ -103,8 +103,8 @@ const handleFinish = async () => {
             },
             onError: (error, variables, context) => {
               // console.log(error);
-              setAttendanceToggle(prevState => !prevState)
-              localStorage.setItem('attendanceToggle', 'false')
+              setAttendanceToggle(true)
+              localStorage.setItem('attendanceToggle', 'true')
               localStorage.setItem('verificationCode', JSON.stringify({
                 code: code
               }))
@@ -149,12 +149,18 @@ const handleMarkStartAttendance = async () => {
         }, {
           onSuccess: () => {
             // refetch()
-            setAttendanceToggle(prevState => !prevState)
+            setAttendanceToggle(true)
             localStorage.removeItem('attendanceToggle')
             // @ts-ignore
             localStorage.setItem("attendanceData", JSON.stringify(attendanceData))
             
             localStorage.removeItem('storedData')
+            localStorage.removeItem('verificationCode')
+          },
+          onError: () => {
+            // refetch()
+            setAttendanceToggle(true)
+            localStorage.setItem('attendanceToggle', 'true')
             localStorage.removeItem('verificationCode')
           },
         });
@@ -194,11 +200,11 @@ const handleMarkStartAttendance = async () => {
               localStorage.setItem("attendanceData", JSON.stringify(attendanceData))
             localStorage.removeItem('verificationCode')
             localStorage.removeItem('storedData')
-            setAttendanceToggle(prevState => !prevState)
+            setAttendanceToggle(true  )
           },
           onError: () => {
-            setAttendanceToggle(prevState => !prevState)
-            localStorage.setItem('attendanceToggle', 'false')
+            setAttendanceToggle(true)
+            localStorage.setItem('attendanceToggle', 'true')
             localStorage.removeItem('verificationCode')
           },
         });
@@ -236,7 +242,7 @@ const handleMarkEndAttendance = async () => {
           }, {
           onSuccess: () => {
             // refetch()
-            setAttendanceToggle(prevState => !prevState)
+            setAttendanceToggle(true)
             localStorage.removeItem('attendanceToggle')
             // @ts-ignore
             localStorage.setItem("attendanceData", 'undefined')
@@ -283,7 +289,7 @@ const handleMarkEndAttendance = async () => {
 
             localStorage.removeItem('verificationCode')
             localStorage.removeItem('storedData')
-            setAttendanceToggle(prevState => !prevState)
+            setAttendanceToggle(true)
           },
           onError: () => {
             setAttendanceToggle(prevState => !prevState)
@@ -330,13 +336,14 @@ const verifiedCourse = courseData?.data?.courses ?? {
 // @ts-ignore
   const retrievedAttendance = localStorage.getItem('attendanceData') != 'undefined' ? JSON.parse(localStorage.getItem('attendanceData')) : { data: {
     time_remaining: Date.now(),
-    started: false
+    match_start_attended: false,
+    session_activated: false
   }}
 
   const remainingTime = new Date(retrievedAttendance?.data.time_remaining).getTime()
   const currentTime = Date.now()
 
-  console.log(retrievedAttendance?.data.started == true && remainingTime > currentTime);
+  console.log(retrievedAttendance?.data.match_start_attended == true && remainingTime > currentTime);
   
 
   return (
@@ -419,7 +426,7 @@ const verifiedCourse = courseData?.data?.courses ?? {
                       onClick={handleMarkStartAttendance}
                       disabled={
                         // // @ts-ignore
-                        retrievedAttendance.data.started == true && remainingTime > currentTime
+                        retrievedAttendance.data.match_start_attended == true && remainingTime > currentTime
                       }
                       type="primary"
                       icon={<CheckCircleOutlined onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined}/>}
@@ -434,7 +441,7 @@ const verifiedCourse = courseData?.data?.courses ?? {
                     }}
                       disabled={
                         // @ts-ignore
-                        !(retrievedAttendance?.data.started == true && remainingTime > currentTime) 
+                        !(retrievedAttendance?.data.match_start_attended == true && remainingTime > currentTime) 
                        }
                     htmlType="submit"
                     onClick={handleMarkEndAttendance}
