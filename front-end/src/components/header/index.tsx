@@ -203,7 +203,7 @@ export const Header: React.FC = () => {
         }}
       >
         <Col xs={0} sm={8} md={12}>
-          <AutoComplete
+          {/* <AutoComplete
             style={{
               width: "100%",
               maxWidth: "550px",
@@ -218,7 +218,7 @@ export const Header: React.FC = () => {
               suffix={<div className={styles.inputSuffix}>/</div>}
               prefix={<SearchOutlined className={styles.inputPrefix} onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined} />}
             />
-          </AutoComplete>
+          </AutoComplete> */}
         </Col>
         <Col>
           <Space size={screens.md ? 32 : 16} align="center">
