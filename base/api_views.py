@@ -373,8 +373,8 @@ def MarkAttendance(request, user_id, code):
                     response_data = {
                         'match': StudentSessionSerializer(match).data,
                         'time_remaining': expiration_datetime,
-                        'session activated': attendance_marked_start,
-                        'match start attended': match_status,
+                        'session_activated': attendance_marked_start,
+                        'match_start_attended': match_status,
                         'message': message,
                     }
                     return Response(response_data, status=status.HTTP_201_CREATED)
@@ -418,9 +418,9 @@ def MarkAttendance(request, user_id, code):
     response_data = {
         'match': StudentSessionSerializer(match).data ,
         'time_remaining': expiration_datetime,
-        'session activated': attendance_marked_start,
+        'session_activated': attendance_marked_start,
         'message': message,
-        'session Id': session_id,
+        'session_Id': session_id,
     }
 
     return Response(response_data, status=status.HTTP_200_OK)
