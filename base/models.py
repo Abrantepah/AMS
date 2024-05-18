@@ -288,6 +288,8 @@ def assign_program_courses(sender, instance, created, **kwargs):
 
 class StudentSession(models.Model):
     studentcourse = models.ForeignKey(StudentCourse, on_delete=models.CASCADE)
+    attended_start = models.BooleanField(null=True)
+    attended_end = models.BooleanField(null=True)
     attended = models.BooleanField(null=True)
     date = models.DateField()
     time = models.TimeField()

@@ -337,6 +337,14 @@ def MarkAttendance(request, user_id, code):
 
             attendance_type = request.data.get('attendance_type')
             if attendance_type == 'start':
+                
+                match.attended_start = True
+                match.save() 
+                
+                match_status = False
+                if match.attended_start is True:
+                    match_status = True
+
 
                 studentcode, created = StudentCode.objects.get_or_create(
                     student=student,
@@ -357,19 +365,21 @@ def MarkAttendance(request, user_id, code):
                     attendance.attended_start = True
                     attendance.save()
 
-                    # attendance_marked_start = Attendance.objects.filter(
-                    # session=session, attended_start=True).exists()
-                    
-                    # # Return response_data instead of success message
-                    # response_data = {
-                    #     'match': StudentSessionSerializer(match).data ,
-                    #     'time_remaining': expiration_datetime,
-                    #     'started': attendance_marked_start,
-                    #     'message': message,
-                    # }
-                    # return Response(response_data, status=status.HTTP_201_CREATED)
+                    attendance_marked_start = Attendance.objects.filter(
+                    session=session, attended_start=True).exists()
+
+                 
+                    # Return response_data instead of success message
+                    response_data = {
+                        'match': StudentSessionSerializer(match).data,
+                        'time_remaining': expiration_datetime,
+                        'started': attendance_marked_start,
+                        'match start attended': match_status,
+                        'message': message,
+                    }
+                    return Response(response_data, status=status.HTTP_201_CREATED)
             
-           
+            if attendance_type == 'end':
                 studentcode, created = StudentCode.objects.get_or_create(
                     student=student,
                     code=code,
@@ -391,7 +401,8 @@ def MarkAttendance(request, user_id, code):
 
                 end = Attendance.objects.get(
                     session=session, StudentCourse=student_course)
-                if end.attended_start is True:
+                if end.attended_start and match.attended_start:
+                    match.attended_end = True
                     match.attended = True
                     match.save()
                     return Response({'attendance Marked Successfully'}, status=status.HTTP_201_CREATED)
@@ -403,7 +414,7 @@ def MarkAttendance(request, user_id, code):
     response_data = {
         'match': StudentSessionSerializer(match).data ,
         'time_remaining': expiration_datetime,
-        'started': attendance_marked_start,
+        'Session Activated': attendance_marked_start,
         'message': message,
         'session Id': session_id,
     }
@@ -667,9 +678,13 @@ def studentsTable(request, user_id, class_id, course_id):
             for studse in studses:
                 var = ((studse.id - 1) % 15) + 1
                 if var == func:
-                    mark = studse.attended
-                    if mark is None:
-                        mark = False
+                    start_mark = studse.attended_start
+                    end_mark = studse.attended_end
+                    mark = None
+                    if start_mark and end_mark:
+                        mark = True
+                    else:
+                        mark = False    
                     studse.attended = mark
                     studse.save()
 
