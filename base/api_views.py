@@ -640,7 +640,7 @@ def studentsTable(request, user_id, class_id, course_id):
     # Get all students enrolled in the courses related to the lecturer
     students = Student.objects.filter(
         programme=department, studentcourse__course=course, studentcourse__course__lecturer=lecturer
-    )
+    ).order_by('id')
 
     # Get all sessions
     Tsessions = Session.objects.filter(
