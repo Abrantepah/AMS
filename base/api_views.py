@@ -469,8 +469,11 @@ def generateCode_api(request, user_id, course_id=None):
             course = Course.objects.get(id=course_id)
             sessions = Session.objects.filter(
                 course=course)
-            available_sessions = [
-                session for session in sessions if not session.is_attended()]
+
+            available_sessions = sorted(
+                (session for session in sessions if not session.is_attended()), 
+                key=lambda session: session.id
+                )
             first_session = available_sessions[0]
 
             # marked_sessions = [
@@ -501,11 +504,14 @@ def generateCode_api(request, user_id, course_id=None):
         course_serializer = CourseSerializer(course_instances, many=True)
 
         session_serializer = SessionSerializer(
-            first_session).data
+            available_sessions, many=True).data
         response_data = {'lecturer': lecturer_serializer.data, 'courses': course_serializer.data,
                          'session': session_serializer, }
 
     return Response(response_data, status=status.HTTP_200_OK)
+
+
+
 
 
 @api_view(['GET', 'POST'])
