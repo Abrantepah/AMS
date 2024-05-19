@@ -32,6 +32,7 @@ import { useConfigProvider } from "../../context";
 import { IconMoon, IconSun } from "../../components/icons";
 import { IOrder, IStore, ICourier, IIdentity } from "../../interfaces";
 import { useStyles } from "./styled";
+import { getNameInitials } from "../../utils/get-name-initials";
 
 const { Header: AntdHeader } = AntdLayout;
 const { useToken } = theme;
@@ -202,7 +203,7 @@ export const Header: React.FC = () => {
         }}
       >
         <Col xs={0} sm={8} md={12}>
-          <AutoComplete
+          {/* <AutoComplete
             style={{
               width: "100%",
               maxWidth: "550px",
@@ -217,7 +218,7 @@ export const Header: React.FC = () => {
               suffix={<div className={styles.inputSuffix}>/</div>}
               prefix={<SearchOutlined className={styles.inputPrefix} onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined} />}
             />
-          </AutoComplete>
+          </AutoComplete> */}
         </Col>
         <Col>
           <Space size={screens.md ? 32 : 16} align="center">
@@ -225,7 +226,18 @@ export const Header: React.FC = () => {
               <Text ellipsis className={styles.userName}>
                 {user?.name}
               </Text>
-              <Avatar size="large" src={user?.avatar} alt={user?.name} />
+              <Avatar
+                size="large"
+                style={{
+                  backgroundColor: '#A2121C',
+                  display: 'flex',
+                  alignItems: 'center',
+                  border: 'none'
+
+                }}
+              >
+                {getNameInitials(user?.name || "")}
+              </Avatar>
             </Space>
           </Space>
         </Col>
