@@ -320,10 +320,10 @@ def MarkAttendance(request, user_id, code):
     for matching_session in matching_sessions:
         match = matching_session
     
-    match_status = False
+    status_match = False
 
     if match.attended_start is True:
-        match_status = True
+        status_match = True
 
     expiration_time = verification_code.expiration_time  
     
@@ -348,6 +348,7 @@ def MarkAttendance(request, user_id, code):
                 match.attended_start = True
                 match.save() 
                 
+                match_status = False
                 if match.attended_start is True:
                     match_status = True
 
@@ -425,7 +426,7 @@ def MarkAttendance(request, user_id, code):
         'match': StudentSessionSerializer(match).data ,
         'time_remaining': expiration_datetime,
         'session_activated': attendance_marked_start,
-        'match_start_attended': match_status,
+        'match_start_attended': status_match,
         'message': message,
         'session_Id': session_id,
     }
