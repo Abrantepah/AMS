@@ -315,10 +315,15 @@ def MarkAttendance(request, user_id, code):
     matching_sessions = student_sessions.filter(
         student_session_modulo=(((session_id-1) % 15) + 1))
     
-    match_status = False
+    
 
     for matching_session in matching_sessions:
         match = matching_session
+    
+    match_status = False
+
+    if match.attended_start is True:
+        match_status = True
 
     expiration_time = verification_code.expiration_time  
     
