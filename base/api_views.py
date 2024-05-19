@@ -314,6 +314,8 @@ def MarkAttendance(request, user_id, code):
     # Filter for StudentSessions where the modulo 15 of the ID matches the Session ID
     matching_sessions = student_sessions.filter(
         student_session_modulo=(((session_id-1) % 15) + 1))
+    
+    match_status = False
 
     for matching_session in matching_sessions:
         match = matching_session
@@ -341,7 +343,6 @@ def MarkAttendance(request, user_id, code):
                 match.attended_start = True
                 match.save() 
                 
-                match_status = False
                 if match.attended_start is True:
                     match_status = True
 
@@ -419,6 +420,7 @@ def MarkAttendance(request, user_id, code):
         'match': StudentSessionSerializer(match).data ,
         'time_remaining': expiration_datetime,
         'session_activated': attendance_marked_start,
+        'match_start_attended': match_status,
         'message': message,
         'session_Id': session_id,
     }
