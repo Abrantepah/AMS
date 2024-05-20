@@ -198,7 +198,7 @@ export const ReportShow = ({ children }: PropsWithChildren) => {
           key="strikes"
           dataIndex={
           // @ts-ignore
-            "student"
+            "student_course"
           }
           title="Strikes"
           render={(value) => (
@@ -207,7 +207,7 @@ export const ReportShow = ({ children }: PropsWithChildren) => {
                 whiteSpace: "nowrap",
               }}
             >
-              {value.Total_strike}
+              {value.strike}
             </Typography.Text>
           )}
           filterIcon={(filtered) => (

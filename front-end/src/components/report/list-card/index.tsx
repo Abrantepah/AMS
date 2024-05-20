@@ -49,7 +49,7 @@ export const ClassListCard = () => {
 // @ts-ignore
   const allClasses = classListProps.dataSource?.all_classes_info ?? []
 
-  console.log(allClasses);
+  // console.log(allClasses);
   
   return (
     <>
