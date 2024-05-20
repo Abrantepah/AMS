@@ -438,7 +438,7 @@ def MarkAttendance(request, user_id, code):
 
 def generate_verification_code(lecturer, course, session, expiration_minutes, latitude, longitude):
     # Your code to generate the verification code
-    alphabet = string.ascii_letters + string.digits
+    alphabet = string.digits + string.digits
     verification_code = ''.join(secrets.choice(alphabet) for i in range(6))
 
     again = VerificationCode.objects.filter(code=verification_code).exists()
@@ -500,7 +500,7 @@ def generateCode_api(request, user_id, course_id=None):
                 selected_longitude = request.data.get('longitude')
 
             # minutes it takes for code to expire
-                expiration_minutes = 15
+                expiration_minutes = 30
             # Generate a verification code
                 code = generate_verification_code(
                     lecturer, selected_course, selected_session, expiration_minutes, selected_latitude, selected_longitude)
