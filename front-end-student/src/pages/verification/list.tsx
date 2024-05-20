@@ -5,6 +5,8 @@ import { useGetIdentity, useCreate, useOne } from "@refinedev/core";
 import { IIdentity } from "../../interfaces";
 import { SaveButton} from "@refinedev/antd";
 import { useEffect, useState } from "react";
+import { CodeCard } from "../../components/verification/code";
+import { AttendanceCard } from "../../components/verification";
 
 export const StoreCreate = () => {
 
@@ -23,7 +25,7 @@ export const StoreCreate = () => {
 // @ts-ignore
 // console.log(JSON.parse(localStorage.getItem('attendanceData')).started);
   
-  
+  const userId = user?.id
 // @ts-ignore
 const retrievedCode = localStorage.getItem('storedData') != 'undefined'|| !(localStorage.getItem('storedData'))? JSON.parse(localStorage.getItem('storedData')) : {
     data: {
@@ -53,11 +55,11 @@ const retrievedCode = localStorage.getItem('storedData') != 'undefined'|| !(loca
     }
   }, [courseData])
 
-    useEffect(() => {
-      const data = localStorage.getItem('attendanceData');
-      if (data == 'undefined' || !data) {
+  useEffect(() => {
+      // @ts-ignore
+    const data = localStorage.getItem('attendanceData') == 'undefined' || !(localStorage.getItem('attendanceData')) ?  undefined : JSON.parse(localStorage.getItem('attendanceData'))
+      if (data == undefined) {
         localStorage.setItem('attendanceData', JSON.stringify(attendanceData))
-        
       }
     }, [attendanceData])
     
@@ -170,10 +172,11 @@ const handleMarkStartAttendance = async () => {
       }
       
   } else {
-    const code = localStorage.getItem('verificationCode')
+    // @ts-ignore
+    const code = JSON.parse(localStorage.getItem('verificationCode')).code || ''
       try {
         attendanceMutate({
-          resource: `MarkAttendance/${user?.id}/${code}`,
+          resource: `MarkAttendance/${user?.id}/${code}/`,
             values: {
               attendance_type: 'start'
           },
@@ -246,6 +249,7 @@ const handleMarkEndAttendance = async () => {
             localStorage.removeItem('attendanceToggle')
             // @ts-ignore
             localStorage.setItem("attendanceData", 'undefined')
+            localStorage.setItem("checkStart", 'undefined')
             localStorage.removeItem('storedData')
             localStorage.removeItem('verificationCode')
           },
@@ -255,11 +259,12 @@ const handleMarkEndAttendance = async () => {
         // console.log("Error marking attendance:", error);
       }
       
-    } else {
-    const code = localStorage.getItem('verificationCode')
+  } else {
+    // @ts-ignore
+    const code = JSON.parse(localStorage.getItem('verificationCode')).code
     try {
           attendanceMutate({
-          resource: `MarkAttendance/${user?.id}/${code}`,
+          resource: `MarkAttendance/${user?.id}/${code}/`,
             values: {
             attendance_type: "end"
           },
@@ -286,6 +291,7 @@ const handleMarkEndAttendance = async () => {
             localStorage.removeItem("courseData")
             
             localStorage.setItem("attendanceData", 'undefined')
+            localStorage.setItem("checkStart", 'undefined')
 
             localStorage.removeItem('verificationCode')
             localStorage.removeItem('storedData')
@@ -342,8 +348,8 @@ const verifiedCourse = courseData?.data?.courses ?? {
 
   const remainingTime = new Date(retrievedAttendance?.data.time_remaining).getTime()
   const currentTime = Date.now()
-
-  console.log(retrievedAttendance?.data.match_start_attended == true && remainingTime > currentTime);
+// @ts-ignore
+  // console.log(!(retrievedAttendance?.data.match_start_attended == true && remainingTime > currentTime));
   
 
   return (
@@ -356,102 +362,15 @@ const verifiedCourse = courseData?.data?.courses ?? {
           // @ts-ignore
           !(localStorage.getItem('attendanceToggle')) && attendanceToggle || JSON.parse(localStorage.getItem('attendanceToggle')) != false && attendanceToggle ? 
             <Col xs={24} md={12} lg={9} style={{marginTop: 64}}>
-
-                <Card
-                  styles={{
-                    body: {
-                      padding: 50,
-                    },
-                  }}
-                >
-                  <Form layout="vertical">
-                  <Form.Item
-                      // name="email"
-                      name={"verificationcode"}
-                      label={"Verification Code"}
-                      rules={[
-                        { required: true },
-                        {
-                          // type: "number",
-                          message: "Invalid Vefication code",
-                        },
-                      ]}
-                    >
-                      <Input
-                        onChange={(e) => setCode(e.currentTarget.value)}
-                        size="large"
-                        placeholder={"Verification Code"}
-                      />
-                  </Form.Item>
-                    <SaveButton
-                      style={{
-                        marginLeft: "auto",
-                        width: '100%'
-                      }}
-                      htmlType="submit"
-                      onClick={handleFinish}
-                      type="primary"
-                      icon={<CheckCircleOutlined onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined}/>}
-                    >
-                      Verify
-                    </SaveButton>
-                  </Form>
-                </Card>
+              <CodeCard handleFinish={handleFinish} setCode={setCode} />
             </Col>
             :
             <Col xs={24} md={12} lg={9} style={{marginTop: 64}}>
-
-                <Card
-                  
-                  styles={{
-                    body: {
-                      padding: 30,
-                    },
-                  }}
-                >
-                  <Typography.Text style={{
-                    fontStyle: 'italic',
-                    color: 'grey',
-                  }}>
-                    Note: Use the start button if this is the first session verification of the class otherwise use the end button
-                  </Typography.Text>
-                  <Flex gap={30} style={{marginTop: 35}}>
-                    <SaveButton
-                      style={{
-                        marginLeft: "auto",
-                        width: '100%',
-                        backgroundColor: 'green'
-                      }}
-                      htmlType="submit"
-                      onClick={handleMarkStartAttendance}
-                      disabled={
-                        // // @ts-ignore
-                        retrievedAttendance.data.match_start_attended == true && remainingTime > currentTime
-                      }
-                      type="primary"
-                      icon={<CheckCircleOutlined onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined}/>}
-                      >
-                    Start
-                  </SaveButton>
-                  <SaveButton
-                    style={{
-                      marginLeft: "auto",
-                      width: '100%',
-                      backgroundColor: 'red',
-                    }}
-                      disabled={
-                        // @ts-ignore
-                        !(retrievedAttendance?.data.match_start_attended == true && remainingTime > currentTime) 
-                       }
-                    htmlType="submit"
-                    onClick={handleMarkEndAttendance}
-                    type="primary"
-                    icon={<CheckCircleOutlined onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined}/>}
-                  >
-                    End
-                  </SaveButton>
-                  </Flex>
-                </Card>
+                <AttendanceCard
+                  userId={userId}
+                  code={code}
+                  handleMarkEndAttendance={handleMarkEndAttendance}
+                  handleMarkStartAttendance={handleMarkStartAttendance} />
             </Col>
           
           }
@@ -553,7 +472,7 @@ const verifiedCourse = courseData?.data?.courses ?? {
             {
               // @ts-ignore
               courseSession.expiration_time != 'N/A'?
-              sessionTime : retrievedSessionTime
+              sessionTime == 'Invalid Date'? 'N/A': sessionTime : retrievedSessionTime == 'Invalid Date'? 'N/A' : retrievedSessionTime
             }
             </Typography.Text>
           </Flex>   

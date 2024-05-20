@@ -71,7 +71,7 @@ export const authProvider: AuthProvider = {
     disableAutoLogin();
     localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem('storedData');
-    localStorage.removeItem('verificationCode');
+    // localStorage.removeItem('verificationCode');
 
     document.cookie.split(";").forEach((c) => {
       document.cookie = c
