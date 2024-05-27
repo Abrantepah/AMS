@@ -69,8 +69,9 @@ export const authProvider: AuthProvider = {
   },
   logout: async () => {
     disableAutoLogin();
-    localStorage.removeItem(TOKEN_KEY);
-    localStorage.removeItem('storedData');
+    localStorage.clear();
+    // localStorage.removeItem(TOKEN_KEY);
+    // localStorage.removeItem('storedData');
     // localStorage.removeItem('verificationCode');
 
     document.cookie.split(";").forEach((c) => {
