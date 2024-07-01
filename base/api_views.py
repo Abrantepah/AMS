@@ -204,62 +204,142 @@ def permission_api(request, user_id):
 
 
 
-@sync_to_async
-def get_student(user_id):
-    return Student.objects.get(id=user_id)
+# @sync_to_async
+# def get_student(user_id):
+#     return Student.objects.get(id=user_id)
 
-@sync_to_async
-def get_verification_code(code):
-    return VerificationCode.objects.get(code=code, used=False)
+# @sync_to_async
+# def get_verification_code(code):
+#     return VerificationCode.objects.get(code=code, used=False)
 
-@sync_to_async
-def is_student_code_exists(code, student):
-    return StudentCode.objects.filter(code=code, student=student).exists()
+# @sync_to_async
+# def is_student_code_exists(code, student):
+#     return StudentCode.objects.filter(code=code, student=student).exists()
 
-@sync_to_async
-def update_verification_code(verification_code, used):
-    verification_code.used = used
-    verification_code.save()
+# @sync_to_async
+# def update_verification_code(verification_code, used):
+#     verification_code.used = used
+#     verification_code.save()
 
-@sync_to_async
-def get_student_course(student, course):
-    return StudentCourse.objects.get(student=student, course=course)
+# @sync_to_async
+# def get_student_course(student, course):
+#     return StudentCourse.objects.get(student=student, course=course)
 
-@sync_to_async
-def update_session(session, expiration_time):
-    session.expiration_time = expiration_time
-    session.save()
+# @sync_to_async
+# def update_session(session, expiration_time):
+#     session.expiration_time = expiration_time
+#     session.save()
 
-@sync_to_async
-def save_verification_code(verification_code):
-    verification_code.save()
+# @sync_to_async
+# def save_verification_code(verification_code):
+#     verification_code.save()
+
+# @api_view(['GET', 'POST'])
+# async def verification_api(request, user_id):
+#     current_time = timezone.now()
+#     student = await get_student(user_id)
+#     errorMessage = None
+
+#     if request.method == 'POST':
+#         try:
+#             code = request.data.get('verificationcode')
+#             verification_code = await get_verification_code(code)
+#             session = verification_code.session
+#         except VerificationCode.DoesNotExist:
+#             errorMessage = 'code does not exist'
+#             return Response(errorMessage, status=status.HTTP_401_UNAUTHORIZED)
+#         else:
+#             if verification_code.expiration_time <= current_time or await is_student_code_exists(code, student):
+#                 await update_verification_code(verification_code, True)
+#                 errorMessage = 'Verification code has expired'
+#                 return Response(errorMessage, status=status.HTTP_401_UNAUTHORIZED)
+#             else:
+#                 student_latitude = float(request.data.get('latitude'))
+#                 student_longitude = float(request.data.get('longitude'))
+#                 verification_latitude = float(verification_code.latitude)
+#                 verification_longitude = float(verification_code.longitude)
+
+#                 radius = 6371
+#                 lat1 = math.radians(student_latitude)
+#                 lon1 = math.radians(student_longitude)
+#                 lat2 = math.radians(verification_latitude)
+#                 lon2 = math.radians(verification_longitude)
+
+#                 delta_lat = lat2 - lat1
+#                 delta_lon = lon2 - lon1
+
+#                 a = math.sin(delta_lat / 2) ** 2 + math.cos(lat1) * math.cos(lat2) * math.sin(delta_lon / 2) ** 2
+#                 c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
+#                 distance = radius * c
+
+#                 max_distance = 0.30
+
+#                 if verification_code.expiration_time <= current_time or distance > max_distance:
+#                     errorMessage = 'you are not within the location radius'
+#                     return Response(errorMessage, status=status.HTTP_401_UNAUTHORIZED)
+#                 else:
+#                     await update_session(session, current_time + timedelta(minutes=5))
+#                     await update_verification_code(verification_code, False)
+
+#                     if student:
+#                         try:
+#                             student_course = await get_student_course(student, verification_code.course)
+#                         except StudentCourse.DoesNotExist:
+#                             errorMessage = 'you are not enrolled in'
+#                             return Response(errorMessage, status=status.HTTP_401_UNAUTHORIZED)
+#                         else:
+#                             if student.year != verification_code.course.year:
+#                                 errorMessage = "Enrollment year does not match the course."
+#                                 return Response(errorMessage, status=status.HTTP_401_UNAUTHORIZED)
+#                             else:
+#                                 course_serializer = CourseSerializer(verification_code.course)
+#                                 lecturer_serializer = LecturerSerializer(verification_code.lecturer)
+#                                 session_serializer = SessionSerializer(verification_code.session)
+
+#                                 response_data = {
+#                                     'courses': course_serializer.data,
+#                                     'lecturer': lecturer_serializer.data,
+#                                     'session': session_serializer.data,
+#                                 }
+
+#                                 return Response(response_data, status=status.HTTP_202_ACCEPTED)
+#     student = StudentSerializer(student).data
+#     return Response(student, status=status.HTTP_200_OK)
+
+
+
 
 @api_view(['GET', 'POST'])
-async def verification_api(request, user_id):
+def verification_api(request, user_id):
+
     current_time = timezone.now()
-    student = await get_student(user_id)
+    student = Student.objects.get(id=user_id)
     errorMessage = None
 
     if request.method == 'POST':
         try:
             code = request.data.get('verificationcode')
-            verification_code = await get_verification_code(code)
+            verification_code = VerificationCode.objects.get(
+                code=code, used=False)
             session = verification_code.session
         except VerificationCode.DoesNotExist:
             errorMessage = 'code does not exist'
             return Response(errorMessage, status=status.HTTP_401_UNAUTHORIZED)
         else:
-            if verification_code.expiration_time <= current_time or await is_student_code_exists(code, student):
-                await update_verification_code(verification_code, True)
+            if verification_code.expiration_time <= current_time or StudentCode.objects.filter(code=code, student=student).exists():
+                verification_code.used = True
+                verification_code.save()
                 errorMessage = 'Verification code has expired'
                 return Response(errorMessage, status=status.HTTP_401_UNAUTHORIZED)
             else:
+                # Get the student's location
                 student_latitude = float(request.data.get('latitude'))
                 student_longitude = float(request.data.get('longitude'))
                 verification_latitude = float(verification_code.latitude)
                 verification_longitude = float(verification_code.longitude)
 
-                radius = 6371
+                # Calculate the distance between the two sets of coordinates using the Haversine formula
+                radius = 6371  # Earth's radius in kilometers
                 lat1 = math.radians(student_latitude)
                 lon1 = math.radians(student_longitude)
                 lat2 = math.radians(verification_latitude)
@@ -268,22 +348,29 @@ async def verification_api(request, user_id):
                 delta_lat = lat2 - lat1
                 delta_lon = lon2 - lon1
 
-                a = math.sin(delta_lat / 2) ** 2 + math.cos(lat1) * math.cos(lat2) * math.sin(delta_lon / 2) ** 2
+                a = math.sin(delta_lat / 2) ** 2 + math.cos(lat1) * \
+                    math.cos(lat2) * math.sin(delta_lon / 2) ** 2
                 c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
-                distance = radius * c
+                distance = radius * c  # Distance in kilometers
 
-                max_distance = 0.30
+                # Assuming you want to allow a maximum distance of, for example, 1 kilometer
+                max_distance = 0.30  # Change to 1.0 for kilometers
 
+                # Perform the radius check
                 if verification_code.expiration_time <= current_time or distance > max_distance:
                     errorMessage = 'you are not within the location radius'
                     return Response(errorMessage, status=status.HTTP_401_UNAUTHORIZED)
                 else:
-                    await update_session(session, current_time + timedelta(minutes=5))
-                    await update_verification_code(verification_code, False)
+                    session.expiration_time = current_time + \
+                        timedelta(minutes=5)
+                    verification_code.used = False
+                    session.save()
+                    verification_code.save()
 
                     if student:
                         try:
-                            student_course = await get_student_course(student, verification_code.course)
+                            student_course = StudentCourse.objects.get(
+                                student=student, course=verification_code.course)
                         except StudentCourse.DoesNotExist:
                             errorMessage = 'you are not enrolled in'
                             return Response(errorMessage, status=status.HTTP_401_UNAUTHORIZED)
@@ -292,9 +379,13 @@ async def verification_api(request, user_id):
                                 errorMessage = "Enrollment year does not match the course."
                                 return Response(errorMessage, status=status.HTTP_401_UNAUTHORIZED)
                             else:
-                                course_serializer = CourseSerializer(verification_code.course)
-                                lecturer_serializer = LecturerSerializer(verification_code.lecturer)
-                                session_serializer = SessionSerializer(verification_code.session)
+                                # load the message.success in a green-covered text
+                                course_serializer = CourseSerializer(
+                                    verification_code.course)
+                                lecturer_serializer = LecturerSerializer(
+                                    verification_code.lecturer)
+                                session_serializer = SessionSerializer(
+                                    verification_code.session)
 
                                 response_data = {
                                     'courses': course_serializer.data,
