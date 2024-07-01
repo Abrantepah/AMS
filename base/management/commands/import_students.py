@@ -25,6 +25,7 @@ class Command(BaseCommand):
                 # Extract data from the row
                 reference, index, name = row
 
+                # reference, surname, othername = row
                 # formatted_name = othername + ' ' + surname
                 # reference, department_name, name = row
  
