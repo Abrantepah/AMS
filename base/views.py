@@ -63,7 +63,7 @@ def Lecturer_login(request):
                 return redirect('changedefaultpassword')
             elif Student.objects.filter(user=user, reference=reference).exists():
                 return redirect('login')
-
+ 
             elif Lecturer.objects.filter(user=user, reference=reference).exists():
                 # Redirect to the dashboard or any desired page after successful login
                 return redirect('lecturer_home')
